@@ -7,6 +7,8 @@ Saved/*
 Content/*
 !Content/Character
 !Content/animations/
+!Content/Char/
+!Content/BP_Comp/
 
 temp.html
 
