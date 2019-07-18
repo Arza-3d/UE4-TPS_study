@@ -5,8 +5,7 @@ Intermediate/*
 Saved/*
 
 Content/*
-!Content/Char/
-!Content/BP_Comp/
+!Content/Character
 !Content/animations/
 
 temp.html
