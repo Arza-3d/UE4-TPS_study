@@ -45,6 +45,9 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	//r3 Rotate character for Y forward because of Maya, and put it down 97cm
+	//GetMesh();
 }
 
 //////////////////////////////////////////////////////////////////////////
