@@ -25,7 +25,6 @@ TPS_study.v12.suo
 *.opensdf
 *.sdf
 *.VC.db
-*.fbx
 *.VC.opendb
 
 Plugins/*/Intermediate/*
