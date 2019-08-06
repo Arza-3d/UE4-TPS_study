@@ -7,8 +7,8 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-//#include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
+//#include "Components/TimelineComponent.h"
 
 ATPS_studyCharacter::ATPS_studyCharacter()
 {
@@ -34,6 +34,8 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false;
+
+	//CPPAimingTimeline = CreateDefaultSubobject<UTimeLineComponent>(TEXT("CPPAimingTimeline"));
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
@@ -119,4 +121,11 @@ void ATPS_studyCharacter::MoveRight(float Value)
 		bRightInputPressed = false;
 		NormalizedRight = 0.0f;
 	}
+}
+
+void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
+{
+	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
+	bUseControllerRotationYaw = bMyCharIsAiming;
+	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }

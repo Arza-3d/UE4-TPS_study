@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "TPS_studyCharacter.generated.h"
+//#include "Components/TimelineComponent.h"
 
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter
@@ -14,6 +15,9 @@ class ATPS_studyCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	//class UTimeLineComponent* CPPAimingTimeline;
 
 public:
 	ATPS_studyCharacter();
@@ -35,6 +39,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = Aiming)
 	bool bCharIsAiming;
+
+	UFUNCTION(BlueprintCallable, Category = Aiming)
+	void OrientCharacter(bool bMyCharIsAiming);
 
 protected:
 
