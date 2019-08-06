@@ -35,12 +35,11 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false;
 
-	//CPPAimingTimeline = CreateDefaultSubobject<UTimeLineComponent>(TEXT("CPPAimingTimeline"));
+	//AimingTransitionTimeline = NewObject<UTimelineComponent>(this, FName("AimingTransitionTimeline"));
+	//AimingTransitionTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-
-	bUsingAdvancedNormalized = true;
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)

@@ -2,19 +2,23 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "TPS_studyCharacter.generated.h"
 //#include "Components/TimelineComponent.h"
+#include "TPS_studyCharacter.generated.h"
+
+//lass UTimeLineComponent
 
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	//class UTimeLineComponent* CPPAimingTimeline;
@@ -22,26 +26,35 @@ class ATPS_studyCharacter : public ACharacter
 public:
 	ATPS_studyCharacter();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 
-	UPROPERTY(BlueprintReadOnly, Category = Animation)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	float NormalizedForward;
 
-	UPROPERTY(BlueprintReadOnly, Category = Animation)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	float NormalizedRight;
 
-	UPROPERTY(EditDefaultsOnly, Category = Animation)
-	bool bUsingAdvancedNormalized;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Aiming")
+	bool bIsAiming;
 
-	UPROPERTY(BlueprintReadWrite, Category = Aiming)
-	bool bCharIsAiming;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Fire")
+	bool bIsTriggerPressed;
 
-	UFUNCTION(BlueprintCallable, Category = Aiming)
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void OrientCharacter(bool bMyCharIsAiming);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
+		meta = (ToolTip = "repeat fire for automatic weapon"))
+	void RepeatFire();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
+		meta = (ToolTip = "regular weapon fire"))
+	void FireCPP();
+
 
 protected:
 
@@ -54,6 +67,9 @@ protected:
 	void LookUpAtRate(float Rate);
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	//UPROPERTY(VisibleAnywhere, Category = Aiming)
+	//class UTimelineComponent* AimingTransitionTimeline;
 
 private:
 
