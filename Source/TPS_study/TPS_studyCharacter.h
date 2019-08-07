@@ -38,6 +38,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	float NormalizedRight;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	TArray<FName> WeaponNamesCPP;
+
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Aiming")
 	bool bIsAiming;
 
@@ -53,10 +56,13 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
 		meta = (ToolTip = "regular weapon fire"))
-	void FireCPP();
+	void Fire();
 
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	class UDataTable* WeaponTableCPP;
 
 	void MoveForward(float Value);
 
