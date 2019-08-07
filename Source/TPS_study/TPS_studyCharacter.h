@@ -38,9 +38,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	float NormalizedRight;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
-	TArray<FName> WeaponNamesCPP;
-
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Aiming")
 	bool bIsAiming;
 
@@ -50,6 +47,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void OrientCharacter(bool bMyCharIsAiming);
 
+	
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	class UDataTable* WeaponTableCPP;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	TArray<FName> WeaponNamesCPP;
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
 		meta = (ToolTip = "repeat fire for automatic weapon"))
 	void RepeatFire();
@@ -57,12 +64,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
 		meta = (ToolTip = "regular weapon fire"))
 	void Fire();
-
-
-protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	class UDataTable* WeaponTableCPP;
 
 	void MoveForward(float Value);
 
@@ -73,6 +74,8 @@ protected:
 	void LookUpAtRate(float Rate);
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void BeginPlay() override;
 
 	//UPROPERTY(VisibleAnywhere, Category = Aiming)
 	//class UTimelineComponent* AimingTransitionTimeline;

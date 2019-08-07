@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Engine/DataTable.h"
 //#include "Components/TimelineComponent.h"
 
 ATPS_studyCharacter::ATPS_studyCharacter()
@@ -40,6 +41,7 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -55,6 +57,16 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
+}
+
+void ATPS_studyCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (WeaponTableCPP != nullptr)
+	{
+		WeaponNamesCPP = WeaponTableCPP->GetRowNames();
+	}
 }
 
 void ATPS_studyCharacter::TurnAtRate(float Rate)
