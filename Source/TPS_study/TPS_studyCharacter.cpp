@@ -13,6 +13,7 @@
 
 ATPS_studyCharacter::ATPS_studyCharacter()
 {
+	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	BaseTurnRate = 45.f;
@@ -36,12 +37,10 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false;
 
-	//AimingTransitionTimeline = NewObject<UTimelineComponent>(this, FName("AimingTransitionTimeline"));
-	//AimingTransitionTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
+	bIsFireRatePassed = true;
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -93,6 +92,16 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 		(divider * GetCharacterMovement()->MaxWalkSpeed);
 }
 
+void ATPS_studyCharacter::SetWeaponIndexCPP(int weaponIndex)
+{
+	WeaponIndexCPP = weaponIndex;
+}
+
+int ATPS_studyCharacter::GetWeaponIndexCPP()
+{
+	return WeaponIndexCPP;
+}
+
 void ATPS_studyCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -103,8 +112,10 @@ void ATPS_studyCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
-		bForwardInputPressed = true;
-		NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
+		if (bIsAiming) {
+			bForwardInputPressed = true;
+			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
+		}
 	}
 	else
 	{
@@ -124,8 +135,10 @@ void ATPS_studyCharacter::MoveRight(float Value)
 
 		AddMovementInput(Direction, Value);
 
-		bRightInputPressed = true;
-		NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
+		if (bIsAiming) {
+			bRightInputPressed = true;
+			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
+		}
 	}
 	else 
 	{
@@ -134,9 +147,65 @@ void ATPS_studyCharacter::MoveRight(float Value)
 	}
 }
 
+
+bool ATPS_studyCharacter::GetIsFireRatePassed()
+{
+	return bIsFireRatePassed;
+}
+
+void ATPS_studyCharacter::SetIsFireRatePassed(bool bFireRatePassed)
+{
+	bIsFireRatePassed = bFireRatePassed;
+}
+
+void ATPS_studyCharacter::AimingCPP(bool bIsCharAiming)
+{
+	bIsAiming = bIsCharAiming;
+	OrientCharacter(bIsCharAiming);
+}
+
+bool ATPS_studyCharacter::IsWeaponNameInThisIndexExist(int weaponIndex)
+{
+	return WeaponNamesCPP.Num() > weaponIndex;
+}
+
+bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation()
+{
+	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
+	bool bIsNotAiming = !GetIsAiming();
+
+	return bIsOnTheGround && bIsNotAiming;
+}
+
+
 void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 {
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
 	bUseControllerRotationYaw = bMyCharIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
+}
+
+bool ATPS_studyCharacter::GetIsAiming()
+{
+	return bIsAiming;
+}
+
+bool ATPS_studyCharacter::GetIsTriggerPressed()
+{
+	return bIsTriggerPressed;
+}
+
+void ATPS_studyCharacter::SetIsTriggerPressed(bool bTriggerPressed)
+{
+	bIsTriggerPressed = bTriggerPressed;
+}
+
+float ATPS_studyCharacter::GetNormalizedForward()
+{
+	return NormalizedForward;
+}
+
+float ATPS_studyCharacter::GetNormalizedRight()
+{
+	return NormalizedRight;
 }

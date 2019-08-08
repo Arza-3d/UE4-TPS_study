@@ -24,6 +24,7 @@ class ATPS_studyCharacter : public ACharacter
 	//class UTimeLineComponent* CPPAimingTimeline;
 
 public:
+
 	ATPS_studyCharacter();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -32,38 +33,60 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	float NormalizedForward;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	float NormalizedRight;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Aiming")
-	bool bIsAiming;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "Fire")
-	bool bIsTriggerPressed;
-
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void OrientCharacter(bool bMyCharIsAiming);
-
+	bool bIsFireRatePassed;
 	
-
 protected:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming",
+		meta = (ToolTip = "is character aiming?"))
+	bool GetIsAiming();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	bool GetIsTriggerPressed();
+
+	UFUNCTION(BlueprintCallable, Category = "Fire")
+	void SetIsTriggerPressed(bool bTriggerPressed);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation", meta = (ToolTip = "only used for aim anim blend walk"))
+	float GetNormalizedForward();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation", meta = (ToolTip = "only used for aim anim blend walk"))
+	float GetNormalizedRight();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* WeaponTableCPP;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "repeat fire for automatic weapon"))
+	void RepeatFire();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "regular weapon fire"))
+	void Fire();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
+	bool GetIsFireRatePassed();
+
+	UFUNCTION(BlueprintCallable, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
+	void SetIsFireRatePassed(bool bFireRatePassed);
+
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void AimingCPP(bool bIsCharAiming);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	bool IsWeaponNameInThisIndexExist(int weaponIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
+	bool IsSwitchWeaponRequirementFulfilled();
+
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNamesCPP;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
-		meta = (ToolTip = "repeat fire for automatic weapon"))
-	void RepeatFire();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetWeaponIndexCPP(int weaponIndex);
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire",
-		meta = (ToolTip = "regular weapon fire"))
-	void Fire();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	int GetWeaponIndexCPP();
+
+	int WeaponIndexCPP;
 
 	void MoveForward(float Value);
 
@@ -77,10 +100,25 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	bool bIsTriggerPressed;
+
+	
+
 	//UPROPERTY(VisibleAnywhere, Category = Aiming)
 	//class UTimelineComponent* AimingTransitionTimeline;
 
 private:
+
+	
+	
+	float NormalizedForward;
+
+	float NormalizedRight;
+
+	bool bIsAiming;
+
+	void OrientCharacter(bool bMyCharIsAiming);
+	
 
 	bool bForwardInputPressed;
 
