@@ -44,7 +44,6 @@ struct FProjectileMuzzle
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX FX;
-
 };
 
 USTRUCT(BlueprintType)
@@ -53,7 +52,7 @@ struct FProjectileTrail
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		F_FX FX;
+	F_FX FX;
 };
 
 USTRUCT(BlueprintType)
@@ -62,11 +61,11 @@ struct FProjectileHit
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		F_FX FX;
+	F_FX FX;
 };
 
 USTRUCT(BlueprintType)
-struct FProjectile : public FTableRowBase
+struct FProjectile
 {
 	GENERATED_BODY();
 
@@ -78,9 +77,31 @@ struct FProjectile : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileHit Hit;
-
 };
 
+USTRUCT(BlueprintType)
+struct FShooter
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FName SocketName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	float FireRate;
+};
+
+USTRUCT(BlueprintType)
+struct FWeapon : public FTableRowBase
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	FShooter Shooter;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	FProjectile Projectile;
+};
 
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter
