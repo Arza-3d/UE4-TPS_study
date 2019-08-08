@@ -43,6 +43,8 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	bIsFireRatePassed = true;
 
 	ProjectileMultiplier = 1.0f;
+	AimingSpeed = 1.0f;
+	StopAimingSpeed = 1.0f;
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -79,7 +81,6 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
-
 
 float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
 {
@@ -169,7 +170,6 @@ void ATPS_studyCharacter::MoveRight(float Value)
 	}
 }
 
-
 bool ATPS_studyCharacter::GetIsFireRatePassed()
 {
 	return bIsFireRatePassed;
@@ -199,7 +199,6 @@ bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation()
 	return bIsOnTheGround && bIsNotAiming;
 }
 
-
 void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 {
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
@@ -215,6 +214,18 @@ bool ATPS_studyCharacter::GetIsAiming()
 bool ATPS_studyCharacter::GetIsTriggerPressed()
 {
 	return bIsTriggerPressed;
+}
+
+float ATPS_studyCharacter::GetNewPlayRate(UAnimMontage* animMontage, float fireRate)
+{
+	if (fireRate > 0.0f)
+	{
+		return 1.0f;
+	}
+	else
+	{
+		return animMontage->SequenceLength / fireRate;
+	}
 }
 
 void ATPS_studyCharacter::SetIsTriggerPressed(bool bTriggerPressed)

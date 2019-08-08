@@ -37,12 +37,14 @@ public:
 	
 protected:
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming",
-		meta = (ToolTip = "is character aiming?"))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	float GetNewPlayRate(UAnimMontage* animMontage, float fireRate);
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void SetIsTriggerPressed(bool bTriggerPressed);
@@ -79,6 +81,12 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNamesCPP;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
+	float AimingSpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
+	float StopAimingSpeed;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void SetWeaponIndex(int weaponIndex);
