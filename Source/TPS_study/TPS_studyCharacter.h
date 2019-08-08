@@ -1,3 +1,5 @@
+// Arza.3d
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -22,10 +24,10 @@ struct F_FX
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* SoundEffect;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	TArray<UParticleSystem*> VisualEffect;
 
 	F_FX()
@@ -36,12 +38,46 @@ struct F_FX
 };
 
 USTRUCT(BlueprintType)
-struct FProjectileMuzzle : public FTableRowBase
+struct FProjectileMuzzle
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX FX;
+
+};
+
+USTRUCT(BlueprintType)
+struct FProjectileTrail
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+		F_FX FX;
+};
+
+USTRUCT(BlueprintType)
+struct FProjectileHit
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+		F_FX FX;
+};
+
+USTRUCT(BlueprintType)
+struct FProjectile : public FTableRowBase
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	FProjectileMuzzle Muzzle;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	FProjectileTrail Trail;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	FProjectileHit Hit;
 
 };
 
