@@ -2,10 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Engine/DataTable.h"
 //#include "Components/TimelineComponent.h"
 #include "TPS_studyCharacter.generated.h"
-
-//lass UTimeLineComponent
 
 UENUM(BlueprintType)
 enum class ECharacterLocomotionState : uint8
@@ -17,22 +16,35 @@ enum class ECharacterLocomotionState : uint8
 	Ragdoll
 };
 
-/*
+
 USTRUCT(BlueprintType)
-struct FMyStructTestssssssssssssssssssssssssss
+struct F_FX
 {
 	GENERATED_BODY();
 
-	UPROPERTY()
-	float MyNumber;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	USoundBase* SoundEffect;
 
-	UPROPERTY(BlueprintReadOnly)
-	bool bIsIt;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	TArray<UParticleSystem*> VisualEffect;
 
-	UPROPERTY()
-	int8 IAmNumber;
+	F_FX()
+	{
+		VisualEffect.Add(nullptr);
+	}
+
 };
-*/
+
+USTRUCT(BlueprintType)
+struct FProjectileMuzzle : public FTableRowBase
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Student")
+	F_FX FX;
+
+};
+
 
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter
@@ -44,8 +56,6 @@ class ATPS_studyCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-
-	
 
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	//class UTimeLineComponent* CPPAimingTimeline;
@@ -105,7 +115,7 @@ protected:
 	void SetIsFireRatePassed(bool bFireRatePassed);
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void AimingCPP(bool bIsCharAiming);
+	void Aiming(bool bIsCharAiming);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	bool IsWeaponNameInThisIndexExist(int weaponIndex);
@@ -121,7 +131,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
-	TArray<FName> WeaponNamesCPP;
+	TArray<FName> WeaponNames;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float AimingSpeed;

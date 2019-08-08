@@ -68,7 +68,7 @@ void ATPS_studyCharacter::BeginPlay()
 
 	if (WeaponTable != nullptr)
 	{
-		WeaponNamesCPP = WeaponTable->GetRowNames();
+		WeaponNames = WeaponTable->GetRowNames();
 	}
 }
 
@@ -180,7 +180,7 @@ void ATPS_studyCharacter::SetIsFireRatePassed(bool bFireRatePassed)
 	bIsFireRatePassed = bFireRatePassed;
 }
 
-void ATPS_studyCharacter::AimingCPP(bool bIsCharAiming)
+void ATPS_studyCharacter::Aiming(bool bIsCharAiming)
 {
 	bIsAiming = bIsCharAiming;
 	OrientCharacter(bIsCharAiming);
@@ -188,7 +188,7 @@ void ATPS_studyCharacter::AimingCPP(bool bIsCharAiming)
 
 bool ATPS_studyCharacter::IsWeaponNameInThisIndexExist(int weaponIndex)
 {
-	return WeaponNamesCPP.Num() > weaponIndex;
+	return WeaponNames.Num() > weaponIndex;
 }
 
 bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation()
