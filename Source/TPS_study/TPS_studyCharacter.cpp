@@ -41,6 +41,8 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 	bIsFireRatePassed = true;
+
+	ProjectileMultiplier = 1.0f;
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -92,14 +94,34 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 		(divider * GetCharacterMovement()->MaxWalkSpeed);
 }
 
-void ATPS_studyCharacter::SetWeaponIndexCPP(int weaponIndex)
+void ATPS_studyCharacter::SetWeaponIndex(int weaponIndex)
 {
-	WeaponIndexCPP = weaponIndex;
+	WeaponIndex = weaponIndex;
 }
 
-int ATPS_studyCharacter::GetWeaponIndexCPP()
+int ATPS_studyCharacter::GetWeaponIndex()
 {
-	return WeaponIndexCPP;
+	return WeaponIndex;
+}
+
+void ATPS_studyCharacter::SetLastWeaponIndex(int lastWeaponIndex)
+{
+	LastWeaponIndex = lastWeaponIndex;
+}
+
+int ATPS_studyCharacter::GetLastWeaponIndex()
+{
+	return LastWeaponIndex;
+}
+
+void ATPS_studyCharacter::SetProjectileMultiplier(float projectileMultiplier)
+{
+	ProjectileMultiplier = projectileMultiplier;
+}
+
+float ATPS_studyCharacter::GetProjectileMultipler()
+{
+	return ProjectileMultiplier;
 }
 
 void ATPS_studyCharacter::MoveForward(float Value)

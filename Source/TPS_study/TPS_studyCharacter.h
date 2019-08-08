@@ -81,12 +81,29 @@ protected:
 	TArray<FName> WeaponNamesCPP;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void SetWeaponIndexCPP(int weaponIndex);
+	void SetWeaponIndex(int weaponIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int GetWeaponIndexCPP();
+	int GetWeaponIndex();
 
-	int WeaponIndexCPP;
+	int WeaponIndex;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void SetLastWeaponIndex(int lastWeaponIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	int GetLastWeaponIndex();
+
+	int LastWeaponIndex;
+
+	UFUNCTION(BlueprintCallable, Category = "Fire")
+	void SetProjectileMultiplier(float projectileMultiplier);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	float GetProjectileMultipler();
+
+	float ProjectileMultiplier;
+
 
 	void MoveForward(float Value);
 
