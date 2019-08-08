@@ -7,6 +7,33 @@
 
 //lass UTimeLineComponent
 
+UENUM(BlueprintType)
+enum class ECharacterLocomotionState : uint8
+{
+	Idle,
+	Jog,
+	Run,
+	Sprint,
+	Ragdoll
+};
+
+/*
+USTRUCT(BlueprintType)
+struct FMyStructTestssssssssssssssssssssssssss
+{
+	GENERATED_BODY();
+
+	UPROPERTY()
+	float MyNumber;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsIt;
+
+	UPROPERTY()
+	int8 IAmNumber;
+};
+*/
+
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter
 {
@@ -27,14 +54,14 @@ public:
 
 	ATPS_studyCharacter();
 
+	bool bIsFireRatePassed;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 
-	bool bIsFireRatePassed;
-	
 protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
@@ -56,13 +83,20 @@ protected:
 	float GetNormalizedRight();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	class UDataTable* WeaponTableCPP;
+	class UDataTable* WeaponTable;
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
+	// EVENT
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "regular weapon fire"))
+	void Fire();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "automatic weapon fire"))
+	void AutoFire();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "repeat fire for automatic weapon"))
 	void RepeatFire();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "regular weapon fire"))
-	void Fire();
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-z
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
 	bool GetIsFireRatePassed();
@@ -75,9 +109,16 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	bool IsWeaponNameInThisIndexExist(int weaponIndex);
-
+	
+	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
+	// BPNativeEvent
+	////////////////////////////////////////////////////////////////////////////////////////////
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsSwitchWeaponRequirementFulfilled();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
+	bool IsAbleToRepeatAutoFire();
+	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNamesCPP;

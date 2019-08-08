@@ -66,9 +66,9 @@ void ATPS_studyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WeaponTableCPP != nullptr)
+	if (WeaponTable != nullptr)
 	{
-		WeaponNamesCPP = WeaponTableCPP->GetRowNames();
+		WeaponNamesCPP = WeaponTable->GetRowNames();
 	}
 }
 
@@ -189,6 +189,11 @@ void ATPS_studyCharacter::AimingCPP(bool bIsCharAiming)
 bool ATPS_studyCharacter::IsWeaponNameInThisIndexExist(int weaponIndex)
 {
 	return WeaponNamesCPP.Num() > weaponIndex;
+}
+
+bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation()
+{
+	return bIsTriggerPressed;
 }
 
 bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation()
