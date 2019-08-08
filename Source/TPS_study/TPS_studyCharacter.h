@@ -85,10 +85,18 @@ struct FShooter
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	FName SocketName;
+	TArray<FName> SocketName;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	float FireRate;
+
+	FShooter()
+	{
+		SocketName.Add(FName(TEXT("Muzzle01")));
+
+		FireRate = 0.5f;
+	}
+	
 };
 
 USTRUCT(BlueprintType)
