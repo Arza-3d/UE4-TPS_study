@@ -18,6 +18,27 @@ enum class ECharacterLocomotionState : uint8
 	Ragdoll
 };
 
+USTRUCT(BlueprintType)
+struct FShooter
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+		TArray<FName> SocketName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+		float FireRate;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+		USoundBase* FireCry;
+
+	FShooter()
+	{
+		SocketName.Add(FName(TEXT("Muzzle01")));
+
+		FireRate = 0.5f;
+	}
+};
 
 USTRUCT(BlueprintType)
 struct F_FX
@@ -34,7 +55,6 @@ struct F_FX
 	{
 		VisualEffect.Add(nullptr);
 	}
-
 };
 
 USTRUCT(BlueprintType)
@@ -43,7 +63,16 @@ struct FProjectileMuzzle
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-	F_FX FX;
+	F_FX MuzzleFX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
+	float ProjectileMultiplier = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
+	float InitialSpeed = 1200.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
+	bool bIsAffectedByGravity;
 };
 
 USTRUCT(BlueprintType)
@@ -52,7 +81,7 @@ struct FProjectileTrail
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-	F_FX FX;
+	F_FX TrailFX;
 };
 
 USTRUCT(BlueprintType)
@@ -61,7 +90,16 @@ struct FProjectileHit
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-	F_FX FX;
+	F_FX HitFX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	F_FX AoEFX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	float DamagePoint = 10.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	float CriticalChance = 0.05f;
 };
 
 USTRUCT(BlueprintType)
@@ -77,26 +115,6 @@ struct FProjectile
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileHit Hit;
-};
-
-USTRUCT(BlueprintType)
-struct FShooter
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TArray<FName> SocketName;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	float FireRate;
-
-	FShooter()
-	{
-		SocketName.Add(FName(TEXT("Muzzle01")));
-
-		FireRate = 0.5f;
-	}
-	
 };
 
 USTRUCT(BlueprintType)
@@ -260,7 +278,6 @@ private:
 
 	void OrientCharacter(bool bMyCharIsAiming);
 	
-
 	bool bForwardInputPressed;
 
 	bool bRightInputPressed;
