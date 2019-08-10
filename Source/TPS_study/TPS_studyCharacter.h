@@ -193,6 +193,9 @@ public:
 
 protected:
 
+	UFUNCTION(BlueprintCallable)
+	void MainFire(int weaponIndex);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
 
@@ -261,6 +264,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void SetWeaponIndex(int weaponIndex);
 
+	/** Test this comment **/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetWeaponIndex();
 
