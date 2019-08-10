@@ -66,7 +66,13 @@ struct FWeapon
 	EWeaponCost WeaponLimit = EWeaponCost::None;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	int LimitCost = 6;
+	int CostPerProjectile = 6;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	int LimitCost = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	float ReloadTime = 1.0f;
 
 	FWeapon()
 	{
@@ -200,11 +206,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponTable;
 
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	struct FWeaponMode* CurrentWeaponMode;
+	/**montage and sound when firing the current weapon mode*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FShooter ShooterState;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	FWeaponMode TheCurrentWeaponMode;
+	FWeapon CurrentWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FProjectile CurrentProjectile;
 
 	UFUNCTION(BlueprintCallable)
 	void GetCurrentWeaponMode(int weaponIndex);
@@ -220,9 +230,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	float GetNewPlayRate(UAnimMontage* animMontage, float fireRate);
-
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void SetIsTriggerPressed(bool bTriggerPressed);
 
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")

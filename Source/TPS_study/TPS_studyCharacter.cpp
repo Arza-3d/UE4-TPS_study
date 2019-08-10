@@ -250,11 +250,18 @@ void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 {
 	FName currentWeaponName = WeaponNames[weaponIndex];
 	static const FString contextString(TEXT("Weapon Mode"));
-	CurrentWeaponMode = WeaponTable->FindRow<FWeaponMode>(currentWeaponName, contextString, true);
+	struct FWeaponMode* currentWeaponMode;
+
+	currentWeaponMode = WeaponTable->FindRow<FWeaponMode>(currentWeaponName, contextString, true);
+	ShooterState = currentWeaponMode->Shooter;
+	CurrentWeapon = currentWeaponMode->Weapon;
+	CurrentProjectile = currentWeaponMode->Projectile;
 }
 
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
 {
+	bIsTriggerPressed = isTriggerPressed;
+
 
 }
 
@@ -278,11 +285,6 @@ float ATPS_studyCharacter::GetNewPlayRate(UAnimMontage* animMontage, float fireR
 	{
 		return animMontage->SequenceLength / fireRate;
 	}
-}
-
-void ATPS_studyCharacter::SetIsTriggerPressed(bool bTriggerPressed)
-{
-	bIsTriggerPressed = bTriggerPressed;
 }
 
 float ATPS_studyCharacter::GetNormalizedForward()
