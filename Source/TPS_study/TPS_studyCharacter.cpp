@@ -248,15 +248,15 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 
 void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 {
-	/*FName currentWeaponName = WeaponNames[weaponIndex];
+	FName currentWeaponName = WeaponNames[weaponIndex];
 	static const FString contextString(TEXT("Weapon Mode"));
 	struct FWeaponModeRow* weaponModeRow;
 
 	weaponModeRow = WeaponTable->FindRow<FWeaponModeRow>(currentWeaponName, contextString, true);
-	FWeaponMode = weaponModeRow;
-	//ShooterState = weaponModeRow->execGetCurrentWeaponMode->;
-	CurrentWeapon = currentWeaponMode->Weapon;
-	CurrentProjectile = currentWeaponMode->Projectile;*/
+	FWeaponMode currentWeaponMode = weaponModeRow->WeaponMode;
+	ShooterState = currentWeaponMode.Shooter;
+	CurrentWeapon = currentWeaponMode.Weapon;
+	CurrentProjectile = currentWeaponMode.Projectile;
 }
 
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)

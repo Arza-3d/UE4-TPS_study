@@ -29,7 +29,7 @@ enum class ETriggerMechanism : uint8
 UENUM(BlueprintType)
 enum class EWeaponCost : uint8
 {
-	None,
+	Unlimited,
 	Ammo,
 	Energy,
 	Overheat
@@ -63,13 +63,13 @@ struct FWeapon
 	ETriggerMechanism Trigger;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	EWeaponCost WeaponLimit = EWeaponCost::None;
+	EWeaponCost WeaponLimit = EWeaponCost::Unlimited;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	int CostPerProjectile = 6;
+	int CostPerProjectile = 1;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	int LimitCost = 1;
+	int LimitCost = 6;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	float ReloadTime = 1.0f;
