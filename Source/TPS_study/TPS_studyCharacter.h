@@ -161,7 +161,7 @@ struct FProjectile
 };
 
 USTRUCT(BlueprintType)
-struct FWeaponMode : public FTableRowBase
+struct FWeaponMode
 {
 	GENERATED_BODY();
 
@@ -173,6 +173,15 @@ struct FWeaponMode : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FProjectile Projectile;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponModeRow : public FTableRowBase
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FWeaponMode WeaponMode;
 };
 
 UCLASS(config=Game)
