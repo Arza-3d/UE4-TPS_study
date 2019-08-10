@@ -194,7 +194,7 @@ public:
 protected:
 
 	UFUNCTION(BlueprintCallable)
-	void MainFire(int weaponIndex);
+	void MainFire();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();

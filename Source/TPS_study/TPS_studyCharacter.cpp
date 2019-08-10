@@ -226,8 +226,9 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
-void ATPS_studyCharacter::MainFire(int weaponIndex)
+void ATPS_studyCharacter::MainFire()
 {
+
 }
 
 bool ATPS_studyCharacter::GetIsAiming()
