@@ -43,7 +43,7 @@ struct FShooter
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	UAnimMontage* Montage;
 	
-	/**optional**/
+	/**optional*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* FireCry;
 };
@@ -197,6 +197,18 @@ public:
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	class UDataTable* WeaponTable;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	struct FWeaponMode* CurrentWeaponMode;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	FWeaponMode TheCurrentWeaponMode;
+
+	UFUNCTION(BlueprintCallable)
+	void GetCurrentWeaponMode(int weaponIndex);
+
 	UFUNCTION(BlueprintCallable)
 	void MainFire(bool isTriggerPressed);
 
@@ -212,14 +224,15 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void SetIsTriggerPressed(bool bTriggerPressed);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation", meta = (ToolTip = "only used for aim anim blend walk"))
+	/**only used for aim anim blend walk*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedForward();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation", meta = (ToolTip = "only used for aim anim blend walk"))
+	/**only used for aim anim blend walk*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedRight();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	class UDataTable* WeaponTable;
+	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
 	// EVENT
@@ -252,7 +265,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
 	void SetWeaponIndexWithMouseWheel(bool isUp);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	bool IsWeaponNameInThisIndexExist(int weaponIndex);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a

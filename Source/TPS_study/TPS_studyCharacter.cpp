@@ -104,20 +104,10 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 		(divider * GetCharacterMovement()->MaxWalkSpeed);
 }
 
-/*void ATPS_studyCharacter::SetWeaponIndex(int weaponIndex)
-{
-	WeaponIndex = weaponIndex;
-}*/
-
 int ATPS_studyCharacter::GetWeaponIndex()
 {
 	return WeaponIndex;
 }
-
-/*void ATPS_studyCharacter::SetLastWeaponIndex(int lastWeaponIndex)
-{
-	LastWeaponIndex = lastWeaponIndex;
-}*/
 
 int ATPS_studyCharacter::GetLastWeaponIndex()
 {
@@ -254,6 +244,13 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
 	bUseControllerRotationYaw = bMyCharIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
+}
+
+void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
+{
+	FName currentWeaponName = WeaponNames[weaponIndex];
+	static const FString contextString(TEXT("Weapon Mode"));
+	CurrentWeaponMode = WeaponTable->FindRow<FWeaponMode>(currentWeaponName, contextString, true);
 }
 
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
