@@ -71,6 +71,16 @@ void ATPS_studyCharacter::BeginPlay()
 	}
 }
 
+void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming)
+{
+	bIsTransitioningAiming = isTransitioningAiming;
+}
+
+bool ATPS_studyCharacter::GetTransitioningAiming()
+{
+	return bIsTransitioningAiming;
+}
+
 void ATPS_studyCharacter::TurnAtRate(float Rate)
 {
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
@@ -94,20 +104,20 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 		(divider * GetCharacterMovement()->MaxWalkSpeed);
 }
 
-void ATPS_studyCharacter::SetWeaponIndex(int weaponIndex)
+/*void ATPS_studyCharacter::SetWeaponIndex(int weaponIndex)
 {
 	WeaponIndex = weaponIndex;
-}
+}*/
 
 int ATPS_studyCharacter::GetWeaponIndex()
 {
 	return WeaponIndex;
 }
 
-void ATPS_studyCharacter::SetLastWeaponIndex(int lastWeaponIndex)
+/*void ATPS_studyCharacter::SetLastWeaponIndex(int lastWeaponIndex)
 {
 	LastWeaponIndex = lastWeaponIndex;
-}
+}*/
 
 int ATPS_studyCharacter::GetLastWeaponIndex()
 {
@@ -134,11 +144,6 @@ void ATPS_studyCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
-		GetCharacterMovement()->SetMovementMode(
-			GetCharacterMovement()->IsFalling() ?
-			MOVE_Falling : MOVE_Walking
-		);
-
 		if (bIsAiming) {
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
@@ -148,10 +153,6 @@ void ATPS_studyCharacter::MoveForward(float Value)
 	{
 		bForwardInputPressed = false;
 		NormalizedForward = 0.0f;
-
-		if (!bForwardInputPressed && !bRightInputPressed) {
-			GetCharacterMovement()->SetMovementMode(MOVE_None);
-		}
 	}
 }
 
@@ -163,15 +164,7 @@ void ATPS_studyCharacter::MoveRight(float Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 	
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
 		AddMovementInput(Direction, Value);
-
-		if (!bForwardInputPressed) {
-			GetCharacterMovement()->SetMovementMode(
-				GetCharacterMovement()->IsFalling() ?
-				MOVE_Falling : MOVE_Walking
-			);
-		}
 
 		if (bIsAiming) {
 			bRightInputPressed = true;
@@ -201,6 +194,43 @@ void ATPS_studyCharacter::Aiming(bool bIsCharAiming)
 	OrientCharacter(bIsCharAiming);
 }
 
+void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
+{
+	LastWeaponIndex = WeaponIndex;
+
+	if (IsWeaponNameInThisIndexExist(numberInput) && IsSwitchWeaponRequirementFulfilled())
+	{
+		WeaponIndex = numberInput;
+	}
+	else
+	{
+		return;
+	}
+}
+
+void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
+{
+	LastWeaponIndex = WeaponIndex;
+	
+	if (IsSwitchWeaponRequirementFulfilled())
+	{
+		int counter = isUp ? 1 : -1;
+		int withinRange = (WeaponIndex + counter) % WeaponNames.Num();
+		if(withinRange >= 0)
+		{
+			WeaponIndex = withinRange;
+		}
+		else
+		{
+			WeaponIndex = WeaponNames.Num() - 1;
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
 bool ATPS_studyCharacter::IsWeaponNameInThisIndexExist(int weaponIndex)
 {
 	return WeaponNames.Num() > weaponIndex;
@@ -226,7 +256,7 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
-void ATPS_studyCharacter::MainFire()
+void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
 {
 
 }

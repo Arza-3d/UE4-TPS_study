@@ -39,7 +39,11 @@ USTRUCT(BlueprintType)
 struct FShooter
 {
 	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UAnimMontage* Montage;
 	
+	/**optional**/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* FireCry;
 };
@@ -194,7 +198,7 @@ public:
 protected:
 
 	UFUNCTION(BlueprintCallable)
-	void MainFire();
+	void MainFire(bool isTriggerPressed);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
@@ -228,6 +232,9 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "repeat fire for automatic weapon"))
 	void RepeatFire();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (KeyWords = "Switch change weapon"))
+	void OnSwitchWeaponSuccess();
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-z
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
@@ -239,17 +246,25 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void Aiming(bool bIsCharAiming);
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
+	void SetWeaponIndexWithNumpad(int numberInput);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
+	void SetWeaponIndexWithMouseWheel(bool isUp);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	bool IsWeaponNameInThisIndexExist(int weaponIndex);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 	// BPNativeEvent
 	////////////////////////////////////////////////////////////////////////////////////////////
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsSwitchWeaponRequirementFulfilled();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
+
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
@@ -261,17 +276,10 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float StopAimingSpeed;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void SetWeaponIndex(int weaponIndex);
-
-	/** Test this comment **/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetWeaponIndex();
 
 	int WeaponIndex;
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void SetLastWeaponIndex(int lastWeaponIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetLastWeaponIndex();
@@ -301,6 +309,13 @@ protected:
 
 	bool bIsTriggerPressed;
 
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void SetIsTransitioningAiming(bool isTransitioningAiming);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	bool GetTransitioningAiming();
+
+	bool bIsTransitioningAiming;
 	
 
 	//UPROPERTY(VisibleAnywhere, Category = Aiming)
