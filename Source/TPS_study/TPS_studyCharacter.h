@@ -18,25 +18,55 @@ enum class ECharacterLocomotionState : uint8
 	Ragdoll
 };
 
+UENUM(BlueprintType)
+enum class ETriggerMechanism : uint8
+{
+	PressTrigger,
+	ReleaseTrigger,
+	AutomaticTrigger
+};
+
+UENUM(BlueprintType)
+enum class EWeaponCost : uint8
+{
+	None,
+	Ammo,
+	Energy,
+	Overheat
+};
+
 USTRUCT(BlueprintType)
 struct FShooter
 {
 	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		TArray<FName> SocketName;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		float FireRate;
-
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		USoundBase* FireCry;
+	USoundBase* FireCry;
+};
 
-	FShooter()
+USTRUCT(BlueprintType)
+struct FWeapon
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	TArray<FName> SocketName;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	float FireRate = 0.5f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	ETriggerMechanism Trigger;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	EWeaponCost WeaponLimit = EWeaponCost::None;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	int LimitCost = 6;
+
+	FWeapon()
 	{
 		SocketName.Add(FName(TEXT("Muzzle01")));
-
-		FireRate = 0.5f;
 	}
 };
 
@@ -64,6 +94,9 @@ struct FProjectileMuzzle
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX MuzzleFX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
+	TEnumAsByte<ECollisionChannel> CollisionComp;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
 	float ProjectileMultiplier = 1.0f;
@@ -118,14 +151,17 @@ struct FProjectile
 };
 
 USTRUCT(BlueprintType)
-struct FWeapon : public FTableRowBase
+struct FWeaponMode : public FTableRowBase
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FShooter Shooter;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FWeapon Weapon;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FProjectile Projectile;
 };
 
@@ -267,8 +303,6 @@ protected:
 	//class UTimelineComponent* AimingTransitionTimeline;
 
 private:
-
-	
 	
 	float NormalizedForward;
 

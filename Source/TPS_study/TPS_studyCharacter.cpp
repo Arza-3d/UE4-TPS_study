@@ -13,7 +13,6 @@
 
 ATPS_studyCharacter::ATPS_studyCharacter()
 {
-	
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	BaseTurnRate = 45.f;
@@ -135,6 +134,11 @@ void ATPS_studyCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
+		GetCharacterMovement()->SetMovementMode(
+			GetCharacterMovement()->IsFalling() ?
+			MOVE_Falling : MOVE_Walking
+		);
+
 		if (bIsAiming) {
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
@@ -144,6 +148,10 @@ void ATPS_studyCharacter::MoveForward(float Value)
 	{
 		bForwardInputPressed = false;
 		NormalizedForward = 0.0f;
+
+		if (!bForwardInputPressed && !bRightInputPressed) {
+			GetCharacterMovement()->SetMovementMode(MOVE_None);
+		}
 	}
 }
 
@@ -157,6 +165,13 @@ void ATPS_studyCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		AddMovementInput(Direction, Value);
+
+		if (!bForwardInputPressed) {
+			GetCharacterMovement()->SetMovementMode(
+				GetCharacterMovement()->IsFalling() ?
+				MOVE_Falling : MOVE_Walking
+			);
+		}
 
 		if (bIsAiming) {
 			bRightInputPressed = true;
