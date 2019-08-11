@@ -49,6 +49,18 @@ enum class EAmmoType : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FCharacterStat
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
+	float Health;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
+	float Energy;
+};
+
+USTRUCT(BlueprintType)
 struct FAmmoCount
 {
 	GENERATED_BODY();
@@ -356,13 +368,19 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool CanCharacterFire();
 
-	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	bool CanWeaponFire();
-
-	//UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
-	bool IsAmmoEnough(EAmmoType ammo);
-
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
+
+	bool CanWeaponFire();
+	
+	bool IsEnoughForWeaponCost();
+	bool IsAmmoEnough(EAmmoType ammo);
+	bool IsNotOverheat();
+	float WeaponTemperature;
+	bool IsEnergyEnough();
+	void StartFireRateCount();
+	FTimerHandle FireRateTimer;
+	void ResetFireRateCount();
+	
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNames;

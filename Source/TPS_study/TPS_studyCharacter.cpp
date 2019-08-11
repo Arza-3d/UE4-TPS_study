@@ -1,14 +1,16 @@
 #include "TPS_studyCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Engine/DataTable.h"
+#include "TimerManager.h"
+
 //#include "Components/TimelineComponent.h"
 
 ATPS_studyCharacter::ATPS_studyCharacter()
@@ -108,19 +110,22 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 
 bool ATPS_studyCharacter::CanWeaponFire()
 {
+	return IsEnoughForWeaponCost() && bIsFireRatePassed;
+}
+
+bool ATPS_studyCharacter::IsEnoughForWeaponCost()
+{
 	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) { return true; }
 
 	switch (CurrentWeapon.WeaponCost) {
 	case EWeaponCost::Ammo:
 		return IsAmmoEnough(CurrentWeapon.AmmoType);
 	case EWeaponCost::Energy:
-		//return IsEnergyEnough();
-		return true;
+		return IsEnergyEnough();
 	case EWeaponCost::Overheat:
-		// return IsNotOverheating();
-		return true;
+		return IsNotOverheat();
 	default:
-		return true;
+		return false;
 	}
 }
 
@@ -144,6 +149,32 @@ bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo)
 	default:
 		return false;
 	}
+}
+
+bool ATPS_studyCharacter::IsNotOverheat()
+{
+
+	return true; //WeaponTemperature < temperatureLimit;
+}
+
+bool ATPS_studyCharacter::IsEnergyEnough()
+{
+	return true;
+}
+
+void ATPS_studyCharacter::StartFireRateCount()
+{
+	bIsFireRatePassed = false;
+	GetWorldTimerManager().ClearTimer(FireRateTimer);
+	GetWorldTimerManager().SetTimer(FireRateTimer, this, 
+		&ATPS_studyCharacter::ResetFireRateCount, CurrentWeapon.FireRate
+	);
+}
+
+void ATPS_studyCharacter::ResetFireRateCount()
+{
+	bIsFireRatePassed = true;
+	GetWorldTimerManager().ClearTimer(FireRateTimer);
 }
 
 int ATPS_studyCharacter::GetWeaponIndex()
