@@ -53,25 +53,25 @@ struct FAmmoCount
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int StandardAmmo;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int RifleAmmo;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int ShotgunAmmo;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Rocket;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Arrow;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Grenade;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Mine;
 };
 
@@ -252,16 +252,15 @@ public:
 
 	bool bIsFireRatePassed;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseTurnRate;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	float BaseLookUpRate;
+	
 
 protected:
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Ammo")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FAmmoCount Ammunition;
+
+	UFUNCTION(BlueprintCallable)
+	void AddAmmo(int addAmmo, EAmmoType ammoType);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponTable;
@@ -286,7 +285,8 @@ protected:
 	void HoldReleaseFire(bool pressed);
 	void OnePressAutoFire(bool pressed);
 
-
+	void CharacterPlayMontage();
+	
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
@@ -294,8 +294,9 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed();
 
+	/**if target duration is below 0, it will return 1 playrate*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	float GetNewPlayRate(UAnimMontage* animMontage, float fireRate);
+	float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
 
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
@@ -418,6 +419,10 @@ protected:
 	//class UTimelineComponent* AimingTransitionTimeline;
 
 private:
+
+	float BaseTurnRate;
+
+	float BaseLookUpRate;
 	
 	float NormalizedForward;
 

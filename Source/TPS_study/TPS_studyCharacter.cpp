@@ -128,9 +128,21 @@ bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo)
 {
 	switch (ammo) {
 	case EAmmoType::StandardAmmo:
-		return true;
+		return Ammunition.StandardAmmo > 0;
+	case EAmmoType::RifleAmmo:
+		return Ammunition.RifleAmmo > 0;
+	case EAmmoType::ShotgunAmmo:
+		return Ammunition.ShotgunAmmo > 0;
+	case EAmmoType::Rocket:
+		return Ammunition.Rocket > 0;
+	case EAmmoType::Arrow:
+		return Ammunition.Arrow > 0;
+	case EAmmoType::Grenade:
+		return Ammunition.Grenade > 0;
+	case EAmmoType::Mine:
+		return Ammunition.Mine > 0;
 	default:
-		return true;
+		return false;
 	}
 }
 
@@ -276,6 +288,32 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
+void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType)
+{
+	switch (ammoType) {
+	case EAmmoType::StandardAmmo:
+		Ammunition.StandardAmmo += addAmmo;
+		break;
+	case EAmmoType::RifleAmmo:
+		Ammunition.RifleAmmo += addAmmo;
+		break;
+	case EAmmoType::ShotgunAmmo:
+		Ammunition.ShotgunAmmo += addAmmo;
+		break;
+	case EAmmoType::Rocket:
+		Ammunition.Rocket += addAmmo;
+		break;
+	case EAmmoType::Arrow:
+		Ammunition.Arrow += addAmmo;
+		break;
+	case EAmmoType::Grenade:
+		Ammunition.Grenade += addAmmo;
+		break;
+	case EAmmoType::Mine:
+		Ammunition.Mine += addAmmo;
+	}
+}
+
 void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 {
 	FName currentWeaponName = WeaponNames[weaponIndex];
@@ -341,6 +379,17 @@ void ATPS_studyCharacter::OnePressAutoFire(bool pressed)
 {
 }
 
+void ATPS_studyCharacter::CharacterPlayMontage()
+{
+	UAnimMontage* fireMontage = ShooterState.FireMontage;
+
+	if (fireMontage)
+	{
+		float playRate = GetNewPlayRateForMontage(CurrentWeapon.FireRate, fireMontage);
+		PlayAnimMontage(fireMontage, playRate);
+	}
+}
+
 bool ATPS_studyCharacter::GetIsAiming()
 {
 	return bIsAiming;
@@ -351,15 +400,15 @@ bool ATPS_studyCharacter::GetIsTriggerPressed()
 	return bIsTriggerPressed;
 }
 
-float ATPS_studyCharacter::GetNewPlayRate(UAnimMontage* animMontage, float fireRate)
+float ATPS_studyCharacter::GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage)
 {
-	if (fireRate > 0.0f)
+	if (targetDuration <= 0.0f)
 	{
 		return 1.0f;
 	}
 	else
 	{
-		return animMontage->SequenceLength / fireRate;
+		return animMontage->SequenceLength / targetDuration;
 	}
 }
 
