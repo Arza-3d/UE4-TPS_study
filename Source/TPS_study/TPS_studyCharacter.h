@@ -29,7 +29,7 @@ enum class ETriggerMechanism : uint8
 UENUM(BlueprintType)
 enum class EWeaponCost : uint8
 {
-	Unlimited,
+	Nothing,
 	Ammo,
 	Energy,
 	Overheat
@@ -63,7 +63,7 @@ struct FWeapon
 	ETriggerMechanism Trigger;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	EWeaponCost WeaponLimit = EWeaponCost::Unlimited;
+	EWeaponCost WeaponLimit = EWeaponCost::Nothing;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	int CostPerProjectile = 1;
@@ -176,7 +176,7 @@ struct FWeaponMode
 };
 
 USTRUCT(BlueprintType)
-struct FWeaponModeRow : public FTableRowBase
+struct FWeaponModeCompact : public FTableRowBase
 {
 	GENERATED_BODY();
 
@@ -215,14 +215,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponTable;
 
-	/**montage and sound when firing the current weapon mode*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	class UDataTable* WeaponModeTable;
+
 	FShooter ShooterState;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FWeapon CurrentWeapon;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	FProjectile CurrentProjectile;
 
 	UFUNCTION(BlueprintCallable)
@@ -253,13 +252,17 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
 	// EVENT
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "regular weapon fire"))
+	
+	/**for press trigger*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void Fire();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "automatic weapon fire"))
+	/**for automatic trigger*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void AutoFire();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (ToolTip = "repeat fire for automatic weapon"))
+	/**repeat fire for automatic trigger*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void RepeatFire();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (KeyWords = "Switch change weapon"))
@@ -280,8 +283,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
 	void SetWeaponIndexWithMouseWheel(bool isUp);
-
-	bool IsWeaponNameInThisIndexExist(int weaponIndex);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 	// BPNativeEvent

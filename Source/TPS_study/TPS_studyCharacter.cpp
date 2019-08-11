@@ -13,6 +13,8 @@
 
 ATPS_studyCharacter::ATPS_studyCharacter()
 {
+	PrimaryActorTick.bStartWithTickEnabled = false;
+
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	BaseTurnRate = 45.f;
@@ -188,7 +190,7 @@ void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 {
 	LastWeaponIndex = WeaponIndex;
 
-	if (IsWeaponNameInThisIndexExist(numberInput) && IsSwitchWeaponRequirementFulfilled())
+	if ((WeaponNames.Num() > WeaponIndex) && IsSwitchWeaponRequirementFulfilled())
 	{
 		WeaponIndex = numberInput;
 	}
@@ -221,11 +223,6 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 	}
 }
 
-bool ATPS_studyCharacter::IsWeaponNameInThisIndexExist(int weaponIndex)
-{
-	return WeaponNames.Num() > weaponIndex;
-}
-
 bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation()
 {
 	return bIsTriggerPressed;
@@ -250,20 +247,39 @@ void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 {
 	FName currentWeaponName = WeaponNames[weaponIndex];
 	static const FString contextString(TEXT("Weapon Mode"));
-	struct FWeaponModeRow* weaponModeRow;
+	struct FWeaponModeCompact* weaponModeRow;
 
-	weaponModeRow = WeaponTable->FindRow<FWeaponModeRow>(currentWeaponName, contextString, true);
-	FWeaponMode currentWeaponMode = weaponModeRow->WeaponMode;
-	ShooterState = currentWeaponMode.Shooter;
-	CurrentWeapon = currentWeaponMode.Weapon;
-	CurrentProjectile = currentWeaponMode.Projectile;
+	weaponModeRow = WeaponModeTable->FindRow<FWeaponModeCompact>(currentWeaponName, contextString, true);
+
+	if (weaponModeRow)
+	{
+		FWeaponMode currentWeaponMode = weaponModeRow->WeaponMode;
+		ShooterState = currentWeaponMode.Shooter;
+		CurrentWeapon = currentWeaponMode.Weapon;
+		CurrentProjectile = currentWeaponMode.Projectile;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Wrong table!"));
+		
+	}
 }
 
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
 {
 	bIsTriggerPressed = isTriggerPressed;
 
+	if (!bIsAiming)
+	{
+		return;
+	}
 
+	Fire();
+
+	if (CurrentWeapon.WeaponLimit != EWeaponCost::Nothing)
+	{
+		
+	}
 }
 
 bool ATPS_studyCharacter::GetIsAiming()
