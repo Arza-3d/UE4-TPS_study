@@ -49,15 +49,39 @@ enum class EAmmoType : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FCeiledFloat
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float Value = 100.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float Max = 100.0f;
+};
+
+USTRUCT(BlueprintType)
+struct FCeiledInt
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int Value = 36;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int Max = 36;
+};
+
+USTRUCT(BlueprintType)
 struct FCharacterStat
 {
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	float Health;
+	FCeiledFloat Health;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	float Energy;
+	FCeiledFloat Mana;
 };
 
 USTRUCT(BlueprintType)
