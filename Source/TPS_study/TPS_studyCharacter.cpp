@@ -112,13 +112,22 @@ bool ATPS_studyCharacter::CanWeaponFire()
 
 	switch (CurrentWeapon.WeaponCost) {
 	case EWeaponCost::Ammo:
-		return true;
-		//return IsAmmoEnough(weaponName);
+		return IsAmmoEnough(CurrentWeapon.AmmoType);
 	case EWeaponCost::Energy:
 		//return IsEnergyEnough();
 		return true;
 	case EWeaponCost::Overheat:
 		// return IsNotOverheating();
+		return true;
+	default:
+		return true;
+	}
+}
+
+bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo)
+{
+	switch (ammo) {
+	case EAmmoType::StandardAmmo:
 		return true;
 	default:
 		return true;

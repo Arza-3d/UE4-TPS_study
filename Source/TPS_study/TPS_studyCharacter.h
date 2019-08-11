@@ -49,6 +49,33 @@ enum class EAmmoType : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FAmmoCount
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int StandardAmmo;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int RifleAmmo;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int ShotgunAmmo;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int Rocket;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int Arrow;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int Grenade;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Ammo")
+	int Mine;
+};
+
+USTRUCT(BlueprintType)
 struct FShooter
 {
 	GENERATED_BODY();
@@ -233,6 +260,9 @@ public:
 
 protected:
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Ammo")
+	FAmmoCount Ammunition;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponTable;
 
@@ -327,6 +357,9 @@ protected:
 
 	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool CanWeaponFire();
+
+	//UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
+	bool IsAmmoEnough(EAmmoType ammo);
 
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
