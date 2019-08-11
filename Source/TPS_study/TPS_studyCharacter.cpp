@@ -106,6 +106,25 @@ float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButton
 		(divider * GetCharacterMovement()->MaxWalkSpeed);
 }
 
+bool ATPS_studyCharacter::CanWeaponFire()
+{
+	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) { return true; }
+
+	switch (CurrentWeapon.WeaponCost) {
+	case EWeaponCost::Ammo:
+		return true;
+		//return IsAmmoEnough(weaponName);
+	case EWeaponCost::Energy:
+		//return IsEnergyEnough();
+		return true;
+	case EWeaponCost::Overheat:
+		// return IsNotOverheating();
+		return true;
+	default:
+		return true;
+	}
+}
+
 int ATPS_studyCharacter::GetWeaponIndex()
 {
 	return WeaponIndex;
@@ -223,6 +242,11 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 	}
 }
 
+bool ATPS_studyCharacter::CanCharacterFire_Implementation()
+{
+	return !GetCharacterMovement()->IsFalling();
+}
+
 bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation()
 {
 	return bIsTriggerPressed;
@@ -268,18 +292,44 @@ void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
 {
 	bIsTriggerPressed = isTriggerPressed;
+	if (!bIsAiming) {return;}
 
-	if (!bIsAiming)
-	{
-		return;
+	switch (CurrentWeapon.Trigger) {
+	case ETriggerMechanism::PressTrigger:
+		StandardFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::AutomaticTrigger:
+		AutomaticFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::ReleaseTrigger:
+		HoldReleaseFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::OnePressAutoTrigger:
+		OnePressAutoFire(isTriggerPressed);
+		break;
+	default:
+		StandardFire(isTriggerPressed);
 	}
+}
+
+void ATPS_studyCharacter::StandardFire(bool pressed)
+{
+	if (!pressed) {return;}
 
 	Fire();
+}
 
-	if (CurrentWeapon.WeaponLimit != EWeaponCost::Nothing)
-	{
-		
-	}
+void ATPS_studyCharacter::AutomaticFire(bool pressed)
+{
+	if (!pressed) {return;}
+}
+
+void ATPS_studyCharacter::HoldReleaseFire(bool pressed)
+{
+}
+
+void ATPS_studyCharacter::OnePressAutoFire(bool pressed)
+{
 }
 
 bool ATPS_studyCharacter::GetIsAiming()

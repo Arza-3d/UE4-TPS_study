@@ -23,7 +23,8 @@ enum class ETriggerMechanism : uint8
 {
 	PressTrigger,
 	ReleaseTrigger,
-	AutomaticTrigger
+	AutomaticTrigger,
+	OnePressAutoTrigger
 };
 
 UENUM(BlueprintType)
@@ -35,15 +36,32 @@ enum class EWeaponCost : uint8
 	Overheat
 };
 
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+	StandardAmmo,
+	RifleAmmo,
+	ShotgunAmmo,
+	Rocket,
+	Arrow,
+	Grenade,
+	Mine
+};
+
 USTRUCT(BlueprintType)
 struct FShooter
 {
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	UAnimMontage* Montage;
+	UAnimMontage* FireMontage;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UAnimMontage* EquipMontage;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UAnimMontage* UnequipMontage;
 	
-	/**optional*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* FireCry;
 };
@@ -63,16 +81,19 @@ struct FWeapon
 	ETriggerMechanism Trigger;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	EWeaponCost WeaponLimit = EWeaponCost::Nothing;
+	EWeaponCost WeaponCost;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	int CostPerProjectile = 1;
+	EAmmoType AmmoType;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	int LimitCost = 6;
+	int AmmoCapacity = 6;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	float ReloadTime = 1.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	float EquipTime = 1.5f;
 
 	FWeapon()
 	{
@@ -204,10 +225,10 @@ public:
 
 	bool bIsFireRatePassed;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
 
 protected:
@@ -229,6 +250,13 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void MainFire(bool isTriggerPressed);
+
+	void StandardFire(bool pressed);
+	void AutomaticFire(bool pressed);
+	void HoldReleaseFire(bool pressed);
+	void OnePressAutoFire(bool pressed);
+
+
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
@@ -293,6 +321,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
+	bool CanCharacterFire();
+
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	bool CanWeaponFire();
 
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
