@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Engine/DataTable.h"
-#include "TPS_Weapon.h"
+#include "TPS_FunctionLibrary.h"
 //#include "Components/TimelineComponent.h"
 #include "TPS_studyCharacter.generated.h"
 
@@ -30,16 +29,14 @@ class ATPS_studyCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	//class UTimeLineComponent* CPPAimingTimeline;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UTPS_Weapon* RangedWeapon;
 
 public:
 
 	ATPS_studyCharacter();
 
 	bool bIsFireRatePassed;
-
-	
 
 protected:
 
@@ -81,7 +78,10 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed();
 
-	/**if target duration is below 0, it will return 1 playrate*/
+	/**
+	*if target duration is below 0, 
+	*it will return 1 playrate
+	*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
 
@@ -92,8 +92,6 @@ protected:
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedRight();
-
-	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
 	// EVENT

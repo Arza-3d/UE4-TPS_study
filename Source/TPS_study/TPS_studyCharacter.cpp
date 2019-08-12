@@ -10,6 +10,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "TPS_Weapon.h"
 
 //#include "Components/TimelineComponent.h"
 
@@ -39,6 +40,8 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); 
 	FollowCamera->bUsePawnControlRotation = false;
+
+	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("TPSWeapon"));
 
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
@@ -166,8 +169,8 @@ void ATPS_studyCharacter::StartFireRateCount()
 {
 	bIsFireRatePassed = false;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
-	GetWorldTimerManager().SetTimer(FireRateTimer, this, 
-		&ATPS_studyCharacter::ResetFireRateCount, CurrentWeapon.FireRate
+	GetWorldTimerManager().SetTimer(FireRateTimer, this,
+		&ATPS_studyCharacter::ResetFireRateCount, CurrentWeapon.FireRateAndOther[0]
 	);
 }
 
@@ -265,10 +268,6 @@ void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 	{
 		WeaponIndex = numberInput;
 	}
-	else
-	{
-		return;
-	}
 }
 
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
@@ -287,10 +286,6 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 		{
 			WeaponIndex = WeaponNames.Num() - 1;
 		}
-	}
-	else
-	{
-		return;
 	}
 }
 
@@ -360,11 +355,6 @@ void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 		CurrentWeapon = currentWeaponMode.Weapon;
 		CurrentProjectile = currentWeaponMode.Projectile;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Wrong table!"));
-		
-	}
 }
 
 void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
@@ -412,11 +402,11 @@ void ATPS_studyCharacter::OnePressAutoFire(bool pressed)
 
 void ATPS_studyCharacter::CharacterPlayMontage()
 {
-	UAnimMontage* fireMontage = ShooterState.FireMontage;
+	UAnimMontage* fireMontage = ShooterState.CharacterWeaponMontage[0];
 
 	if (fireMontage)
 	{
-		float playRate = GetNewPlayRateForMontage(CurrentWeapon.FireRate, fireMontage);
+		float playRate = GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
 		PlayAnimMontage(fireMontage, playRate);
 	}
 }
