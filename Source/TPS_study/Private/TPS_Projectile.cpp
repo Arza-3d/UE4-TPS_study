@@ -10,7 +10,7 @@ ATPS_Projectile::ATPS_Projectile()
 	CollisionComp->AlwaysLoadOnServer = true;
 	CollisionComp->bTraceComplexOnMove = true;
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	//CollisionComp->SetCollisionObjectType(COLLISION_PROJECTILE);
+	//CollisionComp->SetCollisionObjectType(ECollisionChannel::);
 	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
 	CollisionComp->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	CollisionComp->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);

@@ -4,4 +4,3 @@ UTPS_Weapon::UTPS_Weapon()
 {
 
 }
-
