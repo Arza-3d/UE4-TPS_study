@@ -10,7 +10,6 @@
 class UAnimMontage;
 class USoundBase;
 class UParticleSystem;
-//class ECollisionChannel;
 
 UENUM(BlueprintType)
 enum class ETriggerMechanism : uint8

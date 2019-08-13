@@ -29,14 +29,16 @@ class ATPS_studyCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	//class UTPS_Weapon* RangedWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangedWeapon", meta = (AllowPrivateAccess = "true"))
+	class UTPS_Weapon* RangedWeapon;
 
 public:
 
 	ATPS_studyCharacter();
 
 	bool bIsFireRatePassed;
+
+	FShooter ShooterState;
 
 protected:
 
@@ -52,7 +54,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
 
-	FShooter ShooterState;
+	
 
 	FWeapon CurrentWeapon;
 
@@ -232,6 +234,6 @@ private:
 public:
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE class UTPS_Weapon* GetRangedWeapon() const { return RangedWeapon; }
 };
