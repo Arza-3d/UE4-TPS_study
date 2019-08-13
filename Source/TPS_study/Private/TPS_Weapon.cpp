@@ -7,6 +7,12 @@ UTPS_Weapon::UTPS_Weapon()
 	TPSCharacter = Cast<ATPS_studyCharacter>(myCharacter);
 }
 
+void UTPS_Weapon::MainFire()
+{
+
+
+}
+
 void UTPS_Weapon::GetCurrentWeaponMode(int weaponIndex)
 {
 	FName currentWeaponName = WeaponNames[weaponIndex];

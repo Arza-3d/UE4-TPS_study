@@ -1,5 +1,3 @@
-// Arza.3d
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,7 +17,7 @@ enum class ECharacterLocomotionState : uint8
 };*/
 
 UCLASS(config=Game)
-class ATPS_studyCharacter : public ACharacter
+class ATPS_studyCharacter : public ACharacter//, public ITPSAnimInterface
 {
 	GENERATED_BODY()
 
@@ -36,9 +34,15 @@ public:
 
 	ATPS_studyCharacter();
 
+	class UAnimBlueprint* AnimBP;
+	class ITPSAnimInterface* AnimInterface;
+	UObject* AnimObject;
+
 	bool bIsFireRatePassed;
 
 	FShooter ShooterState;
+
+	
 
 protected:
 

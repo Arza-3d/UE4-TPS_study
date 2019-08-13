@@ -10,6 +10,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
+#include "TPSAnimInterface.h"
 #include "TPS_Weapon.h"
 
 //#include "Components/TimelineComponent.h"
@@ -51,6 +52,7 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	ProjectileMultiplier = 1.0f;
 	AimingSpeed = 1.0f;
 	StopAimingSpeed = 1.0f;
+
 }
 
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -76,6 +78,10 @@ void ATPS_studyCharacter::BeginPlay()
 	{
 		WeaponNames = WeaponTable->GetRowNames();
 	}
+
+	AnimBP = Cast<UAnimBlueprint>(GetMesh()->GetAnimInstance());
+	AnimObject = Cast<UObject>(AnimBP);
+	AnimInterface = Cast<ITPSAnimInterface>(AnimBP);
 }
 
 void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming)
@@ -213,6 +219,10 @@ void ATPS_studyCharacter::MoveForward(float Value)
 		if (bIsAiming) {
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
+			if (AnimInterface) {
+				//AnimInterface->Execute_NormalizedForwardIsSetTo(AnimBP, NormalizedForward);
+			}
+			
 		}
 	}
 	else
@@ -235,6 +245,9 @@ void ATPS_studyCharacter::MoveRight(float Value)
 		if (bIsAiming) {
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
+			if (AnimInterface) {
+				//AnimInterface->Execute_NormalizedRightIsSetTo(AnimBP, NormalizedRight);
+			}
 		}
 	}
 	else 
@@ -262,11 +275,17 @@ void ATPS_studyCharacter::Aiming(bool bIsCharAiming)
 
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 {
+	if (numberInput >= WeaponNames.Num()) { return; }
 	LastWeaponIndex = WeaponIndex;
 
 	if ((WeaponNames.Num() > WeaponIndex) && IsSwitchWeaponRequirementFulfilled())
 	{
 		WeaponIndex = numberInput;
+
+		if (AnimInterface) {
+			AnimInterface->Execute_WeaponIndexIsSetTo(AnimObject, WeaponIndex);
+		}
+		
 	}
 }
 
@@ -285,6 +304,10 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 		else
 		{
 			WeaponIndex = WeaponNames.Num() - 1;
+		}
+		
+		if (AnimInterface) {
+			AnimInterface->Execute_WeaponIndexIsSetTo(AnimObject, WeaponIndex);
 		}
 	}
 }
@@ -442,3 +465,4 @@ float ATPS_studyCharacter::GetNormalizedRight()
 {
 	return NormalizedRight;
 }
+

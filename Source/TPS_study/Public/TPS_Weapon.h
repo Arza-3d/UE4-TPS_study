@@ -13,6 +13,9 @@ class TPS_STUDY_API UTPS_Weapon : public UActorComponent
 public:
 	UTPS_Weapon();
 
+	UFUNCTION(BlueprintCallable, Category = "Fire")
+	void MainFire();
+
 protected:
 
 	class ATPS_studyCharacter* TPSCharacter;
