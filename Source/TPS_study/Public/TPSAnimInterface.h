@@ -25,9 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Weapon")
 	void WeaponIndexIsSetTo(const int weaponIndex);
 
-	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation")
-	//void NormalizedForwardIsSetTo(const float normForward);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation")
+	void NormalizedForwardIsSetTo(const float normForward);
 
-	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation")
-	//void NormalizedRightIsSetTo(const float normRight);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation")
+	void NormalizedRightIsSetTo(const float normRight);
 };

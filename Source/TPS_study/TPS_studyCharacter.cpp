@@ -61,6 +61,14 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeapon1);
+	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeapon2);
+	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeapon3);
+	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeapon4);
+
+	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponUp);
+	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponDown);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
 
@@ -79,9 +87,6 @@ void ATPS_studyCharacter::BeginPlay()
 		WeaponNames = WeaponTable->GetRowNames();
 	}
 
-	AnimBP = Cast<UAnimBlueprint>(GetMesh()->GetAnimInstance());
-	AnimObject = Cast<UObject>(AnimBP);
-	AnimInterface = Cast<ITPSAnimInterface>(AnimBP);
 }
 
 void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming)
@@ -92,6 +97,36 @@ void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming)
 bool ATPS_studyCharacter::GetTransitioningAiming()
 {
 	return bIsTransitioningAiming;
+}
+
+void ATPS_studyCharacter::SetWeapon1()
+{
+	SetWeaponIndexWithNumpad(0);
+}
+
+void ATPS_studyCharacter::SetWeapon2()
+{
+	SetWeaponIndexWithNumpad(1);
+}
+
+void ATPS_studyCharacter::SetWeapon3()
+{
+	SetWeaponIndexWithNumpad(2);
+}
+
+void ATPS_studyCharacter::SetWeapon4()
+{
+	SetWeaponIndexWithNumpad(3);
+}
+
+void ATPS_studyCharacter::SetWeaponUp()
+{
+	SetWeaponIndexWithMouseWheel(true);
+}
+
+void ATPS_studyCharacter::SetWeaponDown()
+{
+	SetWeaponIndexWithMouseWheel(false);
 }
 
 void ATPS_studyCharacter::TurnAtRate(float Rate)
@@ -218,11 +253,7 @@ void ATPS_studyCharacter::MoveForward(float Value)
 
 		if (bIsAiming) {
 			bForwardInputPressed = true;
-			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
-			if (AnimInterface) {
-				//AnimInterface->Execute_NormalizedForwardIsSetTo(AnimBP, NormalizedForward);
-			}
-			
+			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);			
 		}
 	}
 	else
@@ -245,9 +276,6 @@ void ATPS_studyCharacter::MoveRight(float Value)
 		if (bIsAiming) {
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
-			if (AnimInterface) {
-				//AnimInterface->Execute_NormalizedRightIsSetTo(AnimBP, NormalizedRight);
-			}
 		}
 	}
 	else 
@@ -281,12 +309,8 @@ void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 	if ((WeaponNames.Num() > WeaponIndex) && IsSwitchWeaponRequirementFulfilled())
 	{
 		WeaponIndex = numberInput;
-
-		if (AnimInterface) {
-			AnimInterface->Execute_WeaponIndexIsSetTo(AnimObject, WeaponIndex);
-		}
-		
 	}
+	OnSwitchWeaponSuccess();
 }
 
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
@@ -305,10 +329,7 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 		{
 			WeaponIndex = WeaponNames.Num() - 1;
 		}
-		
-		if (AnimInterface) {
-			AnimInterface->Execute_WeaponIndexIsSetTo(AnimObject, WeaponIndex);
-		}
+		OnSwitchWeaponSuccess();
 	}
 }
 

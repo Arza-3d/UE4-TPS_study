@@ -34,17 +34,15 @@ public:
 
 	ATPS_studyCharacter();
 
-	class UAnimBlueprint* AnimBP;
-	class ITPSAnimInterface* AnimInterface;
-	UObject* AnimObject;
-
 	bool bIsFireRatePassed;
 
 	FShooter ShooterState;
 
-	
-
 protected:
+
+	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FAmmoCount Ammunition;
@@ -57,8 +55,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
-
-	
 
 	FWeapon CurrentWeapon;
 
@@ -115,8 +111,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void RepeatFire();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire", meta = (KeyWords = "Switch change weapon"))
+	/**
+	* also use this for 
+	* interface to anim BP
+	*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Weapon", meta = (KeyWords = "change interface"))
 	void OnSwitchWeaponSuccess();
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-z
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
@@ -128,11 +129,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void Aiming(bool bIsCharAiming);
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
-	void SetWeaponIndexWithNumpad(int numberInput);
+	
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon", meta = (KeyWords = "Switch Change Weapon"))
-	void SetWeaponIndexWithMouseWheel(bool isUp);
+	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 	// BPNativeEvent
@@ -197,9 +196,7 @@ protected:
 
 	void LookUpAtRate(float Rate);
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void BeginPlay() override;
+	
 
 	bool bIsTriggerPressed;
 
@@ -210,19 +207,22 @@ protected:
 	bool GetTransitioningAiming();
 
 	bool bIsTransitioningAiming;
-	
-
-	//UPROPERTY(VisibleAnywhere, Category = Aiming)
-	//class UTimelineComponent* AimingTransitionTimeline;
 
 private:
 
+	void SetWeaponIndexWithNumpad(int numberInput);
+	void SetWeapon1();
+	void SetWeapon2();
+	void SetWeapon3();
+	void SetWeapon4();
+
+	void SetWeaponIndexWithMouseWheel(bool isUp);
+	void SetWeaponUp();
+	void SetWeaponDown();
+
 	float BaseTurnRate;
-
 	float BaseLookUpRate;
-	
 	float NormalizedForward;
-
 	float NormalizedRight;
 
 	bool bIsAiming;
