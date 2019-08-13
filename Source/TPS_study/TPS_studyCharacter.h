@@ -111,6 +111,17 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void RepeatFire();
 
+	/**ammo is 0*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	void OnWeaponRunOutOfAmmo();
+	bool CheckAndCallRunOutOfAmmo(int ammo);
+	/**energy is 0*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	void OnWeaponRunOutOfEnergy();
+	/**it is overheating*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	void OnWeaponIsOverheating();
+
 	/**
 	* also use this for 
 	* interface to anim BP
@@ -171,12 +182,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetWeaponIndex();
-
 	int WeaponIndex;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetLastWeaponIndex();
-
 	int LastWeaponIndex;
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
@@ -184,19 +193,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	float GetProjectileMultipler();
-
 	float ProjectileMultiplier;
 
-
 	void MoveForward(float Value);
-
 	void MoveRight(float Value);
-
 	void TurnAtRate(float Rate);
-
 	void LookUpAtRate(float Rate);
-
-	
 
 	bool bIsTriggerPressed;
 

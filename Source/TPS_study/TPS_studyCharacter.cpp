@@ -78,56 +78,22 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
 
-void ATPS_studyCharacter::BeginPlay()
-{
+void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
-
-	if (WeaponTable != nullptr)
-	{
-		WeaponNames = WeaponTable->GetRowNames();
-	}
-
+	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
 }
-
-void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming)
-{
+void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming) { 
 	bIsTransitioningAiming = isTransitioningAiming;
 }
+bool ATPS_studyCharacter::GetTransitioningAiming() { return bIsTransitioningAiming; }
 
-bool ATPS_studyCharacter::GetTransitioningAiming()
-{
-	return bIsTransitioningAiming;
-}
+void ATPS_studyCharacter::SetWeapon1() { SetWeaponIndexWithNumpad(0); } 
+void ATPS_studyCharacter::SetWeapon2() { SetWeaponIndexWithNumpad(1); }
+void ATPS_studyCharacter::SetWeapon3() { SetWeaponIndexWithNumpad(2); }
+void ATPS_studyCharacter::SetWeapon4() { SetWeaponIndexWithNumpad(3); }
 
-void ATPS_studyCharacter::SetWeapon1()
-{
-	SetWeaponIndexWithNumpad(0);
-}
-
-void ATPS_studyCharacter::SetWeapon2()
-{
-	SetWeaponIndexWithNumpad(1);
-}
-
-void ATPS_studyCharacter::SetWeapon3()
-{
-	SetWeaponIndexWithNumpad(2);
-}
-
-void ATPS_studyCharacter::SetWeapon4()
-{
-	SetWeaponIndexWithNumpad(3);
-}
-
-void ATPS_studyCharacter::SetWeaponUp()
-{
-	SetWeaponIndexWithMouseWheel(true);
-}
-
-void ATPS_studyCharacter::SetWeaponDown()
-{
-	SetWeaponIndexWithMouseWheel(false);
-}
+void ATPS_studyCharacter::SetWeaponUp() { SetWeaponIndexWithMouseWheel(true); }
+void ATPS_studyCharacter::SetWeaponDown() { SetWeaponIndexWithMouseWheel(false); }
 
 void ATPS_studyCharacter::TurnAtRate(float Rate)
 {
@@ -173,23 +139,26 @@ bool ATPS_studyCharacter::IsEnoughForWeaponCost()
 	}
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo)
-{
+bool ATPS_studyCharacter::CheckAndCallRunOutOfAmmo(int ammo) {
+	if (ammo <= 0) { OnWeaponRunOutOfAmmo(); }
+	return ammo > 0;
+}
+bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo) {
 	switch (ammo) {
 	case EAmmoType::StandardAmmo:
-		return Ammunition.StandardAmmo > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.StandardAmmo);
 	case EAmmoType::RifleAmmo:
-		return Ammunition.RifleAmmo > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.RifleAmmo);
 	case EAmmoType::ShotgunAmmo:
-		return Ammunition.ShotgunAmmo > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.ShotgunAmmo);
 	case EAmmoType::Rocket:
-		return Ammunition.Rocket > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.Rocket);
 	case EAmmoType::Arrow:
-		return Ammunition.Arrow > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.Arrow);
 	case EAmmoType::Grenade:
-		return Ammunition.Grenade > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.Grenade);
 	case EAmmoType::Mine:
-		return Ammunition.Mine > 0;
+		return CheckAndCallRunOutOfAmmo(Ammunition.Mine);
 	default:
 		return false;
 	}
@@ -197,7 +166,6 @@ bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo)
 
 bool ATPS_studyCharacter::IsNotOverheat()
 {
-
 	return true; //WeaponTemperature < temperatureLimit;
 }
 
@@ -486,4 +454,3 @@ float ATPS_studyCharacter::GetNormalizedRight()
 {
 	return NormalizedRight;
 }
-
