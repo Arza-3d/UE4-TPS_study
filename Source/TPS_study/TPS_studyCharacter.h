@@ -65,7 +65,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void MainFire(bool isTriggerPressed);
-
+	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
+	void ConsumeWeaponCost();
+	bool IsNoMoreAmmo();
+	FRotator FixMuzzleRotation(FTransform socketTransform);
 	void StandardFire(bool pressed);
 	void AutomaticFire(bool pressed);
 	void HoldReleaseFire(bool pressed);
@@ -73,7 +76,6 @@ protected:
 
 	void CharacterPlayMontage();
 	
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
 
@@ -102,7 +104,6 @@ protected:
 	/**for press trigger*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void Fire();
-
 	/**for automatic trigger*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void AutoFire();

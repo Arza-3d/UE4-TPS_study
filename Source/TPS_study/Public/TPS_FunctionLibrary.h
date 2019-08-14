@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Particles/ParticleSystem.h"
 #include "TPS_FunctionLibrary.generated.h"
 
 class UAnimMontage;
@@ -277,5 +279,7 @@ UCLASS()
 class TPS_STUDY_API UTPS_FunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
+	UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
 
 };

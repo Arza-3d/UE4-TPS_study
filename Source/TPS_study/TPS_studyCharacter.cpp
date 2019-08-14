@@ -11,6 +11,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
 #include "TPSAnimInterface.h"
+#include "TPS_Projectile.h"
 #include "TPS_Weapon.h"
 
 //#include "Components/TimelineComponent.h"
@@ -391,17 +392,95 @@ void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
 		StandardFire(isTriggerPressed);
 	}
 }
-
-void ATPS_studyCharacter::StandardFire(bool pressed)
+void ATPS_studyCharacter::SpawnProjectile(USkeletalMeshComponent* weaponMesh)
 {
-	if (!pressed) {return;}
+	UWorld* world = GetWorld();
+	USceneComponent* weaponInWorld = Cast<USceneComponent>(weaponMesh);
+	TArray<FName> muzzleName = CurrentWeapon.SocketName;
+	for (int i = 0; i < muzzleName.Num(); i++) {
+		if (IsNoMoreAmmo()) { break; }
+		
+		ConsumeWeaponCost();
 
-	Fire();
+		FTransform spawnTransform;
+		FTransform muzzleTransform = weaponInWorld->GetSocketTransform(muzzleName[i]);
+		spawnTransform = FTransform(
+			FixMuzzleRotation(muzzleTransform),
+			muzzleTransform.GetLocation(),
+			muzzleTransform.GetScale3D()
+		);
+		ATPS_Projectile* myProjectile = world->SpawnActorDeferred<ATPS_Projectile>(
+			ATPS_Projectile::StaticClass(), 
+			spawnTransform
+		);
+		myProjectile->SetUpProjectile(CurrentProjectile);
+		myProjectile->FinishSpawning(spawnTransform);
+	}
+}
+void ATPS_studyCharacter::ConsumeWeaponCost()
+{
+	switch (CurrentWeapon.AmmoType) {
+	case EAmmoType::StandardAmmo:
+		Ammunition.StandardAmmo--;
+		break;
+	case EAmmoType::RifleAmmo:
+		Ammunition.RifleAmmo--;
+		break;
+	case EAmmoType::ShotgunAmmo:
+		Ammunition.ShotgunAmmo--;
+		break;
+	case EAmmoType::Rocket:
+		Ammunition.Rocket--;
+		break;
+	case EAmmoType::Arrow:
+		Ammunition.Arrow--;
+		break;
+	case EAmmoType::Grenade:
+		Ammunition.Grenade--;
+		break;
+	case EAmmoType::Mine:
+		Ammunition.Mine--;
+		break;
+	default:
+		break;
+	}
+}
+bool ATPS_studyCharacter::IsNoMoreAmmo() {
+	switch (CurrentWeapon.AmmoType) {
+	case EAmmoType::StandardAmmo:
+		return Ammunition.StandardAmmo <= 0;
+	case EAmmoType::RifleAmmo:
+		return Ammunition.RifleAmmo <= 0;
+	case EAmmoType::ShotgunAmmo:
+		return Ammunition.ShotgunAmmo <= 0;	
+	case EAmmoType::Rocket:
+		return Ammunition.Rocket <= 0;
+	case EAmmoType::Arrow:
+		return Ammunition.Arrow <= 0;
+	case EAmmoType::Grenade:
+		return Ammunition.Grenade <= 0;
+	case EAmmoType::Mine:
+		return Ammunition.Mine <= 0;
+	default:
+		return false;
+	}
+}
+FRotator ATPS_studyCharacter::FixMuzzleRotation(FTransform socketTransform)
+{
+	return FRotator();
+}
+void ATPS_studyCharacter::StandardFire(bool pressed) {
+	if (!pressed) {return;}
+	StartFireRateCount();
+	FTransform socketTransform
+	//Fire();
 }
 
 void ATPS_studyCharacter::AutomaticFire(bool pressed)
 {
 	if (!pressed) {return;}
+
+	SpawnProjectile(GetMesh());
 }
 
 void ATPS_studyCharacter::HoldReleaseFire(bool pressed)
