@@ -25,6 +25,13 @@ protected:
 	// 0.z CONSTRUCTION
 
 	// 1.a NAVIGATION
+public:
+	/**only used for aim anim blend walk*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
+	float GetNormalizedForward();
+	/**only used for aim anim blend walk*/
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
+	float GetNormalizedRight();
 
 	// 1.z NAVIGATION
 
@@ -34,13 +41,37 @@ protected:
 
 	// 3.a FIRE
 protected:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
+	bool GetIsAiming();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	bool GetIsTriggerPressed();
 	UFUNCTION(BlueprintCallable)
 	void Fire_Base(bool isTriggerPressed);
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponMode(int weaponIndex);
+
+	bool IsNoMoreAmmo();
+	FRotator GetNewMuzzleRotation(FTransform socketTransform);
 	void Fire__Standard(bool pressed);
 	void Fire__Automatic(bool pressed);
 	void Fire__HoldRelease(bool pressed);
 	void Fire__AutomaticOnePress(bool pressed);
+	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
+	void ConsumeWeaponCost();
+	void PlayFireMontage();
+	
 	// 3.z FIRE
+public:
+	FShooter ShooterState;
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
+	FAmmoCount Ammunition;
+	FWeapon CurrentWeapon;
+	FProjectile CurrentProjectile;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	class UDataTable* WeaponTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	class UDataTable* WeaponModeTable;
 
 	// 4.a SWITCH WEAPON
 
@@ -53,51 +84,13 @@ public:
 	// 5.z PICKUP
 
 public:
-
-	
-
 	bool bIsFireRatePassed = true;
 
-	FShooter ShooterState;
+	
 
 protected:
 
 	
-	
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
-	FAmmoCount Ammunition;
-
-	
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	class UDataTable* WeaponTable;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	class UDataTable* WeaponModeTable;
-
-	FWeapon CurrentWeapon;
-
-	FProjectile CurrentProjectile;
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponMode(int weaponIndex);
-
-	
-	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
-	void ConsumeWeaponCost();
-	bool IsNoMoreAmmo();
-	FRotator GetNewMuzzleRotation(FTransform socketTransform);
-	
-
-	void PlayFireMontage();
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
-	bool GetIsAiming();
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	bool GetIsTriggerPressed();
-
 	/**
 	*if target duration is below 0, 
 	*it will return 1 playrate
@@ -105,13 +98,7 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
 
-	/**only used for aim anim blend walk*/
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedForward();
-
-	/**only used for aim anim blend walk*/
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedRight();
+	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
 	// EVENT
@@ -123,11 +110,9 @@ protected:
 	/**for automatic trigger*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void AutoFire();
-
 	/**repeat fire for automatic trigger*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void RepeatFire();
-
 	/**ammo is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponRunOutOfAmmo();
@@ -138,7 +123,6 @@ protected:
 	/**it is overheating*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponIsOverheating();
-
 	/**
 	* also use this for 
 	* interface to anim BP
@@ -152,10 +136,10 @@ protected:
 	bool GetIsFireRatePassed();
 
 	UFUNCTION(BlueprintCallable, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
-	void SetIsFireRatePassed(bool bFireRatePassed);
+	void SetIsFireRatePassed(const bool bFireRatePassed);
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void Aiming(bool bIsCharAiming);
+	void Aiming(const bool bIsCharAiming);
 
 	
 
@@ -231,13 +215,13 @@ protected:
 
 private:
 
-	void SetWeaponIndexWithNumpad(int numberInput);
+	void SetWeaponIndexWithNumpad(const int numberInput);
 	void SetWeaponIndexWithNumpad_1();
 	void SetWeaponIndexWithNumpad_2();
 	void SetWeaponIndexWithNumpad_3();
 	void SetWeaponIndexWithNumpad_4();
 
-	void SetWeaponIndexWithMouseWheel(bool isUp);
+	void SetWeaponIndexWithMouseWheel(const bool isUp);
 	void SetWeaponIndexWithMouseWheel_Up();
 	void SetWeaponIndexWithMouseWheel_Down();
 
@@ -248,7 +232,7 @@ private:
 
 	bool bIsAiming;
 
-	void OrientCharacter(bool bMyCharIsAiming);
+	void OrientCharacter(const bool bMyCharIsAiming);
 	
 	bool bForwardInputPressed;
 
