@@ -264,8 +264,7 @@ void ATPS_studyCharacter::SetIsFireRatePassed(bool bFireRatePassed)
 	bIsFireRatePassed = bFireRatePassed;
 }
 
-void ATPS_studyCharacter::Aiming(bool bIsCharAiming)
-{
+void ATPS_studyCharacter::Aiming(bool bIsCharAiming) {
 	bIsAiming = bIsCharAiming;
 	OrientCharacter(bIsCharAiming);
 }
@@ -282,87 +281,42 @@ void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 	OnSwitchWeaponSuccess();
 }
 
-void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
-{
+void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp) {
 	LastWeaponIndex = WeaponIndex;
-	
-	if (IsSwitchWeaponRequirementFulfilled())
-	{
+	if (IsSwitchWeaponRequirementFulfilled()) {
 		int counter = isUp ? 1 : -1;
 		int withinRange = (WeaponIndex + counter) % WeaponNames.Num();
-		if(withinRange >= 0)
-		{
+		if(withinRange >= 0) {
 			WeaponIndex = withinRange;
-		}
-		else
-		{
+		} else {
 			WeaponIndex = WeaponNames.Num() - 1;
 		}
 		OnSwitchWeaponSuccess();
 	}
 }
 
-bool ATPS_studyCharacter::CanCharacterFire_Implementation()
-{
-	return !GetCharacterMovement()->IsFalling();
-}
 
-bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation()
-{
+
+bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation() {
 	return bIsTriggerPressed;
 }
 
-bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation()
-{
+bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation() {
 	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
 	bool bIsNotAiming = !GetIsAiming();
-
 	return bIsOnTheGround && bIsNotAiming;
 }
 
-void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
-{
-	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
-	bUseControllerRotationYaw = bMyCharIsAiming;
-	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
-}
 
-void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType)
-{
-	switch (ammoType) {
-	case EAmmoType::StandardAmmo:
-		Ammunition.StandardAmmo += addAmmo;
-		break;
-	case EAmmoType::RifleAmmo:
-		Ammunition.RifleAmmo += addAmmo;
-		break;
-	case EAmmoType::ShotgunAmmo:
-		Ammunition.ShotgunAmmo += addAmmo;
-		break;
-	case EAmmoType::Rocket:
-		Ammunition.Rocket += addAmmo;
-		break;
-	case EAmmoType::Arrow:
-		Ammunition.Arrow += addAmmo;
-		break;
-	case EAmmoType::Grenade:
-		Ammunition.Grenade += addAmmo;
-		break;
-	case EAmmoType::Mine:
-		Ammunition.Mine += addAmmo;
-	}
-}
 
-void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
-{
+
+
+void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex) {
 	FName currentWeaponName = WeaponNames[weaponIndex];
 	static const FString contextString(TEXT("Weapon Mode"));
 	struct FWeaponModeCompact* weaponModeRow;
-
 	weaponModeRow = WeaponModeTable->FindRow<FWeaponModeCompact>(currentWeaponName, contextString, true);
-
-	if (weaponModeRow)
-	{
+	if (weaponModeRow) {
 		FWeaponMode currentWeaponMode = weaponModeRow->WeaponMode;
 		ShooterState = currentWeaponMode.Shooter;
 		CurrentWeapon = currentWeaponMode.Weapon;
@@ -370,41 +324,17 @@ void ATPS_studyCharacter::GetCurrentWeaponMode(int weaponIndex)
 	}
 }
 
-void ATPS_studyCharacter::MainFire(bool isTriggerPressed)
-{
-	bIsTriggerPressed = isTriggerPressed;
-	if (!bIsAiming) {return;}
 
-	switch (CurrentWeapon.Trigger) {
-	case ETriggerMechanism::PressTrigger:
-		StandardFire(isTriggerPressed);
-		break;
-	case ETriggerMechanism::AutomaticTrigger:
-		AutomaticFire(isTriggerPressed);
-		break;
-	case ETriggerMechanism::ReleaseTrigger:
-		HoldReleaseFire(isTriggerPressed);
-		break;
-	case ETriggerMechanism::OnePressAutoTrigger:
-		OnePressAutoFire(isTriggerPressed);
-		break;
-	default:
-		StandardFire(isTriggerPressed);
-	}
-}
-void ATPS_studyCharacter::SpawnProjectile(USkeletalMeshComponent* weaponMesh)
-{
+void ATPS_studyCharacter::SpawnProjectile(USkeletalMeshComponent* weaponMesh) {
 	UWorld* world = GetWorld();
 	USceneComponent* weaponInWorld = Cast<USceneComponent>(weaponMesh);
 	TArray<FName> muzzleName = CurrentWeapon.SocketName;
 	for (int i = 0; i < muzzleName.Num(); i++) {
 		if (IsNoMoreAmmo()) { break; }
-		
 		ConsumeWeaponCost();
-
-		FTransform spawnTransform;
+		//FTransform spawnTransform;
 		FTransform muzzleTransform = weaponInWorld->GetSocketTransform(muzzleName[i]);
-		spawnTransform = FTransform(
+		FTransform spawnTransform = FTransform(
 			FixMuzzleRotation(muzzleTransform),
 			muzzleTransform.GetLocation(),
 			muzzleTransform.GetScale3D()
@@ -417,8 +347,78 @@ void ATPS_studyCharacter::SpawnProjectile(USkeletalMeshComponent* weaponMesh)
 		myProjectile->FinishSpawning(spawnTransform);
 	}
 }
-void ATPS_studyCharacter::ConsumeWeaponCost()
+
+
+
+
+
+void ATPS_studyCharacter::AutomaticFire(bool pressed)
 {
+	if (!pressed) {return;}
+
+	SpawnProjectile(GetMesh());
+}
+
+void ATPS_studyCharacter::HoldReleaseFire(bool pressed)
+{
+}
+
+void ATPS_studyCharacter::OnePressAutoFire(bool pressed)
+{
+}
+
+// 1.a NAVIGATION
+float ATPS_studyCharacter::GetNormalizedForward() { return NormalizedForward; }
+float ATPS_studyCharacter::GetNormalizedRight() { return NormalizedRight; }
+// 1.z NAVIGATION
+
+// 2.a AIMING
+bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
+void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming) {
+	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
+	bUseControllerRotationYaw = bMyCharIsAiming;
+	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
+}
+// 2.z AIMING
+
+// 3.a FIRE
+bool ATPS_studyCharacter::CanCharacterFire_Implementation() { return !GetCharacterMovement()->IsFalling(); }
+bool ATPS_studyCharacter::GetIsTriggerPressed() { return bIsTriggerPressed; }
+bool ATPS_studyCharacter::IsNoMoreAmmo() {
+	switch (CurrentWeapon.AmmoType) {
+	case EAmmoType::StandardAmmo:
+		return Ammunition.StandardAmmo <= 0;
+	case EAmmoType::RifleAmmo:
+		return Ammunition.RifleAmmo <= 0;
+	case EAmmoType::ShotgunAmmo:
+		return Ammunition.ShotgunAmmo <= 0;
+	case EAmmoType::Rocket:
+		return Ammunition.Rocket <= 0;
+	case EAmmoType::Arrow:
+		return Ammunition.Arrow <= 0;
+	case EAmmoType::Grenade:
+		return Ammunition.Grenade <= 0;
+	case EAmmoType::Mine:
+		return Ammunition.Mine <= 0;
+	default:
+		return false;
+	}
+}
+float ATPS_studyCharacter::GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage) {
+	return (targetDuration <= 0.0f) ? 1.0f : animMontage->SequenceLength / targetDuration;
+}
+FRotator ATPS_studyCharacter::FixMuzzleRotation(FTransform socketTransform)
+{
+	return FRotator();
+}
+void ATPS_studyCharacter::CharacterPlayMontage() {
+	UAnimMontage* fireMontage = ShooterState.CharacterWeaponMontage[0];
+	if (fireMontage) {
+		float playRate = GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
+		PlayAnimMontage(fireMontage, playRate);
+	}
+}
+void ATPS_studyCharacter::ConsumeWeaponCost() {
 	switch (CurrentWeapon.AmmoType) {
 	case EAmmoType::StandardAmmo:
 		Ammunition.StandardAmmo--;
@@ -445,91 +445,57 @@ void ATPS_studyCharacter::ConsumeWeaponCost()
 		break;
 	}
 }
-bool ATPS_studyCharacter::IsNoMoreAmmo() {
-	switch (CurrentWeapon.AmmoType) {
-	case EAmmoType::StandardAmmo:
-		return Ammunition.StandardAmmo <= 0;
-	case EAmmoType::RifleAmmo:
-		return Ammunition.RifleAmmo <= 0;
-	case EAmmoType::ShotgunAmmo:
-		return Ammunition.ShotgunAmmo <= 0;	
-	case EAmmoType::Rocket:
-		return Ammunition.Rocket <= 0;
-	case EAmmoType::Arrow:
-		return Ammunition.Arrow <= 0;
-	case EAmmoType::Grenade:
-		return Ammunition.Grenade <= 0;
-	case EAmmoType::Mine:
-		return Ammunition.Mine <= 0;
+void ATPS_studyCharacter::MainFire(bool isTriggerPressed) {
+	bIsTriggerPressed = isTriggerPressed;
+	if (!bIsAiming) { return; }
+	switch (CurrentWeapon.Trigger) {
+	case ETriggerMechanism::PressTrigger:
+		StandardFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::AutomaticTrigger:
+		AutomaticFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::ReleaseTrigger:
+		HoldReleaseFire(isTriggerPressed);
+		break;
+	case ETriggerMechanism::OnePressAutoTrigger:
+		OnePressAutoFire(isTriggerPressed);
+		break;
 	default:
-		return false;
+		StandardFire(isTriggerPressed);
 	}
-}
-FRotator ATPS_studyCharacter::FixMuzzleRotation(FTransform socketTransform)
-{
-	return FRotator();
 }
 void ATPS_studyCharacter::StandardFire(bool pressed) {
-	if (!pressed) {return;}
+	if (!pressed) { return; }
 	StartFireRateCount();
-	FTransform socketTransform
+	//FTransform socketTransform
 	//Fire();
 }
+// 3.z FIRE
 
-void ATPS_studyCharacter::AutomaticFire(bool pressed)
-{
-	if (!pressed) {return;}
-
-	SpawnProjectile(GetMesh());
-}
-
-void ATPS_studyCharacter::HoldReleaseFire(bool pressed)
-{
-}
-
-void ATPS_studyCharacter::OnePressAutoFire(bool pressed)
-{
-}
-
-void ATPS_studyCharacter::CharacterPlayMontage()
-{
-	UAnimMontage* fireMontage = ShooterState.CharacterWeaponMontage[0];
-
-	if (fireMontage)
-	{
-		float playRate = GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
-		PlayAnimMontage(fireMontage, playRate);
+// 4.a PICKUP
+void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType) {
+	switch (ammoType) {
+	case EAmmoType::StandardAmmo:
+		Ammunition.StandardAmmo += addAmmo;
+		break;
+	case EAmmoType::RifleAmmo:
+		Ammunition.RifleAmmo += addAmmo;
+		break;
+	case EAmmoType::ShotgunAmmo:
+		Ammunition.ShotgunAmmo += addAmmo;
+		break;
+	case EAmmoType::Rocket:
+		Ammunition.Rocket += addAmmo;
+		break;
+	case EAmmoType::Arrow:
+		Ammunition.Arrow += addAmmo;
+		break;
+	case EAmmoType::Grenade:
+		Ammunition.Grenade += addAmmo;
+		break;
+	case EAmmoType::Mine:
+		Ammunition.Mine += addAmmo;
 	}
 }
-
-bool ATPS_studyCharacter::GetIsAiming()
-{
-	return bIsAiming;
-}
-
-bool ATPS_studyCharacter::GetIsTriggerPressed()
-{
-	return bIsTriggerPressed;
-}
-
-float ATPS_studyCharacter::GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage)
-{
-	if (targetDuration <= 0.0f)
-	{
-		return 1.0f;
-	}
-	else
-	{
-		return animMontage->SequenceLength / targetDuration;
-	}
-}
-
-float ATPS_studyCharacter::GetNormalizedForward()
-{
-	return NormalizedForward;
-}
-
-float ATPS_studyCharacter::GetNormalizedRight()
-{
-	return NormalizedRight;
-}
+// 4.z PICKUP
