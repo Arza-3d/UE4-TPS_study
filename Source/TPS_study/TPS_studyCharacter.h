@@ -64,17 +64,17 @@ protected:
 	void GetCurrentWeaponMode(int weaponIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void MainFire(bool isTriggerPressed);
+	void Fire_Base(bool isTriggerPressed);
 	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
 	void ConsumeWeaponCost();
 	bool IsNoMoreAmmo();
 	FRotator FixMuzzleRotation(FTransform socketTransform);
-	void StandardFire(bool pressed);
-	void AutomaticFire(bool pressed);
-	void HoldReleaseFire(bool pressed);
-	void OnePressAutoFire(bool pressed);
+	void Fire__Standard(bool pressed);
+	void Fire__Automatic(bool pressed);
+	void Fire__HoldRelease(bool pressed);
+	void Fire__AutomaticOnePress(bool pressed);
 
-	void CharacterPlayMontage();
+	void PlayFireMontage();
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
