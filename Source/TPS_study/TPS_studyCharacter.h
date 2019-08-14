@@ -3,52 +3,72 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "TPS_FunctionLibrary.h"
-//#include "Components/TimelineComponent.h"
 #include "TPS_studyCharacter.generated.h"
 
-/*UENUM(BlueprintType)
-enum class ECharacterLocomotionState : uint8
-{
-	Idle,
-	Jog,
-	Run,
-	Sprint,
-	Ragdoll
-};*/
-
 UCLASS(config=Game)
-class ATPS_studyCharacter : public ACharacter//, public ITPSAnimInterface
-{
+class ATPS_studyCharacter : public ACharacter {
 	GENERATED_BODY()
 
+	// 0.a CONSTRUCTION
+public:
+	ATPS_studyCharacter();
+private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangedWeapon", meta = (AllowPrivateAccess = "true"))
 	class UTPS_Weapon* RangedWeapon;
+protected:
+	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// 0.z CONSTRUCTION
+
+	// 1.a NAVIGATION
+
+	// 1.z NAVIGATION
+
+	// 2.a AIMING
+
+	// 2.z AIMING
+
+	// 3.a FIRE
+protected:
+	UFUNCTION(BlueprintCallable)
+	void Fire_Base(bool isTriggerPressed);
+	void Fire__Standard(bool pressed);
+	void Fire__Automatic(bool pressed);
+	void Fire__HoldRelease(bool pressed);
+	void Fire__AutomaticOnePress(bool pressed);
+	// 3.z FIRE
+
+	// 4.a SWITCH WEAPON
+
+	// 4.z SWITCH WEAPON
+
+	// 5.a PICKUP
+public:
+	UFUNCTION(BlueprintCallable)
+	void AddAmmo(int addAmmo, EAmmoType ammoType);
+	// 5.z PICKUP
 
 public:
 
-	ATPS_studyCharacter();
+	
 
-	bool bIsFireRatePassed;
+	bool bIsFireRatePassed = true;
 
 	FShooter ShooterState;
 
 protected:
 
-	virtual void BeginPlay() override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FAmmoCount Ammunition;
 
-	UFUNCTION(BlueprintCallable)
-	void AddAmmo(int addAmmo, EAmmoType ammoType);
+	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponTable;
@@ -61,18 +81,14 @@ protected:
 	FProjectile CurrentProjectile;
 
 	UFUNCTION(BlueprintCallable)
-	void GetCurrentWeaponMode(int weaponIndex);
+	void SetWeaponMode(int weaponIndex);
 
-	UFUNCTION(BlueprintCallable)
-	void Fire_Base(bool isTriggerPressed);
+	
 	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
 	void ConsumeWeaponCost();
 	bool IsNoMoreAmmo();
-	FRotator FixMuzzleRotation(FTransform socketTransform);
-	void Fire__Standard(bool pressed);
-	void Fire__Automatic(bool pressed);
-	void Fire__HoldRelease(bool pressed);
-	void Fire__AutomaticOnePress(bool pressed);
+	FRotator GetNewMuzzleRotation(FTransform socketTransform);
+	
 
 	void PlayFireMontage();
 	
@@ -154,22 +170,24 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
+	bool IsAbleToRepeatAutoFire_Implementation();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
-	bool CanCharacterFire();
+	bool IsCharacterAbleToFire();
+	bool IsCharacterAbleToFire_Implementation();
 
 	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
 
-	bool CanWeaponFire();
+	bool IsWeaponAbleToFire();
 	
 	bool IsEnoughForWeaponCost();
 	bool IsAmmoEnough(EAmmoType ammo);
 	bool IsNotOverheat();
 	float WeaponTemperature;
 	bool IsEnergyEnough();
-	void StartFireRateCount();
+	void TimerFireRate_Start();
 	FTimerHandle FireRateTimer;
-	void ResetFireRateCount();
+	void TimerFireRate_Reset();
 	
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
@@ -194,11 +212,11 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	float GetProjectileMultipler();
-	float ProjectileMultiplier;
+	float ProjectileMultiplier = 1.0f;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
-	void TurnAtRate(float Rate);
+	void LookRightAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 
 	bool bIsTriggerPressed;
@@ -214,14 +232,14 @@ protected:
 private:
 
 	void SetWeaponIndexWithNumpad(int numberInput);
-	void SetWeapon1();
-	void SetWeapon2();
-	void SetWeapon3();
-	void SetWeapon4();
+	void SetWeaponIndexWithNumpad_1();
+	void SetWeaponIndexWithNumpad_2();
+	void SetWeaponIndexWithNumpad_3();
+	void SetWeaponIndexWithNumpad_4();
 
 	void SetWeaponIndexWithMouseWheel(bool isUp);
-	void SetWeaponUp();
-	void SetWeaponDown();
+	void SetWeaponIndexWithMouseWheel_Up();
+	void SetWeaponIndexWithMouseWheel_Down();
 
 	float BaseTurnRate;
 	float BaseLookUpRate;
