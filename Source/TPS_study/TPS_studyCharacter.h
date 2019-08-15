@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "TPS_FunctionLibrary.h"
 #include "TPS_studyCharacter.generated.h"
@@ -22,6 +23,11 @@ private:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// 0. CONSTRUCTION TIMELINE SETUP
+	/*void Construct_Timeline();*/
+	void Setup_Timeline();
+	void Setup_BasicComponent();
+	void Setup_NewComponent();
 	// 0.z CONSTRUCTION
 
 	// 1.a NAVIGATION
@@ -32,11 +38,21 @@ public:
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedRight();
-
 	// 1.z NAVIGATION
 
 	// 2.a AIMING
-
+protected:
+	UPROPERTY()
+	UTimelineComponent* AimingTimelineCPP;
+	UPROPERTY()
+	UCurveFloat* FloatCurve;
+	UFUNCTION()
+	void TimeAiming(float val);
+	UFUNCTION()
+	void TimeFinishAiming();
+	void StartAiming();
+	UPROPERTY()
+	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
 	// 2.z AIMING
 
 	// 3.a FIRE
@@ -151,6 +167,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsSwitchWeaponRequirementFulfilled();
+	bool IsSwitchWeaponRequirementFulfilled_Implementation();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
@@ -178,10 +195,10 @@ protected:
 	TArray<FName> WeaponNames;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-	float AimingSpeed;
+	float AimingSpeed = 0.1f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-	float StopAimingSpeed;
+	float StopAimingSpeed = 0.1f;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int GetWeaponIndex();
@@ -225,8 +242,8 @@ private:
 	void SetWeaponIndexWithMouseWheel_Up();
 	void SetWeaponIndexWithMouseWheel_Down();
 
-	float BaseTurnRate;
-	float BaseLookUpRate;
+	const float BaseTurnRate = 45.0f;
+	const float BaseLookUpRate = 45.0f;
 	float NormalizedForward;
 	float NormalizedRight;
 

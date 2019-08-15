@@ -18,8 +18,6 @@
 ATPS_studyCharacter::ATPS_studyCharacter() {
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
@@ -37,12 +35,12 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	AimingSpeed = 1.0f;
-	StopAimingSpeed = 1.0f;
+	//Construct_Timeline();
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
+	Setup_Timeline();
 }
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	check(PlayerInputComponent);
@@ -60,6 +58,44 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
+}
+void ATPS_studyCharacter::Setup_BasicComponent() {
+}
+void ATPS_studyCharacter::Setup_NewComponent()
+{
+}
+/*void ATPS_studyCharacter::Construct_Timeline() {
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> 
+		Curve(TEXT("/Character/Component/Curves/Aiming_CRV"));
+	check(Curve.Succeeded());
+	FloatCurve = Curve.Object;
+
+}*/
+void ATPS_studyCharacter::Setup_Timeline() {
+	FOnTimelineFloat onAimingTimeCallback;
+	FOnTimelineEventStatic onAimingTimeFinishedCallback;
+	if (FloatCurve) {
+		AimingTimelineCPP = NewObject<UTimelineComponent>(
+			this,
+			FName("AiminTimeline")
+			);
+		AimingTimelineCPP->CreationMethod = 
+			EComponentCreationMethod::UserConstructionScript;
+		this->BlueprintCreatedComponents.Add(AimingTimelineCPP);
+		AimingTimelineCPP->SetNetAddressable();
+		AimingTimelineCPP->SetPropertySetObject(this);
+		AimingTimelineCPP->SetDirectionPropertyName(FName("TimeAimingDirection"));
+		AimingTimelineCPP->SetLooping(false);
+		AimingTimelineCPP->SetTimelineLength(1.0f);
+		AimingTimelineCPP->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+		AimingTimelineCPP->SetPlaybackPosition(0.0f, false);
+		onAimingTimeCallback.BindUFunction(this, FName(TEXT("TimeAiming")));
+		onAimingTimeFinishedCallback.BindUFunction(this, FName(TEXT("TimeFinishAiming")));
+		AimingTimelineCPP->AddInterpFloat(FloatCurve, onAimingTimeCallback);
+		AimingTimelineCPP->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
+		AimingTimelineCPP->RegisterComponent();
+	}
+
 }
 // 0.z CONSTRUCTION
 
@@ -263,6 +299,29 @@ void ATPS_studyCharacter::TimerFireRate_Start() {
 void ATPS_studyCharacter::TimerFireRate_Reset() {
 	bIsFireRatePassed = true;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
+}
+void ATPS_studyCharacter::TimeAiming(float val) {
+	float aimingMaxAcceleration = 1000.0f;
+	float aimingTargetArmLength = 100.0f;
+	float aimingWalkSpeed = 450.0f;
+	float aimingFieldOfView = 70.0f;
+	float defaultFieldOfView = 90.0f;
+	float defaultMaxAcceleration = 2000.0f;
+	float defaultTargetArmLength = 300.0f;
+	float defaultWalkSpeed = 600.0f;
+	FVector defaultSocketOffset = FVector(0.0f);
+	FVector aimingSocketOffset = FVector(100.0f);
+	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
+	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
+	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
+	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
+}
+void ATPS_studyCharacter::TimeFinishAiming()
+{
+}
+void ATPS_studyCharacter::StartAiming()
+{
 }
 // 3.z FIRE
 
