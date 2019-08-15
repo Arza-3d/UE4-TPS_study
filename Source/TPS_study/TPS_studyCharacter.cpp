@@ -59,8 +59,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
-void ATPS_studyCharacter::SetDefaultAimStat()
-{
+void ATPS_studyCharacter::SetDefaultAimStat() {
 	DefaultAimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
 	DefaultAimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
 	DefaultAimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
@@ -73,7 +72,7 @@ void ATPS_studyCharacter::Setup_NewComponent()
 {
 }
 /*void ATPS_studyCharacter::Construct_Timeline() {
-	static ConstructorHelpers::FObjectFinder<UCurveFloat> 
+	static ConstructorHelpers::FObjectFinder<UCurveFloat>
 		Curve(TEXT("/Character/Component/Curves/Aiming_CRV"));
 	check(Curve.Succeeded());
 	FloatCurve = Curve.Object;
@@ -87,7 +86,7 @@ void ATPS_studyCharacter::Setup_Timeline() {
 			this,
 			FName("AiminTimeline")
 			);
-		AimingTimelineCPP->CreationMethod = 
+		AimingTimelineCPP->CreationMethod =
 			EComponentCreationMethod::UserConstructionScript;
 		this->BlueprintCreatedComponents.Add(AimingTimelineCPP);
 		AimingTimelineCPP->SetNetAddressable();
