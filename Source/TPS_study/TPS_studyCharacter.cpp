@@ -1,4 +1,5 @@
 #include "TPS_studyCharacter.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -16,67 +17,39 @@
 
 // 0.a CONSTRUCTION
 ATPS_studyCharacter::ATPS_studyCharacter() {
-	PrimaryActorTick.bStartWithTickEnabled = false;
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
-	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.2f;
+	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
+	// basic component setup:
+	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f;
-	CameraBoom->bUsePawnControlRotation = true;
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
-	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	// inherited component setup:
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCharacterMovement()->AirControl = 0.2f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	// aiming setup:
+	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
+	AimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
+	AimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
+	AimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
+	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
-	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
-	Setup_Timeline();
-	SetDefaultAimStat();
-}
-void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
-	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_1);
-	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_2);
-	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_3);
-	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_4);
-	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up);
-	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down);
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
-}
-void ATPS_studyCharacter::SetDefaultAimStat() {
-	if (DefaultAimStats.Num() == 0) { DefaultAimStats.SetNum(1); };
-	DefaultAimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
-	DefaultAimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
-	DefaultAimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
-	DefaultAimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-	DefaultAimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
-}
-void ATPS_studyCharacter::Setup_BasicComponent() {
-}
-void ATPS_studyCharacter::Setup_NewComponent()
-{
-}
-void ATPS_studyCharacter::Setup_WidgetCrosshair()
-{
-	//CreateWidget
-}
-void ATPS_studyCharacter::Setup_Timeline() {
+	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
 	if (FloatCurve) {
@@ -100,6 +73,25 @@ void ATPS_studyCharacter::Setup_Timeline() {
 		AimingTimeline->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
 		AimingTimeline->RegisterComponent();
 	}
+	// weapon setup:
+	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
+}
+void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
+	check(PlayerInputComponent);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_1);
+	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_2);
+	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_3);
+	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_4);
+	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up);
+	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down);
+	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
 // 0.z CONSTRUCTION
 
@@ -116,8 +108,7 @@ void ATPS_studyCharacter::MoveForward(float Value) {
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
 		}
-	}
-	else {
+	} else {
 		bForwardInputPressed = false;
 		NormalizedForward = 0.0f;
 	}
@@ -132,8 +123,7 @@ void ATPS_studyCharacter::MoveRight(float Value) {
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
 		}
-	}
-	else {
+	} else {
 		bRightInputPressed = false;
 		NormalizedRight = 0.0f;
 	}
@@ -150,6 +140,7 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate) {
 bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
 void ATPS_studyCharacter::Aiming() {
 	Aiming_Setup(true);
+	bIsTransitioningAiming = true;
 }
 void ATPS_studyCharacter::AimingStop() {
 	Aiming_Setup(false);
@@ -166,6 +157,24 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming) {
 	bUseControllerRotationYaw = bMyCharIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
+void ATPS_studyCharacter::TimeAiming(float val) {
+	float aimingFieldOfView = AimStats[AimStatTargetIndex].FollCam.FieldOfView;
+	float aimingMaxAcceleration = AimStats[AimStatTargetIndex].CharMov.MaxAcceleration;
+	float aimingTargetArmLength = AimStats[AimStatTargetIndex].CamBoom.TargetArmLength;
+	float aimingWalkSpeed = AimStats[AimStatTargetIndex].CharMov.MaxWalkSpeed;
+	float defaultFieldOfView = AimStats[AimStatTargetIndex].FollCam.FieldOfView;
+	float defaultMaxAcceleration = AimStats[AimStatTargetIndex].CharMov.MaxAcceleration;
+	float defaultTargetArmLength = AimStats[AimStatTargetIndex].CamBoom.TargetArmLength;
+	float defaultWalkSpeed = AimStats[AimStatTargetIndex].CharMov.MaxWalkSpeed;
+	FVector aimingSocketOffset = AimStats[AimStatTargetIndex].CamBoom.SocketOffset;
+	FVector defaultSocketOffset = AimStats[AimStatStartIndex].CamBoom.SocketOffset;
+	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
+	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
+	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
+	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
+}
+void ATPS_studyCharacter::TimeFinishAiming() { bIsTransitioningAiming = false; }
 // 2.z AIMING
 
 // 3.a FIRE
@@ -313,29 +322,7 @@ void ATPS_studyCharacter::TimerFireRate_Reset() {
 	bIsFireRatePassed = true;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
 }
-void ATPS_studyCharacter::TimeAiming(float val) {
-	float aimingMaxAcceleration = 1000.0f;
-	float aimingTargetArmLength = 100.0f;
-	float aimingWalkSpeed = 450.0f;
-	float aimingFieldOfView = 70.0f;
-	float defaultFieldOfView = 90.0f;
-	float defaultMaxAcceleration = 2000.0f;
-	float defaultTargetArmLength = 300.0f;
-	float defaultWalkSpeed = 600.0f;
-	FVector defaultSocketOffset = FVector(0.0f);
-	FVector aimingSocketOffset = FVector(100.0f);
-	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
-	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
-	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
-	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
-}
-void ATPS_studyCharacter::TimeFinishAiming()
-{
-}
-void ATPS_studyCharacter::StartAiming()
-{
-}
+
 // 3.z FIRE
 
 // 4.a SWITCH WEAPON

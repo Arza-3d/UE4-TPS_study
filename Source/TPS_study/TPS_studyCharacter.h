@@ -23,13 +23,6 @@ private:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void SetDefaultAimStat();
-	// 0. CONSTRUCTION TIMELINE SETUP
-	/*void Construct_Timeline();*/
-	void Setup_Timeline();
-	void Setup_BasicComponent();
-	void Setup_NewComponent();
-	void Setup_WidgetCrosshair();
 	// 0.z CONSTRUCTION
 
 	// 1.a NAVIGATION
@@ -44,6 +37,8 @@ public:
 
 	// 2.a AIMING
 protected:
+	int AimStatStartIndex = 0;
+	int AimStatTargetIndex = 1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<class UUserWidget> Crosshair;
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
@@ -51,9 +46,11 @@ protected:
 	void AimingStop();
 	void Aiming_Setup(const bool isAiming);
 	/**
-	* 0 = default aim stat
+	* 0 = default
+	* 1 = aiming
+	* 2, 3, x extra mode
 	*/
-	TArray<FAimingStat> DefaultAimStats;
+	TArray<FAimingStat> AimStats;
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
 	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
@@ -62,7 +59,6 @@ protected:
 	void TimeAiming(float val);
 	UFUNCTION()
 	void TimeFinishAiming();
-	void StartAiming();
 	UPROPERTY()
 	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
 	// 2.z AIMING
@@ -227,6 +223,7 @@ protected:
 	bool bIsTransitioningAiming;
 
 private:
+
 
 	void SetWeaponIndexWithNumpad(const int numberInput);
 	void SetWeaponIndexWithNumpad_1();
