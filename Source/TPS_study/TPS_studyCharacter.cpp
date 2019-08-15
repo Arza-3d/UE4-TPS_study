@@ -35,12 +35,12 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	SetDefaultAimStat();
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
 	Setup_Timeline();
+	SetDefaultAimStat();
 }
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	check(PlayerInputComponent);
@@ -60,6 +60,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
 void ATPS_studyCharacter::SetDefaultAimStat() {
+	if (DefaultAimStats.Num() == 0) { return; };
 	DefaultAimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
 	DefaultAimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
 	DefaultAimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
@@ -71,38 +72,34 @@ void ATPS_studyCharacter::Setup_BasicComponent() {
 void ATPS_studyCharacter::Setup_NewComponent()
 {
 }
-/*void ATPS_studyCharacter::Construct_Timeline() {
-	static ConstructorHelpers::FObjectFinder<UCurveFloat>
-		Curve(TEXT("/Character/Component/Curves/Aiming_CRV"));
-	check(Curve.Succeeded());
-	FloatCurve = Curve.Object;
-
-}*/
+void ATPS_studyCharacter::Setup_WidgetCrosshair()
+{
+	//CreateWidget
+}
 void ATPS_studyCharacter::Setup_Timeline() {
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
 	if (FloatCurve) {
-		AimingTimelineCPP = NewObject<UTimelineComponent>(
+		AimingTimeline = NewObject<UTimelineComponent>(
 			this,
-			FName("AiminTimeline")
+			FName("AimingTimeline")
 			);
-		AimingTimelineCPP->CreationMethod =
+		AimingTimeline->CreationMethod =
 			EComponentCreationMethod::UserConstructionScript;
-		this->BlueprintCreatedComponents.Add(AimingTimelineCPP);
-		AimingTimelineCPP->SetNetAddressable();
-		AimingTimelineCPP->SetPropertySetObject(this);
-		AimingTimelineCPP->SetDirectionPropertyName(FName("TimeAimingDirection"));
-		AimingTimelineCPP->SetLooping(false);
-		AimingTimelineCPP->SetTimelineLength(1.0f);
-		AimingTimelineCPP->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
-		AimingTimelineCPP->SetPlaybackPosition(0.0f, false);
+		this->BlueprintCreatedComponents.Add(AimingTimeline);
+		AimingTimeline->SetNetAddressable();
+		AimingTimeline->SetPropertySetObject(this);
+		AimingTimeline->SetDirectionPropertyName(FName("TimeAimingDirection"));
+		AimingTimeline->SetLooping(false);
+		AimingTimeline->SetTimelineLength(1.0f);
+		AimingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
+		AimingTimeline->SetPlaybackPosition(0.0f, false);
 		onAimingTimeCallback.BindUFunction(this, FName(TEXT("TimeAiming")));
 		onAimingTimeFinishedCallback.BindUFunction(this, FName(TEXT("TimeFinishAiming")));
-		AimingTimelineCPP->AddInterpFloat(FloatCurve, onAimingTimeCallback);
-		AimingTimelineCPP->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
-		AimingTimelineCPP->RegisterComponent();
+		AimingTimeline->AddInterpFloat(FloatCurve, onAimingTimeCallback);
+		AimingTimeline->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
+		AimingTimeline->RegisterComponent();
 	}
-
 }
 // 0.z CONSTRUCTION
 
@@ -151,9 +148,18 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate) {
 
 // 2.a AIMING
 bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
-void ATPS_studyCharacter::Aiming(bool bIsCharAiming) {
-	bIsAiming = bIsCharAiming;
-	OrientCharacter(bIsCharAiming);
+void ATPS_studyCharacter::Aiming() {
+	Aiming_Setup(true);
+}
+void ATPS_studyCharacter::AimingStop() {
+	Aiming_Setup(false);
+}
+void ATPS_studyCharacter::Aiming_Setup(const bool isAiming) {
+	bIsAiming = isAiming;
+	OrientCharacter(isAiming);
+	SetIsTransitioningAiming(isAiming);
+	float speed = (isAiming) ? AimingSpeed : StopAimingSpeed;
+	AimingTimeline->SetPlayRate(1.0f / speed);
 }
 void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming) {
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;

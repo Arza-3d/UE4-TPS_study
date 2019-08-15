@@ -29,6 +29,7 @@ protected:
 	void Setup_Timeline();
 	void Setup_BasicComponent();
 	void Setup_NewComponent();
+	void Setup_WidgetCrosshair();
 	// 0.z CONSTRUCTION
 
 	// 1.a NAVIGATION
@@ -43,13 +44,19 @@ public:
 
 	// 2.a AIMING
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	TSubclassOf<class UUserWidget> Crosshair;
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void Aiming();
+	void AimingStop();
+	void Aiming_Setup(const bool isAiming);
 	/**
 	* 0 = default aim stat
 	*/
 	TArray<FAimingStat> DefaultAimStats;
 	UPROPERTY()
-	UTimelineComponent* AimingTimelineCPP;
-	UPROPERTY()
+	UTimelineComponent* AimingTimeline;
+	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
 	UCurveFloat* FloatCurve;
 	UFUNCTION()
 	void TimeAiming(float val);
@@ -93,7 +100,6 @@ protected:
 	class UDataTable* WeaponTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
-
 	// 4.a SWITCH WEAPON
 
 	// 4.z SWITCH WEAPON
@@ -152,40 +158,25 @@ protected:
 	void OnSwitchWeaponSuccess();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-z
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsFireRatePassed();
-
-	UFUNCTION(BlueprintCallable, Category = "Fire", meta = (ToolTip = "true after fire rate is passed"))
+	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void SetIsFireRatePassed(const bool bFireRatePassed);
-
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void Aiming(const bool bIsCharAiming);
-
 	
 
-	
-	
-	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
-	// BPNativeEvent
-	////////////////////////////////////////////////////////////////////////////////////////////
-
+	// a Overriden Function
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsSwitchWeaponRequirementFulfilled();
 	bool IsSwitchWeaponRequirementFulfilled_Implementation();
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
 	bool IsAbleToRepeatAutoFire_Implementation();
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsCharacterAbleToFire();
 	bool IsCharacterAbleToFire_Implementation();
-
-	////////////////////////////////////////////////////////////////////////////////////////////BPN-a
+	// z Overriden Function
 
 	bool IsWeaponAbleToFire();
-	
 	bool IsEnoughForWeaponCost();
 	bool IsAmmoEnough(EAmmoType ammo);
 	bool IsNotOverheat();
