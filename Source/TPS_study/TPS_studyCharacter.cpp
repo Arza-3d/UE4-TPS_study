@@ -60,7 +60,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
 void ATPS_studyCharacter::SetDefaultAimStat() {
-	if (DefaultAimStats.Num() == 0) { return; };
+	if (DefaultAimStats.Num() == 0) { DefaultAimStats.SetNum(1); };
 	DefaultAimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
 	DefaultAimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
 	DefaultAimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
