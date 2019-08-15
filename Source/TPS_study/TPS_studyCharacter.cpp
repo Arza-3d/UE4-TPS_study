@@ -35,7 +35,7 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	//Construct_Timeline();
+	SetDefaultAimStat();
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
@@ -58,6 +58,14 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
+}
+void ATPS_studyCharacter::SetDefaultAimStat()
+{
+	DefaultAimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
+	DefaultAimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
+	DefaultAimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
+	DefaultAimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	DefaultAimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 }
 void ATPS_studyCharacter::Setup_BasicComponent() {
 }

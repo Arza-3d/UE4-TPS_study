@@ -23,6 +23,7 @@ private:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void SetDefaultAimStat();
 	// 0. CONSTRUCTION TIMELINE SETUP
 	/*void Construct_Timeline();*/
 	void Setup_Timeline();
@@ -42,6 +43,10 @@ public:
 
 	// 2.a AIMING
 protected:
+	/**
+	* 0 = default aim stat
+	*/
+	TArray<FAimingStat> DefaultAimStats;
 	UPROPERTY()
 	UTimelineComponent* AimingTimelineCPP;
 	UPROPERTY()
