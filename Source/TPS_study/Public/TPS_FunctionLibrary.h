@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -86,8 +84,7 @@ struct FShooter {
 	USoundBase* FireCry;
 };
 USTRUCT(BlueprintType)
-struct FWeapon
-{
+struct FWeapon {
 	GENERATED_BODY();
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<FName> SocketName;
@@ -114,7 +111,7 @@ struct FWeapon
 	TArray<int> Ammo;
 	FWeapon() {
 		SocketName.Add(FName(TEXT("Muzzle01")));
-		FireRateAndOther.Add(0.5f);		
+		FireRateAndOther.Add(0.5f);
 	}
 };
 USTRUCT(BlueprintType)
