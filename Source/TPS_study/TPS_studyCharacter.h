@@ -99,6 +99,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	/**
+	* FAimingStatCompact
+	* contain aiming stat related
+	*/
 	class UDataTable* AimingTable;
 	// 4.a SWITCH WEAPON
 
