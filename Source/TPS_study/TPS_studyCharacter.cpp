@@ -78,6 +78,8 @@ void ATPS_studyCharacter::BeginPlay() {
 }
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	check(PlayerInputComponent);
+	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPS_studyCharacter::Aiming);
+	PlayerInputComponent->BindAction("AimAction", IE_Released, this, &ATPS_studyCharacter::AimingStop);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_1);
@@ -92,6 +94,12 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
+}
+void ATPS_studyCharacter::Tick(float DeltaSeconds) {
+	Super::Tick(DeltaSeconds);
+	if (AimingTimeline) {
+		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
+	}
 }
 // 0.z CONSTRUCTION
 
@@ -141,9 +149,11 @@ bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
 void ATPS_studyCharacter::Aiming() {
 	Aiming_Setup(true);
 	bIsTransitioningAiming = true;
+	AimingTimeline->Play();
 }
 void ATPS_studyCharacter::AimingStop() {
 	Aiming_Setup(false);
+	AimingTimeline->Reverse();
 }
 void ATPS_studyCharacter::Aiming_Setup(const bool isAiming) {
 	bIsAiming = isAiming;
@@ -174,7 +184,9 @@ void ATPS_studyCharacter::TimeAiming(float val) {
 	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
 	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
 }
-void ATPS_studyCharacter::TimeFinishAiming() { bIsTransitioningAiming = false; }
+void ATPS_studyCharacter::TimeFinishAiming() { 
+	bIsTransitioningAiming = false; 
+}
 // 2.z AIMING
 
 // 3.a FIRE

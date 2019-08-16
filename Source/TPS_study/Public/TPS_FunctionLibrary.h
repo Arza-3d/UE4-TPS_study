@@ -92,7 +92,7 @@ struct FWeapon {
 	* 0 = fire rate,
 	* 1 = reload time,
 	* 2 = equip time,
-	* 3 = uneqip time
+	* 3 = unequip time
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<float> FireRateAndOther;

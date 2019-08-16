@@ -23,6 +23,7 @@ private:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaSeconds) override;
 	// 0.z CONSTRUCTION
 
 	// 1.a NAVIGATION
