@@ -49,6 +49,14 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
+	// aiming setup:
+	if (AimingTable != nullptr) { AimingNames = WeaponTable->GetRowNames(); }
+	int aimStatsCount = AimStats.Num();
+	int aimingNamesCount = AimingNames.Num();
+	AimStats.SetNum(aimStatsCount + aimingNamesCount);
+	for (int i = 0; i < AimingNames.Num(); i++) {
+		//AimStats[aimStatsCount - 1] = WeaponTable->GetRow;
+	}
 	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
@@ -75,6 +83,7 @@ void ATPS_studyCharacter::BeginPlay() {
 	}
 	// weapon setup:
 	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
+
 }
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	check(PlayerInputComponent);
@@ -147,6 +156,7 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate) {
 // 2.a AIMING
 bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
 void ATPS_studyCharacter::Aiming() {
+	if (!IsAbleToAim()) { return; }
 	Aiming_Setup(true);
 	bIsTransitioningAiming = true;
 	AimingTimeline->Play();
@@ -334,7 +344,6 @@ void ATPS_studyCharacter::TimerFireRate_Reset() {
 	bIsFireRatePassed = true;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
 }
-
 // 3.z FIRE
 
 // 4.a SWITCH WEAPON
@@ -342,6 +351,9 @@ bool ATPS_studyCharacter::IsSwitchWeaponRequirementFulfilled_Implementation() {
 	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
 	bool bIsNotAiming = !GetIsAiming();
 	return bIsOnTheGround && bIsNotAiming;
+}
+bool ATPS_studyCharacter::IsAbleToAim_Implementation() {
+	return !GetCharacterMovement()->IsFalling();
 }
 int ATPS_studyCharacter::GetLastWeaponIndex() { return LastWeaponIndex; }
 int ATPS_studyCharacter::GetWeaponIndex() { return WeaponIndex; }

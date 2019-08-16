@@ -40,6 +40,7 @@ public:
 protected:
 	int AimStatStartIndex = 0;
 	int AimStatTargetIndex = 1;
+	TArray<FName> AimingNames;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<class UUserWidget> Crosshair;
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
@@ -97,6 +98,8 @@ protected:
 	class UDataTable* WeaponTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	class UDataTable* AimingTable;
 	// 4.a SWITCH WEAPON
 
 	// 4.z SWITCH WEAPON
@@ -165,6 +168,9 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsSwitchWeaponRequirementFulfilled();
 	bool IsSwitchWeaponRequirementFulfilled_Implementation();
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Aiming")
+	bool IsAbleToAim();
+	bool IsAbleToAim_Implementation();
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
 	bool IsAbleToRepeatAutoFire_Implementation();
