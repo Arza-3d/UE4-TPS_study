@@ -184,16 +184,18 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming) {
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 void ATPS_studyCharacter::TimeAiming(float val) {
-	float aimingFieldOfView = AimStats[AimStatTargetIndex].FollCam.FieldOfView;
-	float aimingMaxAcceleration = AimStats[AimStatTargetIndex].CharMov.MaxAcceleration;
-	float aimingTargetArmLength = AimStats[AimStatTargetIndex].CamBoom.TargetArmLength;
-	float aimingWalkSpeed = AimStats[AimStatTargetIndex].CharMov.MaxWalkSpeed;
-	float defaultFieldOfView = AimStats[AimStatStartIndex].FollCam.FieldOfView;
-	float defaultMaxAcceleration = AimStats[AimStatStartIndex].CharMov.MaxAcceleration;
-	float defaultTargetArmLength = AimStats[AimStatStartIndex].CamBoom.TargetArmLength;
-	float defaultWalkSpeed = AimStats[AimStatStartIndex].CharMov.MaxWalkSpeed;
-	FVector aimingSocketOffset = AimStats[AimStatTargetIndex].CamBoom.SocketOffset;
-	FVector defaultSocketOffset = AimStats[AimStatStartIndex].CamBoom.SocketOffset;
+	int A = AimStatStartIndex;
+	int B = AimStatTargetIndex;
+	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
+	float aimingMaxAcceleration = AimStats[B].CharMov.MaxAcceleration;
+	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
+	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
+	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
+	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
+	float defaultTargetArmLength = AimStats[A].CamBoom.TargetArmLength;
+	float defaultWalkSpeed = AimStats[A].CharMov.MaxWalkSpeed;
+	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
+	FVector defaultSocketOffset = AimStats[A].CamBoom.SocketOffset;
 	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
 	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
 	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
@@ -202,6 +204,7 @@ void ATPS_studyCharacter::TimeAiming(float val) {
 }
 void ATPS_studyCharacter::TimeFinishAiming() { 
 	bIsTransitioningAiming = false; 
+	OnAimingSucceed();
 }
 // 2.z AIMING
 
