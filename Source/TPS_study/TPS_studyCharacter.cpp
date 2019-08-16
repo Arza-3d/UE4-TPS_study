@@ -40,29 +40,37 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	// aiming setup:
-	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
+	/*if (AimStats.Num() == 0) { AimStats.SetNum(1); };
 	AimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
 	AimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
 	AimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
+	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;*/
 }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	// aiming setup:
-	if (AimingTable != nullptr) { AimingNames = WeaponTable->GetRowNames(); }
-	int aimStatsCount = AimStats.Num();
+	if (AimingTable != nullptr) { AimingNames = AimingTable->GetRowNames(); }
+	//int aimStatsCount = AimStats.Num();
+	//UE_LOG(LogTemp, Log, TEXT("Aimstats count should be 1, but =  %i"), AimStats.Num());
 	int aimingNamesCount = AimingNames.Num();
+	//UE_LOG(LogTemp, Log, TEXT("AimingNames should be one 1, but =  %i"), AimingNames.Num());
 	FName currentAimingName;
 	static const FString contextString(TEXT("Aiming name"));
 	struct FAimingStatCompact* aimStatRow;
-	AimStats.SetNum(aimStatsCount + aimingNamesCount);
+	AimStats.SetNum(1 + aimingNamesCount);
+	AimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
+	AimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
+	AimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
+	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	AimStats[0].FollCam.FieldOfView = 150.0f;//GetFollowCamera()->FieldOfView;
 	for (int i = 0; i < AimingNames.Num(); i++) {
 		currentAimingName = AimingNames[i];
 		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
-		AimStats[aimStatsCount + i].CamBoom = aimStatRow->AimStat.CamBoom;
-		AimStats[aimStatsCount + i].CharMov = aimStatRow->AimStat.CharMov;
-		AimStats[aimStatsCount + i].FollCam = aimStatRow->AimStat.FollCam;
+		//UE_LOG(LogTemp, Log, TEXT("Aimstats count is %i"), AimStats.Num());
+		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
+		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
+		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
 	}
 	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
