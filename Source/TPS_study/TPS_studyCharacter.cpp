@@ -53,9 +53,16 @@ void ATPS_studyCharacter::BeginPlay() {
 	if (AimingTable != nullptr) { AimingNames = WeaponTable->GetRowNames(); }
 	int aimStatsCount = AimStats.Num();
 	int aimingNamesCount = AimingNames.Num();
+	FName currentAimingName;
+	static const FString contextString(TEXT("Aiming name"));
+	struct FAimingStatCompact* aimStatRow;
 	AimStats.SetNum(aimStatsCount + aimingNamesCount);
 	for (int i = 0; i < AimingNames.Num(); i++) {
-		//AimStats[aimStatsCount - 1] = WeaponTable->GetRow;
+		currentAimingName = AimingNames[i];
+		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
+		AimStats[aimStatsCount + i].CamBoom = aimStatRow->AimStat.CamBoom;
+		AimStats[aimStatsCount + i].CharMov = aimStatRow->AimStat.CharMov;
+		AimStats[aimStatsCount + i].FollCam = aimStatRow->AimStat.FollCam;
 	}
 	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
@@ -83,7 +90,6 @@ void ATPS_studyCharacter::BeginPlay() {
 	}
 	// weapon setup:
 	if (WeaponTable != nullptr) { WeaponNames = WeaponTable->GetRowNames(); }
-
 }
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
 	check(PlayerInputComponent);
