@@ -89,7 +89,7 @@ USTRUCT(BlueprintType)
 struct FAmmoCount {
 	GENERATED_BODY();
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int StandardAmmo;
+	int StandardAmmo = 50;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int RifleAmmo;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
@@ -259,5 +259,3 @@ struct FAimingStatCompact : public FTableRowBase {
 	FAimingStat AimStat;
 };
 // 2.z Aiming
-
-

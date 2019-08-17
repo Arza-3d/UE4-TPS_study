@@ -47,6 +47,17 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 }
+/*void ATPS_studyCharacter::TestingPointer(int* Test) {
+	int currentAmmo = *Test;
+	currentAmmo--;
+	*Test = currentAmmo;
+	UE_LOG(LogTemp, Log, TEXT("test ^_^ %i"), *Test);
+}
+void ATPS_studyCharacter::CallTestingPointer() {
+	TestingPointer(&PointerTestX);
+	UE_LOG(LogTemp, Log, TEXT("This is the pointer test ^_^ %i"), PointerTestX);
+
+}*/
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	// aiming setup:

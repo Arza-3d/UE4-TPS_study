@@ -13,6 +13,16 @@ class ATPS_studyCharacter : public ACharacter {
 	// 0.a CONSTRUCTION
 public:
 	ATPS_studyCharacter();
+	//DEBUG
+	//UFUNCTION(BlueprintCallable)
+	/*void TestingPointer(int* test);
+	UFUNCTION(BlueprintCallable)
+	void CallTestingPointer();
+	//UPROPERTY(EditAnywhere)
+	int PointerTestX = 0;
+	UPROPERTY(EditAnywhere)
+	int PointerTestY = 100;*/
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
