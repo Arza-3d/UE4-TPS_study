@@ -71,18 +71,39 @@ protected:
 	bool GetIsAiming();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed();
-	UFUNCTION(BlueprintCallable)
-	void Fire_Base(bool isTriggerPressed);
+	
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponMode(int weaponIndex);
 
 	bool IsNoMoreAmmo();
 	FRotator GetNewMuzzleRotation(FTransform socketTransform);
-	void Fire__Standard(bool pressed);
-	void Fire__Automatic(bool pressed);
-	void Fire__HoldRelease(bool pressed);
-	void Fire__AutomaticOnePress(bool pressed);
-	void SpawnProjectile(USkeletalMeshComponent* weaponMesh);
+	UFUNCTION(BlueprintCallable)
+	void FirePress();
+	void FireRelease();
+	void FireStandardTrigger();
+	void FireStandardProjectile();
+	void FireRifleProjectile();
+	void FireShotgunProjectile();
+	void FireRocket();
+	void FireArrow();
+	void FireGrenade();
+	void FireMine();
+	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	void OnRunOutOfAmmoDuringMultipleFire();
+	/*StandardAmmo,
+	RifleAmmo,
+	ShotgunAmmo,
+	Rocket,
+	Arrow,
+	Grenade,
+	Mine*/
+	void FireAutomaticTrigger();
+	void Fire_Hold();
+	void Fire_Release();
+	void FireAutomaticTriggerOnePress();
+	//void SpawnProjectileDeffered();
 	void ConsumeWeaponCost();
 	void PlayFireMontage();
 	
@@ -191,9 +212,9 @@ protected:
 	bool IsNotOverheat();
 	float WeaponTemperature;
 	bool IsEnergyEnough();
-	void TimerFireRate_Start();
 	FTimerHandle FireRateTimer;
-	void TimerFireRate_Reset();
+	void TimerFireRateStart();
+	void TimerFireRateReset();
 	
 
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")

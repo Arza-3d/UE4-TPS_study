@@ -280,40 +280,228 @@ void ATPS_studyCharacter::ConsumeWeaponCost() {
 		break;
 	}
 }
-void ATPS_studyCharacter::Fire_Base(bool isTriggerPressed) {
-	bIsTriggerPressed = isTriggerPressed;
+void ATPS_studyCharacter::FirePress() {
+	bIsTriggerPressed = true;
+	if (!(bIsAiming && bIsFireRatePassed && IsEnoughForWeaponCost())) {
+		return;
+	}
 	if (!bIsAiming) { return; }
 	switch (CurrentWeapon.Trigger) {
 	case ETriggerMechanism::PressTrigger:
-		Fire__Standard(isTriggerPressed);
+		FireStandardTrigger();
 		break;
 	case ETriggerMechanism::AutomaticTrigger:
-		Fire__Automatic(isTriggerPressed);
+		FireAutomaticTrigger();
 		break;
 	case ETriggerMechanism::ReleaseTrigger:
-		Fire__HoldRelease(isTriggerPressed);
+		Fire_Hold();
 		break;
 	case ETriggerMechanism::OnePressAutoTrigger:
-		Fire__AutomaticOnePress(isTriggerPressed);
+		FireAutomaticTriggerOnePress();
 		break;
 	default:
-		Fire__Standard(isTriggerPressed);
+		FireStandardTrigger();
 	}
 }
-void ATPS_studyCharacter::Fire__Automatic(bool pressed) {
-	if (!pressed) { return; }
-	SpawnProjectile(GetMesh());
+void ATPS_studyCharacter::FireRelease() {
+	bIsTriggerPressed = false;
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) {
+		Fire_Release();
+	}
 }
-void ATPS_studyCharacter::Fire__AutomaticOnePress(bool pressed) {
+void ATPS_studyCharacter::FireAutomaticTrigger() {
+	//SpawnProjectileDeffered(GetMesh());
 }
-void ATPS_studyCharacter::Fire__HoldRelease(bool pressed) {
+void ATPS_studyCharacter::FireAutomaticTriggerOnePress() {
 }
-void ATPS_studyCharacter::Fire__Standard(bool pressed) {
-	if (!pressed) { return; }
-	TimerFireRate_Start();
-	//FTransform socketTransform
-	//Fire();
+void ATPS_studyCharacter::Fire_Hold() {
 }
+void ATPS_studyCharacter::Fire_Release() {
+}
+void ATPS_studyCharacter::FireStandardTrigger() {
+	TimerFireRateStart();
+	PlayFireMontage();
+	switch (CurrentWeapon.AmmoType) {
+	case EAmmoType::StandardAmmo:
+		FireStandardProjectile();
+		break;
+	case EAmmoType::RifleAmmo:
+		FireRifleProjectile();
+		break;
+	case EAmmoType::ShotgunAmmo:
+		FireShotgunProjectile();
+		break;
+	case EAmmoType::Rocket:
+		FireRocket();
+		break;
+	case EAmmoType::Arrow:
+		FireArrow();
+		break;
+	case EAmmoType::Grenade:
+		FireGrenade();
+		break;
+	case EAmmoType::Mine:
+		FireMine();
+		break;
+	default:
+		break;
+	}
+}
+void ATPS_studyCharacter::FireStandardProjectile() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.StandardAmmo <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.StandardAmmo--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireRifleProjectile() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.RifleAmmo <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.RifleAmmo--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireShotgunProjectile() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.ShotgunAmmo <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.ShotgunAmmo--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireRocket() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.Rocket <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.Rocket--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireGrenade() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.Grenade <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.Grenade--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireArrow() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.Arrow <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.Arrow--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::FireMine() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (Ammunition.Mine <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		Ammunition.Mine--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+}
+void ATPS_studyCharacter::SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i) {
+	FTransform MuzzleTransform = WeaponInWorld->GetSocketTransform(MuzzleName[i]);
+	FTransform SpawnTransform = FTransform(
+		GetNewMuzzleRotation(MuzzleTransform),
+		MuzzleTransform.GetLocation(),
+		MuzzleTransform.GetScale3D()
+	);
+	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(
+		ATPS_Projectile::StaticClass(),
+		SpawnTransform
+		);
+	MyProjectile->SetUpProjectile(CurrentProjectile);
+	MyProjectile->FinishSpawning(SpawnTransform);
+}
+/*void ATPS_studyCharacter::SpawnProjectileDeffered() {
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	for (int i = 0; i < MuzzleName.Num(); i++) {
+		if (IsNoMoreAmmo()) { break; }
+		ConsumeWeaponCost();
+		FTransform MuzzleTransform = WeaponInWorld->GetSocketTransform(MuzzleName[i]);
+		FTransform SpawnTransform = FTransform(
+			GetNewMuzzleRotation(MuzzleTransform),
+			MuzzleTransform.GetLocation(),
+			MuzzleTransform.GetScale3D()
+		);
+		ATPS_Projectile* myProjectile = World->SpawnActorDeferred<ATPS_Projectile>(
+			ATPS_Projectile::StaticClass(),
+			SpawnTransform
+			);
+		myProjectile->SetUpProjectile(CurrentProjectile);
+		myProjectile->FinishSpawning(SpawnTransform);
+	}
+}*/
+/*void ATPS_studyCharacter::SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i) {
+	FTransform MuzzleTransform = WeaponInWorld->GetSocketTransform(MuzzleName[i]);
+	FTransform SpawnTransform = FTransform(
+		GetNewMuzzleRotation(MuzzleTransform),
+		MuzzleTransform.GetLocation(),
+		MuzzleTransform.GetScale3D()
+	);
+	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(
+		ATPS_Projectile::StaticClass(),
+		SpawnTransform
+		);
+	MyProjectile->SetUpProjectile(CurrentProjectile);
+	MyProjectile->FinishSpawning(SpawnTransform);
+}*/
 void ATPS_studyCharacter::PlayFireMontage() {
 	UAnimMontage* fireMontage = ShooterState.CharacterWeaponMontage[0];
 	if (fireMontage) {
@@ -321,35 +509,14 @@ void ATPS_studyCharacter::PlayFireMontage() {
 		PlayAnimMontage(fireMontage, playRate);
 	}
 }
-void ATPS_studyCharacter::SpawnProjectile(USkeletalMeshComponent* weaponMesh) {
-	UWorld* world = GetWorld();
-	USceneComponent* weaponInWorld = Cast<USceneComponent>(weaponMesh);
-	TArray<FName> muzzleName = CurrentWeapon.SocketName;
-	for (int i = 0; i < muzzleName.Num(); i++) {
-		if (IsNoMoreAmmo()) { break; }
-		ConsumeWeaponCost();
-		FTransform muzzleTransform = weaponInWorld->GetSocketTransform(muzzleName[i]);
-		FTransform spawnTransform = FTransform(
-			GetNewMuzzleRotation(muzzleTransform),
-			muzzleTransform.GetLocation(),
-			muzzleTransform.GetScale3D()
-		);
-		ATPS_Projectile* myProjectile = world->SpawnActorDeferred<ATPS_Projectile>(
-			ATPS_Projectile::StaticClass(),
-			spawnTransform
-			);
-		myProjectile->SetUpProjectile(CurrentProjectile);
-		myProjectile->FinishSpawning(spawnTransform);
-	}
-}
-void ATPS_studyCharacter::TimerFireRate_Start() {
+void ATPS_studyCharacter::TimerFireRateStart() {
 	bIsFireRatePassed = false;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
 	GetWorldTimerManager().SetTimer(FireRateTimer, this,
-		&ATPS_studyCharacter::TimerFireRate_Reset, CurrentWeapon.FireRateAndOther[0]
+		&ATPS_studyCharacter::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]
 	);
 }
-void ATPS_studyCharacter::TimerFireRate_Reset() {
+void ATPS_studyCharacter::TimerFireRateReset() {
 	bIsFireRatePassed = true;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
 }

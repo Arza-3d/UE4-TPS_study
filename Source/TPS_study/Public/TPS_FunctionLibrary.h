@@ -11,6 +11,39 @@ class UAnimMontage;
 class USoundBase;
 class UParticleSystem;
 
+/**
+ * Will put some extra struct and enum in this class
+ */
+UCLASS()
+class TPS_STUDY_API UTPS_FunctionLibrary : public UBlueprintFunctionLibrary {
+	GENERATED_BODY()
+		UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
+};
+
+// 0 character state
+UENUM(BlueprintType)
+enum class ECharacterMobility : uint8 {
+	Idle,
+	Jog,
+	Sprint,
+	Crouch,
+	Jump,
+	Ragdoll
+};
+UENUM(BlueprintType)
+enum class ECharacterHealthState : uint8 {
+	Idle,
+	Damaged,
+	Stunned,
+	Died
+};
+UENUM(BlueprintType)
+enum class ECharacterShooterState : uint8 {
+	Idle,
+	Aiming,
+	Shooting
+};
+
 // 1.a weapon table
 UENUM(BlueprintType)
 enum class ETriggerMechanism : uint8 {
@@ -110,7 +143,7 @@ struct FWeapon {
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	TArray<int> Ammo;
 	FWeapon() {
-		SocketName.Add(FName(TEXT("Muzzle01")));
+		SocketName.Add(FName(TEXT("Muzzle_01")));
 		FireRateAndOther.Add(0.5f);
 	}
 };
@@ -227,11 +260,4 @@ struct FAimingStatCompact : public FTableRowBase {
 };
 // 2.z Aiming
 
-/**
- * Will put some extra struct and enum in this class
- */
-UCLASS()
-class TPS_STUDY_API UTPS_FunctionLibrary : public UBlueprintFunctionLibrary {
-	GENERATED_BODY()
-	UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
-};
+
