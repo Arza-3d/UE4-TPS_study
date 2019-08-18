@@ -56,8 +56,7 @@ UENUM(BlueprintType)
 enum class EWeaponCost : uint8 {
 	Nothing,
 	Ammo,
-	Energy,
-	Overheat
+	Energy
 };
 UENUM(BlueprintType)
 enum class EAmmoType : uint8 {
@@ -68,6 +67,13 @@ enum class EAmmoType : uint8 {
 	Arrow,
 	Grenade,
 	Mine
+};
+UENUM(BlueprintType)
+enum class EEnergyType : uint8 {
+	MP,
+	Fuel,
+	Battery,
+	Overheat
 };
 USTRUCT(BlueprintType)
 struct FCeiledFloat {
@@ -81,27 +87,38 @@ USTRUCT(BlueprintType)
 struct FCharacterStat {
 	GENERATED_BODY();
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	FCeiledFloat Health;
+	FCeiledFloat HP;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	FCeiledFloat Mana;
+	FCeiledFloat MP;
 };
 USTRUCT(BlueprintType)
 struct FAmmoCount {
 	GENERATED_BODY();
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int StandardAmmo = 50;
+	int StandardAmmo = 15;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int RifleAmmo;
+	int RifleAmmo = 30;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int ShotgunAmmo;
+	int ShotgunAmmo = 10;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Rocket;
+	int Rocket = 3;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Arrow;
+	int Arrow = 18;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Grenade;
+	int Grenade = 2;
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Mine;
+	int Mine = 3;
+};
+/**Only external energy mana is not included*/
+USTRUCT(BlueprintType)
+struct FExternalEnergyCount {
+	GENERATED_BODY();
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
+	float Fuel = 100.0f;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
+	float Battery = 100.0f;
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
+	float Overheat = 0.0f;
 };
 USTRUCT(BlueprintType)
 struct FShooter {
@@ -119,6 +136,9 @@ struct FShooter {
 USTRUCT(BlueprintType)
 struct FWeapon {
 	GENERATED_BODY();
+	/**
+	* name/names of the socket where the projectile is spawned
+	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<FName> SocketName;
 	/**
@@ -126,22 +146,28 @@ struct FWeapon {
 	* 1 = reload time,
 	* 2 = equip time,
 	* 3 = unequip time
+	* all of that are in second
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<float> FireRateAndOther;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	ETriggerMechanism Trigger;
+	/* is the weapon cost int (ammo), or float (energy), or nothing (unlimited)*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EWeaponCost WeaponCost;
+	/** used only if WeaponCost is "Ammo"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EAmmoType AmmoType;
+	/** used only if WeaponCost is "Energy"*/
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	EEnergyType EnergyType;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	//FEnergyBar AmmoType;
 	/**
 	* 0 = current ammo,
 	* 1 = max ammo before reload
 	* 2 = max ammo that can be carried
 	*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	TArray<int> Ammo;
 	FWeapon() {
 		SocketName.Add(FName(TEXT("Muzzle_01")));
 		FireRateAndOther.Add(0.5f);
@@ -154,13 +180,19 @@ struct F_FX {
 	USoundBase* SoundEffect;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	TArray<UParticleSystem*> VisualEffect;
-	F_FX() { VisualEffect.Add(nullptr); }
+	F_FX() { 
+		VisualEffect.SetNum(1);
+		VisualEffect.Add(nullptr); 
+	}
 };
 USTRUCT(BlueprintType)
 struct FProjectileMuzzle {
 	GENERATED_BODY();
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX MuzzleFX;
+	/**
+	* Should be setup as PlayerProjectile collision channel
+	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
 	TEnumAsByte<ECollisionChannel> CollisionComp;
 	/**

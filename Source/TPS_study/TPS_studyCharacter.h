@@ -90,43 +90,33 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FirePress();
 	void FireRelease();
+	void FireUnlimited();
+	void FireAmmo();
+	void FireEnergy();
+	void FireAmmoProjectile(int* Ammo);
+	void FireEnergyProjectile(float* Energy);
 	void FireStandardTrigger();
-	void FireStandardProjectile();
-	void FireRifleProjectile();
-	void FireShotgunProjectile();
-	void FireRocket();
-	void FireArrow();
-	void FireGrenade();
-	void FireMine();
 	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnRunOutOfAmmoDuringMultipleFire();
-	/*StandardAmmo,
-	RifleAmmo,
-	ShotgunAmmo,
-	Rocket,
-	Arrow,
-	Grenade,
-	Mine*/
 	void FireAutomaticTrigger();
 	void Fire_Hold();
 	void Fire_Release();
 	void FireAutomaticTriggerOnePress();
-	//void SpawnProjectileDeffered();
-	void ConsumeWeaponCost();
 	void PlayFireMontage();
 	
 	// 3.z FIRE
 public:
 	FShooter ShooterState;
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	FAmmoCount Ammunition;
+	FExternalEnergyCount Energy;
 	FWeapon CurrentWeapon;
 	FProjectile CurrentProjectile;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	class UDataTable* WeaponTable;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
+	//class UDataTable* WeaponTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
