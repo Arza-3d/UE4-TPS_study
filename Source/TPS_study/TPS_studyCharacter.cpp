@@ -47,6 +47,10 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 }
+float ATPS_studyCharacter::GetHP() { return CharacterStat.HP; }
+void ATPS_studyCharacter::SetHP(float val) { CharacterStat.HP = val; }
+float ATPS_studyCharacter::GetMP() { return CharacterStat.MP; }
+void ATPS_studyCharacter::SetMP(float val) { CharacterStat.MP = val; }
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	// aiming setup:
@@ -383,9 +387,19 @@ void ATPS_studyCharacter::FireAmmo() {
 	}
 }
 void ATPS_studyCharacter::FireEnergy() {
-	//switch (CurrentWeapon.EnergyType) {
-
-	//}
+	switch (CurrentWeapon.EnergyType) {
+	case EEnergyType::MP:
+		FireEnergyProjectile( &CharacterStat.MP );
+		break;
+	case EEnergyType::Battery:
+		FireEnergyProjectile( &EnergyExternal.Battery );
+		break;
+	case EEnergyType::Fuel:
+		FireEnergyProjectile( &EnergyExternal.Fuel );
+		break;
+	case EEnergyType::Overheat:
+		FireEnergyProjectile( &EnergyExternal.Overheat );
+	}
 }
 void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo) {
 	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
@@ -412,12 +426,13 @@ void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
 	float CurrentEnergy = *MyEnergy;
+	float EnergyCostPerShot = CurrentWeapon.EnergyUsePerShot;
 	for (int i = 0; i < MuzzleCount; i++) {
-		if (CurrentEnergy <= 0) {
+		if (CurrentEnergy < EnergyCostPerShot) {
 			OnRunOutOfAmmoDuringMultipleFire();
 			break;
 		}
-		CurrentEnergy--;
+		CurrentEnergy -= EnergyCostPerShot;
 		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
 	}
 	*MyEnergy = CurrentEnergy;

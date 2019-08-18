@@ -13,16 +13,6 @@ class ATPS_studyCharacter : public ACharacter {
 	// 0.a CONSTRUCTION
 public:
 	ATPS_studyCharacter();
-	//DEBUG
-	//UFUNCTION(BlueprintCallable)
-	/*void TestingPointer(int* test);
-	UFUNCTION(BlueprintCallable)
-	void CallTestingPointer();
-	//UPROPERTY(EditAnywhere)
-	int PointerTestX = 0;
-	UPROPERTY(EditAnywhere)
-	int PointerTestY = 100;*/
-
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -30,6 +20,13 @@ private:
 	class UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangedWeapon", meta = (AllowPrivateAccess = "true"))
 	class UTPS_Weapon* RangedWeapon;
+	FCharacterStat CharacterStat;
+	FExternalEnergyCount EnergyExternal;
+public:
+	float GetHP();
+	void SetHP(float val);
+	float GetMP();
+	void SetMP(float val);
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -105,8 +102,8 @@ protected:
 	void Fire_Release();
 	void FireAutomaticTriggerOnePress();
 	void PlayFireMontage();
-	
 	// 3.z FIRE
+
 public:
 	FShooter ShooterState;
 protected:
