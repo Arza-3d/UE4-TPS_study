@@ -383,7 +383,7 @@ void ATPS_studyCharacter::FireAmmo() {
 	}
 }
 void ATPS_studyCharacter::FireEnergy() {
-	//switch (CurrentWeapon.) {
+	//switch (CurrentWeapon.EnergyType) {
 
 	//}
 }
@@ -395,7 +395,7 @@ void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo) {
 	int MuzzleCount = MuzzleName.Num();
 	int CurrentAmmo = *Ammo;
 	for (int i = 0; i < MuzzleCount; i++) {
-		if (Ammunition.StandardAmmo <= 0) {
+		if (CurrentAmmo <= 0) {
 			OnRunOutOfAmmoDuringMultipleFire();
 			break;
 		}
@@ -406,7 +406,22 @@ void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo) {
 	UE_LOG(LogTemp, Log, TEXT("fire ammo excecuted %i"), CurrentAmmo);
 }
 void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) {
-
+	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
+	UWorld* World = GetWorld();
+	USceneComponent* WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+	float CurrentEnergy = *MyEnergy;
+	for (int i = 0; i < MuzzleCount; i++) {
+		if (CurrentEnergy <= 0) {
+			OnRunOutOfAmmoDuringMultipleFire();
+			break;
+		}
+		CurrentEnergy--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	}
+	*MyEnergy = CurrentEnergy;
+	UE_LOG(LogTemp, Log, TEXT("fire ammo excecuted %f"), CurrentEnergy);
 }
 
 void ATPS_studyCharacter::SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i) {
