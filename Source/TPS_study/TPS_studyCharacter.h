@@ -208,7 +208,7 @@ protected:
 	bool IsAmmoEnough(EAmmoType ammo);
 	bool IsNotOverheat();
 	float WeaponTemperature;
-	bool IsEnergyEnough();
+	bool IsEnergyEnough(EEnergyType EnergyType);
 	FTimerHandle FireRateTimer;
 	void TimerFireRateStart();
 	void TimerFireRateReset();

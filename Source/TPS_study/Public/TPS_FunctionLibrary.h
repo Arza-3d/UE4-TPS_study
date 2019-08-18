@@ -152,9 +152,9 @@ struct FWeapon {
 	/** used only if WeaponCost is "Energy"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EEnergyType EnergyType;
-	/** used only if WeaponCost is "Energy"*/
+	/** used only if WeaponCost is "Energy", this is in %*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-	float EnergyUsePerShot;
+	float EnergyUsePerShot = 10.0f;
 };
 USTRUCT(BlueprintType)
 struct F_FX {

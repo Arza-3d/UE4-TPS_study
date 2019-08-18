@@ -222,9 +222,7 @@ bool ATPS_studyCharacter::IsEnoughForWeaponCost() {
 	case EWeaponCost::Ammo:
 		return IsAmmoEnough(CurrentWeapon.AmmoType);
 	case EWeaponCost::Energy:
-		return IsEnergyEnough();
-	/*case EWeaponCost::Overheat:
-		return IsNotOverheat();*/
+		return IsEnergyEnough(CurrentWeapon.EnergyType);
 	default:
 		return false;
 	}
@@ -389,15 +387,19 @@ void ATPS_studyCharacter::FireAmmo() {
 void ATPS_studyCharacter::FireEnergy() {
 	switch (CurrentWeapon.EnergyType) {
 	case EEnergyType::MP:
+		UE_LOG(LogTemp, Log, TEXT("fire using MP is checked"));
 		FireEnergyProjectile( &CharacterStat.MP );
 		break;
 	case EEnergyType::Battery:
+		UE_LOG(LogTemp, Log, TEXT("fire using Battery is checked"));
 		FireEnergyProjectile( &EnergyExternal.Battery );
 		break;
 	case EEnergyType::Fuel:
+		UE_LOG(LogTemp, Log, TEXT("fire fuel MP is checked"));
 		FireEnergyProjectile( &EnergyExternal.Fuel );
 		break;
 	case EEnergyType::Overheat:
+		UE_LOG(LogTemp, Log, TEXT("fire with overheat limit is checked"));
 		FireEnergyProjectile( &EnergyExternal.Overheat );
 	}
 }
@@ -427,16 +429,27 @@ void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) {
 	int MuzzleCount = MuzzleName.Num();
 	float CurrentEnergy = *MyEnergy;
 	float EnergyCostPerShot = CurrentWeapon.EnergyUsePerShot;
-	for (int i = 0; i < MuzzleCount; i++) {
-		if (CurrentEnergy < EnergyCostPerShot) {
-			OnRunOutOfAmmoDuringMultipleFire();
-			break;
+	if (CurrentWeapon.EnergyType != EEnergyType::Overheat) {
+		for (int i = 0; i < MuzzleCount; i++) {
+			if (CurrentEnergy < EnergyCostPerShot) {
+				OnRunOutOfAmmoDuringMultipleFire();
+				break;
+			}
+			CurrentEnergy -= EnergyCostPerShot;
+			SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
 		}
-		CurrentEnergy -= EnergyCostPerShot;
-		SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+	} else {
+		for (int i = 0; i < MuzzleCount; i++) {
+			if (CurrentEnergy >= 100.0f) {
+				OnRunOutOfAmmoDuringMultipleFire();
+				break;
+			}
+			CurrentEnergy += EnergyCostPerShot;
+			SpawnProjectile(WeaponInWorld, MuzzleName, World, i);
+		}
 	}
 	*MyEnergy = CurrentEnergy;
-	UE_LOG(LogTemp, Log, TEXT("fire ammo excecuted %f"), CurrentEnergy);
+	UE_LOG(LogTemp, Log, TEXT("fire energy excecuted %f"), CurrentEnergy);
 }
 
 void ATPS_studyCharacter::SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i) {
@@ -519,7 +532,6 @@ void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput) {
 		SetWeaponMode(WeaponIndex);
 		OnSwitchWeaponSuccess();
 	}
-	
 }
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_1() { SetWeaponIndexWithNumpad(0); }
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_2() { SetWeaponIndexWithNumpad(1); }
@@ -591,8 +603,19 @@ bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo) {
 bool ATPS_studyCharacter::IsNotOverheat() {
 	return true; //WeaponTemperature < temperatureLimit;
 }
-bool ATPS_studyCharacter::IsEnergyEnough() {
-	return true;
+bool ATPS_studyCharacter::IsEnergyEnough(EEnergyType EnergyType) {
+	switch (CurrentWeapon.EnergyType) {
+	case EEnergyType::MP:
+		return CharacterStat.MP >= CurrentWeapon.EnergyUsePerShot;
+	case EEnergyType::Fuel:
+		return EnergyExternal.Fuel >= CurrentWeapon.EnergyUsePerShot;
+	case EEnergyType::Battery:
+		return EnergyExternal.Battery >= CurrentWeapon.EnergyUsePerShot;
+	case EEnergyType::Overheat:
+		return EnergyExternal.Overheat < 100.0f;
+	default:
+		return false;
+	}
 }
 void ATPS_studyCharacter::SetProjectileMultiplier(float projectileMultiplier) { ProjectileMultiplier = projectileMultiplier; }
 float ATPS_studyCharacter::GetProjectileMultipler() { return ProjectileMultiplier; }
