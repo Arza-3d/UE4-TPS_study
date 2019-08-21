@@ -13,6 +13,7 @@ class ATPS_studyCharacter : public ACharacter {
 	// 0.a CONSTRUCTION
 public:
 	ATPS_studyCharacter();
+	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
@@ -20,6 +21,9 @@ private:
 	class UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangedWeapon", meta = (AllowPrivateAccess = "true"))
 	class UTPS_Weapon* RangedWeapon;
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class ATPS_Projectile> TheProjectile;
+	
 	FCharacterStat CharacterStat;
 	FExternalEnergyCount EnergyExternal;
 public:
@@ -74,16 +78,17 @@ protected:
 
 	// 3.a FIRE
 protected:
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
 	bool GetIsAiming();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed();
 	
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponMode(int weaponIndex);
+	//UFUNCTION(BlueprintCallable)
+	void SetWeaponMode(int MyWeaponIndex);
 
-	bool IsNoMoreAmmo();
-	FRotator GetNewMuzzleRotation(FTransform socketTransform);
+	bool IsThereStillAmmoLeft();
+	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 	UFUNCTION(BlueprintCallable)
 	void FirePress();
 	void FireRelease();
@@ -102,6 +107,7 @@ protected:
 	void Fire_Release();
 	void FireAutomaticTriggerOnePress();
 	void PlayFireMontage();
+
 	// 3.z FIRE
 
 public:
@@ -123,7 +129,9 @@ protected:
 	*/
 	class UDataTable* AimingTable;
 	// 4.a SWITCH WEAPON
-
+	//USkeletalMeshComponent* WeaponMesh;
+	USceneComponent* WeaponInWorld;
+	void SwitchWeaponMesh();
 	// 4.z SWITCH WEAPON
 
 	// 5.a PICKUP
@@ -135,23 +143,9 @@ public:
 public:
 	bool bIsFireRatePassed = true;
 
-	
-
 protected:
 
-	
-	/**
-	*if target duration is below 0, 
-	*it will return 1 playrate
-	*/
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
-
-	
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-a
-	// EVENT
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// a EVENT
 	/**on aiming succeed*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
 	void OnAimingSucceed();
@@ -174,40 +168,28 @@ protected:
 	/**it is overheating*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponIsOverheating();
-	/**
-	* also use this for 
-	* interface to anim BP
-	*/
+	/**also use this for interface to anim BP*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Weapon", meta = (KeyWords = "change interface"))
 	void OnSwitchWeaponSuccess();
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////E-z
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	bool GetIsFireRatePassed();
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void SetIsFireRatePassed(const bool bFireRatePassed);
-	
+	// z Event
 
 	// a Overriden Function
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
-	bool IsSwitchWeaponRequirementFulfilled();
-	bool IsSwitchWeaponRequirementFulfilled_Implementation();
+	bool IsAbleToSwitchWeapon();
+	virtual bool IsAbleToSwitchWeapon_Implementation();
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Aiming")
 	bool IsAbleToAim();
-	bool IsAbleToAim_Implementation();
+	virtual bool IsAbleToAim_Implementation();
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
-	bool IsAbleToRepeatAutoFire_Implementation();
+	virtual bool IsAbleToRepeatAutoFire_Implementation();
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
-	bool IsCharacterAbleToFire();
-	bool IsCharacterAbleToFire_Implementation();
+	bool IsAbleToFire();
+	virtual bool IsAbleToFire_Implementation();
 	// z Overriden Function
 
-	bool IsWeaponAbleToFire();
 	bool IsEnoughForWeaponCost();
 	bool IsAmmoEnough(EAmmoType ammo);
-	bool IsNotOverheat();
-	float WeaponTemperature;
 	bool IsEnergyEnough(EEnergyType EnergyType);
 	FTimerHandle FireRateTimer;
 	void TimerFireRateStart();
@@ -231,56 +213,36 @@ protected:
 	int GetLastWeaponIndex();
 	int LastWeaponIndex;
 
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void SetProjectileMultiplier(float projectileMultiplier);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	float GetProjectileMultipler();
-	float ProjectileMultiplier = 1.0f;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void LookRightAtRate(float Rate);
 	void LookUpAtRate(float Rate);
-
 	bool bIsTriggerPressed;
-
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void SetIsTransitioningAiming(bool isTransitioningAiming);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetTransitioningAiming();
-
 	bool bIsTransitioningAiming;
-
 private:
-
-
 	void SetWeaponIndexWithNumpad(const int numberInput);
 	void SetWeaponIndexWithNumpad_1();
 	void SetWeaponIndexWithNumpad_2();
 	void SetWeaponIndexWithNumpad_3();
 	void SetWeaponIndexWithNumpad_4();
-
 	void SetWeaponIndexWithMouseWheel(const bool isUp);
 	void SetWeaponIndexWithMouseWheel_Up();
 	void SetWeaponIndexWithMouseWheel_Down();
-
 	const float BaseTurnRate = 45.0f;
 	const float BaseLookUpRate = 45.0f;
 	float NormalizedForward;
 	float NormalizedRight;
-
 	bool bIsAiming;
-
 	void OrientCharacter(const bool bMyCharIsAiming);
-	
 	bool bForwardInputPressed;
-
 	bool bRightInputPressed;
-
 	float AssignNormalizedVelo(float MyValue,  bool bOtherButtonPressed);
-
 public:
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

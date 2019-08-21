@@ -17,7 +17,11 @@ class UParticleSystem;
 UCLASS()
 class TPS_STUDY_API UTPS_FunctionLibrary : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
-		UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
+
+
+public:
+	static float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
+	static UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
 };
 
 // 0 character state
