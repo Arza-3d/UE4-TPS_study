@@ -52,33 +52,42 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	// fire setup:
 	SwitchWeaponMesh();
 }
+
 float ATPS_studyCharacter::GetHP() { return CharacterStat.HP; }
 void ATPS_studyCharacter::SetHP(float val) { CharacterStat.HP = val; }
 float ATPS_studyCharacter::GetMP() { return CharacterStat.MP; }
 void ATPS_studyCharacter::SetMP(float val) { CharacterStat.MP = val; }
+
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 	// aiming setup:
-	if (AimingTable != nullptr) { AimingNames = AimingTable->GetRowNames(); }
+	if (AimingTable != nullptr) 
+	{ 
+		AimingNames = AimingTable->GetRowNames(); 
+	}
+
 	int aimingNamesCount = AimingNames.Num();
 	FName currentAimingName;
 	static const FString contextString(TEXT("Aiming name"));
 	struct FAimingStatCompact* aimStatRow;
 	AimStats.SetNum(1 + aimingNamesCount);
-	for (int i = 0; i < AimingNames.Num(); i++) {
+
+	for (int i = 0; i < AimingNames.Num(); i++) 
+	{
 		currentAimingName = AimingNames[i];
 		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
 		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
 	}
+
 	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
-	if (FloatCurve) {
+	if (FloatCurve) 
+	{
 		AimingTimeline = NewObject<UTimelineComponent>(this, FName("AimingTimeline"));
-		AimingTimeline->CreationMethod =
-			EComponentCreationMethod::UserConstructionScript;
+		AimingTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
 		this->BlueprintCreatedComponents.Add(AimingTimeline);
 		AimingTimeline->SetNetAddressable();
 		AimingTimeline->SetPropertySetObject(this);
@@ -97,7 +106,9 @@ void ATPS_studyCharacter::BeginPlay() {
 	if (WeaponModeTable != nullptr) { WeaponNames = WeaponModeTable->GetRowNames(); }
 	SetWeaponMode(0);
 }
-void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) {
+
+void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) 
+{
 	check(PlayerInputComponent);
 	//AttackAction
 	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
@@ -119,9 +130,12 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
 }
-void ATPS_studyCharacter::Tick(float DeltaSeconds) {
+
+void ATPS_studyCharacter::Tick(float DeltaSeconds)
+{
 	Super::Tick(DeltaSeconds);
-	if (AimingTimeline) {
+	if (AimingTimeline) 
+	{
 		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
 	}
 }
@@ -130,57 +144,85 @@ void ATPS_studyCharacter::Tick(float DeltaSeconds) {
 // 1.a NAVIGATION
 float ATPS_studyCharacter::GetNormalizedForward() { return NormalizedForward; }
 float ATPS_studyCharacter::GetNormalizedRight() { return NormalizedRight; }
-void ATPS_studyCharacter::MoveForward(float Value) {
-	if ((Controller != NULL) && (Value != 0.0f)) {
+
+ETriggerMechanism ATPS_studyCharacter::GetTriggerMechanism() const { return CurrentWeapon.Trigger; }
+
+FName ATPS_studyCharacter::GetWeaponName()
+{
+	return WeaponNames[WeaponIndex];
+}
+
+void ATPS_studyCharacter::MoveForward(float Value)
+{
+	if ((Controller != NULL) && (Value != 0.0f))
+	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
-		if (bIsAiming) {
+		if (bIsAiming)
+		{
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
 		}
-	} else {
+	} 
+	else 
+	{
 		bForwardInputPressed = false;
 		NormalizedForward = 0.0f;
 	}
 }
-void ATPS_studyCharacter::MoveRight(float Value) {
-	if ((Controller != NULL) && (Value != 0.0f)) {
+
+void ATPS_studyCharacter::MoveRight(float Value)
+{
+	if ((Controller != NULL) && (Value != 0.0f)) 
+	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
-		if (bIsAiming) {
+		if (bIsAiming) 
+		{
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
 		}
-	} else {
+	} 
+	else 
+	{
 		bRightInputPressed = false;
 		NormalizedRight = 0.0f;
 	}
 }
-void ATPS_studyCharacter::LookRightAtRate(float Rate) {
+
+void ATPS_studyCharacter::LookRightAtRate(float Rate)
+{
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
-void ATPS_studyCharacter::LookUpAtRate(float Rate) {
+
+void ATPS_studyCharacter::LookUpAtRate(float Rate)
+{
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 // 1.z NAVIGATION
 
 // 2.a AIMING
 bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
+
 void ATPS_studyCharacter::Aiming() {
 	if (!IsAbleToAim()) { return; }
 	Aiming_Setup(true);
 	bIsTransitioningAiming = true;
 	AimingTimeline->Play();
 }
-void ATPS_studyCharacter::AimingStop() {
+
+void ATPS_studyCharacter::AimingStop()
+{
 	Aiming_Setup(false);
 	AimingTimeline->Reverse();
 }
-void ATPS_studyCharacter::Aiming_Setup(const bool isAiming) {
+
+void ATPS_studyCharacter::Aiming_Setup(const bool isAiming)
+{
 	bIsAiming = isAiming;
 	OrientCharacter(isAiming);
 	SetIsTransitioningAiming(isAiming);
@@ -188,12 +230,16 @@ void ATPS_studyCharacter::Aiming_Setup(const bool isAiming) {
 	if (speed <= 0.0f) { speed = 1.0f; };
 	AimingTimeline->SetPlayRate(1.0f / speed);
 }
-void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming) {
+
+void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
+{
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
 	bUseControllerRotationYaw = bMyCharIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
-void ATPS_studyCharacter::TimeAiming(float val) {
+
+void ATPS_studyCharacter::TimeAiming(float val)
+{
 	int A = AimStatStartIndex;
 	int B = AimStatTargetIndex;
 	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
@@ -212,7 +258,9 @@ void ATPS_studyCharacter::TimeAiming(float val) {
 	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
 	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
 }
-void ATPS_studyCharacter::TimeFinishAiming() { 
+
+void ATPS_studyCharacter::TimeFinishAiming() 
+{ 
 	bIsTransitioningAiming = false; 
 	OnAimingSucceed();
 }
@@ -220,8 +268,11 @@ void ATPS_studyCharacter::TimeFinishAiming() {
 
 // 3.a FIRE
 bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation() { return bIsTriggerPressed; }
+
 bool ATPS_studyCharacter::IsAbleToFire_Implementation() { return !GetCharacterMovement()->IsFalling(); }
-bool ATPS_studyCharacter::IsEnoughForWeaponCost() {
+
+bool ATPS_studyCharacter::IsEnoughForWeaponCost() 
+{
 	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) { return true; }
 	switch (CurrentWeapon.WeaponCost) {
 	case EWeaponCost::Ammo:
@@ -232,8 +283,11 @@ bool ATPS_studyCharacter::IsEnoughForWeaponCost() {
 		return false;
 	}
 }
-bool ATPS_studyCharacter::IsThereStillAmmoLeft() {
-	switch (CurrentWeapon.AmmoType) {
+
+bool ATPS_studyCharacter::IsThereStillAmmoLeft() 
+{
+	switch (CurrentWeapon.AmmoType) 
+	{
 	case EAmmoType::StandardAmmo:
 		return Ammunition.StandardAmmo <= 0;
 	case EAmmoType::RifleAmmo:
@@ -252,8 +306,11 @@ bool ATPS_studyCharacter::IsThereStillAmmoLeft() {
 		return false;
 	}
 }
+
 bool ATPS_studyCharacter::GetIsTriggerPressed() { return bIsTriggerPressed; }
-FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform) {
+
+FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform) 
+{
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
 	QueryParams.AddIgnoredActor(this);
@@ -264,7 +321,8 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	FVector EndTrace = StartTrace + LookDirection * 100.0f * 3000.0f;
 	FVector TargetLocation;
 	FRotator MuzzleLookRotation;
-	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams)) {
+	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams)) 
+	{
 		TargetLocation = HitTrace.Location;
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
 	}
@@ -272,14 +330,16 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), TargetLocation, FColor::Blue, false, 3.0f, 0, 1.0f);
 	return MuzzleLookRotation;
 }
-void ATPS_studyCharacter::FirePress() {
-	UE_LOG(LogTemp, Log, TEXT("pressing trigger"));
+void ATPS_studyCharacter::FirePress() 
+{
 	bIsTriggerPressed = true;
 	if (!(bIsAiming && bIsFireRatePassed && IsEnoughForWeaponCost())) { return; }
-	switch (CurrentWeapon.Trigger) {
+
+	switch (CurrentWeapon.Trigger) 
+	{
 	case ETriggerMechanism::PressTrigger:
-		UE_LOG(LogTemp, Log, TEXT("Standard trigger checked"));
 		FireStandardTrigger();
+		OnFire();
 		break;
 	case ETriggerMechanism::AutomaticTrigger:
 		UE_LOG(LogTemp, Log, TEXT("automatic trigger checked"));
@@ -297,156 +357,184 @@ void ATPS_studyCharacter::FirePress() {
 		FireStandardTrigger();
 	}
 }
-void ATPS_studyCharacter::FireRelease() {
+
+void ATPS_studyCharacter::FireRelease()
+{
 	bIsTriggerPressed = false;
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) {
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) 
+	{
 		Fire_Release();
 	}
 }
-void ATPS_studyCharacter::FireAutomaticTrigger() {
+
+void ATPS_studyCharacter::FireAutomaticTrigger()
+{
 	if (!(bIsTriggerPressed && bIsAiming && bIsFireRatePassed && IsEnoughForWeaponCost())) { return; }
 	FireStandardTrigger();
+	OnFire();
 }
-void ATPS_studyCharacter::FireAutomaticTriggerOnePress() {
+
+void ATPS_studyCharacter::FireAutomaticTriggerOnePress() 
+{
 }
-void ATPS_studyCharacter::Fire_Hold() {
+
+void ATPS_studyCharacter::Fire_Hold() 
+{
 }
-void ATPS_studyCharacter::Fire_Release() {
+
+void ATPS_studyCharacter::Fire_Release() 
+{
 }
-void ATPS_studyCharacter::FireStandardTrigger() {
+
+void ATPS_studyCharacter::FireStandardTrigger()
+{
 	TimerFireRateStart();
 	PlayFireMontage();
-	UE_LOG(LogTemp, Log, TEXT("firestandardtrigger is executed"));
-	switch (CurrentWeapon.WeaponCost) {
+
+	switch (CurrentWeapon.WeaponCost)
+	{
 	case EWeaponCost::Nothing:
-		UE_LOG(LogTemp, Log, TEXT("fireunlimited is checked"));
 		FireUnlimited();
 		break;
 	case EWeaponCost::Ammo:
-		UE_LOG(LogTemp, Log, TEXT("fireammo is checked"));
 		FireAmmo();
 		break;
 	case EWeaponCost::Energy:
-		UE_LOG(LogTemp, Log, TEXT("fireenergy is checked"));
 		FireEnergy();
 		break;
 	default:
 		break;
 	}
 }
-void ATPS_studyCharacter::FireAmmo() {
-	switch (CurrentWeapon.AmmoType) {
+
+void ATPS_studyCharacter::FireAmmo() 
+{
+	switch (CurrentWeapon.AmmoType) 
+	{
 	case EAmmoType::StandardAmmo:
-		UE_LOG(LogTemp, Log, TEXT("fire standard projectile is checked"));
 		FireAmmoProjectile(&Ammunition.StandardAmmo);
 		break;
 	case EAmmoType::RifleAmmo:
-		UE_LOG(LogTemp, Log, TEXT("fire rifle ammo is checked"));
 		FireAmmoProjectile(&Ammunition.RifleAmmo);
 		break;
 	case EAmmoType::ShotgunAmmo:
-		UE_LOG(LogTemp, Log, TEXT("fire shotgun is checked"));
 		FireAmmoProjectile(&Ammunition.ShotgunAmmo);
 		break;
 	case EAmmoType::Rocket:
-		UE_LOG(LogTemp, Log, TEXT("fire rocket is checked"));
 		FireAmmoProjectile(&Ammunition.Rocket);
 		break;
 	case EAmmoType::Arrow:
-		UE_LOG(LogTemp, Log, TEXT("fire arrow is checked"));
 		FireAmmoProjectile(&Ammunition.Arrow);
 		break;
 	case EAmmoType::Grenade:
-		UE_LOG(LogTemp, Log, TEXT("fire grenade is checked"));
 		FireAmmoProjectile(&Ammunition.Grenade);
 		break;
 	case EAmmoType::Mine:
-		UE_LOG(LogTemp, Log, TEXT("fire mine is checked"));
 		FireAmmoProjectile(&Ammunition.Mine);
 		break;
 	default:
 		break;
 	}
 }
-void ATPS_studyCharacter::FireEnergy() {
-	switch (CurrentWeapon.EnergyType) {
+
+void ATPS_studyCharacter::FireEnergy()
+{
+	switch (CurrentWeapon.EnergyType) 
+	{
 	case EEnergyType::MP:
-		UE_LOG(LogTemp, Log, TEXT("fire using MP is checked"));
 		FireEnergyProjectile( &CharacterStat.MP );
 		break;
 	case EEnergyType::Battery:
-		UE_LOG(LogTemp, Log, TEXT("fire using Battery is checked"));
 		FireEnergyProjectile( &EnergyExternal.Battery );
 		break;
 	case EEnergyType::Fuel:
-		UE_LOG(LogTemp, Log, TEXT("fire fuel MP is checked"));
 		FireEnergyProjectile( &EnergyExternal.Fuel );
 		break;
 	case EEnergyType::Overheat:
-		UE_LOG(LogTemp, Log, TEXT("fire with overheat limit is checked"));
 		FireEnergyProjectile( &EnergyExternal.Overheat );
 	}
 }
-void ATPS_studyCharacter::FireUnlimited() {
+
+void ATPS_studyCharacter::FireUnlimited() 
+{
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
-	for (int i = 0; i < MuzzleCount; i++) {
+
+	for (int i = 0; i < MuzzleCount; i++) 
+	{
 		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
 }
-void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo) {
+
+void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo)
+{
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
 	int CurrentAmmo = *Ammo;
-	for (int i = 0; i < MuzzleCount; i++) {
+
+	for (int i = 0; i < MuzzleCount; i++)
+	{
 		if (CurrentAmmo <= 0) {
 			OnRunOutOfAmmoDuringMultipleFire();
 			break;
 		}
+
 		CurrentAmmo--;
 		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
+
 	*Ammo = CurrentAmmo;
-	UE_LOG(LogTemp, Log, TEXT("fire ammo excecuted %i"), CurrentAmmo);
 }
-void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) {
+
+void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) 
+{
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
 	float CurrentEnergy = *MyEnergy;
 	float EnergyCostPerShot = CurrentWeapon.EnergyUsePerShot;
-	if (CurrentWeapon.EnergyType != EEnergyType::Overheat) {
-		for (int i = 0; i < MuzzleCount; i++) {
-			if (CurrentEnergy < EnergyCostPerShot) {
+
+	if (CurrentWeapon.EnergyType != EEnergyType::Overheat)
+	{
+		for (int i = 0; i < MuzzleCount; i++) 
+		{
+			if (CurrentEnergy < EnergyCostPerShot)
+			{
 				OnRunOutOfAmmoDuringMultipleFire();
 				break;
 			}
+
 			CurrentEnergy -= EnergyCostPerShot;
 			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
-	} else {
-		for (int i = 0; i < MuzzleCount; i++) {
-			if (CurrentEnergy >= 100.0f) {
+	}
+	else 
+	{
+		for (int i = 0; i < MuzzleCount; i++)
+		{
+			if (CurrentEnergy >= 100.0f)
+			{
 				OnRunOutOfAmmoDuringMultipleFire();
 				break;
 			}
+
 			CurrentEnergy += EnergyCostPerShot;
 			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
 	}
 	*MyEnergy = CurrentEnergy;
-	UE_LOG(LogTemp, Log, TEXT("fire energy excecuted %f"), CurrentEnergy);
 }
-void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i) {
+
+void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i)
+{
 	FTransform MuzzleTransform = MyWeaponInWorld->GetSocketTransform(MuzzleName[i]);
 	FTransform SpawnTransform = FTransform(GetNewMuzzleRotationFromLineTrace(MuzzleTransform), MuzzleTransform.GetLocation(), MuzzleTransform.GetScale3D());
 	UClass* ProjectileClass = UGameplayStatics::GetObjectClass(TheProjectile);
-	//ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(ATPS_Projectile::StaticClass(), SpawnTransform);
 	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(ATPS_Projectile::StaticClass(), SpawnTransform);
-	UE_LOG(LogTemp, Log, TEXT("IS SPAWNING PROJECTILE AND THE SPEED PARAMETER IS %f"), CurrentProjectile.Muzzle.InitialSpeedAndOther[0]);
+
 	MyProjectile->SetUpProjectile(CurrentProjectile);
 	MyProjectile->FinishSpawning(SpawnTransform);
-	//DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), TargetLocation, FColor::Red, false, 3.0f, 0, 3.0f);
 }
+
 void ATPS_studyCharacter::PlayFireMontage() {
 	UAnimMontage* fireMontage;
 	if (ShooterState.CharacterWeaponMontage.Num() > 0) {
@@ -472,22 +560,31 @@ void ATPS_studyCharacter::TimerFireRateReset() {
 // 3.z FIRE
 
 // 4.a SWITCH WEAPON
-bool ATPS_studyCharacter::IsAbleToSwitchWeapon_Implementation() {
+bool ATPS_studyCharacter::IsAbleToSwitchWeapon_Implementation() 
+{
 	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
 	bool bIsNotAiming = !GetIsAiming();
 	return bIsOnTheGround && bIsNotAiming;
 }
-bool ATPS_studyCharacter::IsAbleToAim_Implementation() {
+
+bool ATPS_studyCharacter::IsAbleToAim_Implementation() 
+{
 	return !GetCharacterMovement()->IsFalling();
 }
-int ATPS_studyCharacter::GetLastWeaponIndex() { return LastWeaponIndex; }
-int ATPS_studyCharacter::GetWeaponIndex() { return WeaponIndex; }
-void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex) {
+
+int ATPS_studyCharacter::GetLastWeaponIndex() const { return LastWeaponIndex; }
+
+int ATPS_studyCharacter::GetWeaponIndex() const { return WeaponIndex; }
+
+void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex) 
+{
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
 	struct FWeaponModeCompact* WeaponModeRow;
 	WeaponModeRow = WeaponModeTable->FindRow<FWeaponModeCompact>(CurrentWeaponName, ContextString, true);
-	if (WeaponModeRow) {
+
+	if (WeaponModeRow) 
+	{
 		FWeaponMode CurrentWeaponMode = WeaponModeRow->WeaponMode;
 		ShooterState = CurrentWeaponMode.Shooter;
 		CurrentWeapon = CurrentWeaponMode.Weapon;
@@ -495,31 +592,44 @@ void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex) {
 		UE_LOG(LogTemp, Log, TEXT("weapon changed to %i and the speed is %f"), MyWeaponIndex, CurrentProjectile.Muzzle.InitialSpeedAndOther[0]);
 	}
 }
-void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp) {
+void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp) 
+{
 	LastWeaponIndex = WeaponIndex;
-	if (IsAbleToSwitchWeapon()) {
+
+	if (IsAbleToSwitchWeapon()) 
+	{
 		int counter = isUp ? 1 : -1;
 		int withinRange = (WeaponIndex + counter) % WeaponNames.Num();
+
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
 		SetWeaponMode(WeaponIndex);
 		OnSwitchWeaponSuccess();
 	}
 }
+
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up() { SetWeaponIndexWithMouseWheel(true); }
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down() { SetWeaponIndexWithMouseWheel(false); }
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput) {
+
+void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
+{
+
 	if (numberInput >= WeaponNames.Num()) { return; }
+
 	LastWeaponIndex = WeaponIndex;
-	if ((WeaponNames.Num() > WeaponIndex) && IsAbleToSwitchWeapon()) {
+
+	if ((WeaponNames.Num() > WeaponIndex) && IsAbleToSwitchWeapon()) 
+	{
 		WeaponIndex = numberInput;
 		SetWeaponMode(WeaponIndex);
 		OnSwitchWeaponSuccess();
 	}
 }
+
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_1() { SetWeaponIndexWithNumpad(0); }
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_2() { SetWeaponIndexWithNumpad(1); }
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_3() { SetWeaponIndexWithNumpad(2); }
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad_4() { SetWeaponIndexWithNumpad(3); }
+
 // 4.z SWITCH WEAPON
 
 void ATPS_studyCharacter::SwitchWeaponMesh() {
@@ -554,22 +664,31 @@ void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType) {
 }
 // 5.z PICKUP
 
-void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming) {
+void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming) 
+{
 	bIsTransitioningAiming = isTransitioningAiming;
 }
-bool ATPS_studyCharacter::GetTransitioningAiming() { return bIsTransitioningAiming; }
-float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed) {
+
+bool ATPS_studyCharacter::GetTransitioningAiming() const { return bIsTransitioningAiming; }
+
+float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed) 
+{
 	FVector myVelo = GetVelocity();
 	float mySpeed = FVector(myVelo.X, myVelo.Y, 0.0f).Size();
 	float divider = (bOtherButtonPressed) ? UKismetMathLibrary::Sqrt(2.0f) : 1.0f;
 	return (mySpeed * MyValue) / (divider * GetCharacterMovement()->MaxWalkSpeed);
 }
-bool ATPS_studyCharacter::CheckAndCallRunOutOfAmmo(int ammo) {
+
+bool ATPS_studyCharacter::CheckAndCallRunOutOfAmmo(int ammo) 
+{
 	if (ammo <= 0) { OnWeaponRunOutOfAmmo(); }
 	return ammo > 0;
 }
-bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo) {
-	switch (ammo) {
+
+bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo) 
+{
+	switch (ammo) 
+	{
 	case EAmmoType::StandardAmmo:
 		return CheckAndCallRunOutOfAmmo(Ammunition.StandardAmmo);
 	case EAmmoType::RifleAmmo:
@@ -588,8 +707,11 @@ bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType ammo) {
 		return false;
 	}
 }
-bool ATPS_studyCharacter::IsEnergyEnough(EEnergyType EnergyType) {
-	switch (CurrentWeapon.EnergyType) {
+
+bool ATPS_studyCharacter::IsEnergyEnough(EEnergyType EnergyType) 
+{
+	switch (CurrentWeapon.EnergyType) 
+	{
 	case EEnergyType::MP:
 		return CharacterStat.MP >= CurrentWeapon.EnergyUsePerShot;
 	case EEnergyType::Fuel:

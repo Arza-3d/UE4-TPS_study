@@ -10,70 +10,103 @@ UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter {
 	GENERATED_BODY()
 
-	// 0.a CONSTRUCTION
+	///////////////////
+	// 0.Construction
+	///////////////////
+
 public:
 	ATPS_studyCharacter();
 	
 private:
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangedWeapon", meta = (AllowPrivateAccess = "true"))
 	class UTPS_Weapon* RangedWeapon;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class ATPS_Projectile> TheProjectile;
 	
 	FCharacterStat CharacterStat;
 	FExternalEnergyCount EnergyExternal;
+
 public:
+
 	float GetHP();
 	void SetHP(float val);
 	float GetMP();
 	void SetMP(float val);
+
 protected:
+
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
-	// 0.z CONSTRUCTION
 
-	// 1.a NAVIGATION
+	/////////////////
+	// 1.Navigation
+	////////////////
+
 public:
+
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedForward();
+
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedRight();
-	// 1.z NAVIGATION
 
-	// 2.a AIMING
+	////////////
+	// 2.Aiming
+	////////////
+
 protected:
-	int AimStatStartIndex = 0;
-	int AimStatTargetIndex = 1;
-	TArray<FName> AimingNames;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<class UUserWidget> Crosshair;
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void Aiming();
-	void AimingStop();
-	void Aiming_Setup(const bool isAiming);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	ETriggerMechanism GetTriggerMechanism() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	FName GetWeaponName();
+
 	/**
 	* 0 = default
 	* 1 = aiming
 	* 2, 3, x extra mode
 	*/
 	TArray<FAimingStat> AimStats;
+	int AimStatStartIndex = 0;
+	int AimStatTargetIndex = 1;
+	TArray<FName> AimingNames;
+
+	void Aiming();
+	void AimingStop();
+	void Aiming_Setup(const bool isAiming);
+	
+	
+
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
 	UCurveFloat* FloatCurve;
+
 	UFUNCTION()
 	void TimeAiming(float val);
+
 	UFUNCTION()
 	void TimeFinishAiming();
+
 	UPROPERTY()
 	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
+
 	// 2.z AIMING
 
 	// 3.a FIRE
@@ -89,8 +122,10 @@ protected:
 
 	bool IsThereStillAmmoLeft();
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
+
 	UFUNCTION(BlueprintCallable)
 	void FirePress();
+
 	void FireRelease();
 	void FireUnlimited();
 	void FireAmmo();
@@ -102,6 +137,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnRunOutOfAmmoDuringMultipleFire();
+	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	//void OnRunOutOfAmmoDuringMultipleFire();
 	void FireAutomaticTrigger();
 	void Fire_Hold();
 	void Fire_Release();
@@ -113,13 +150,11 @@ protected:
 public:
 	FShooter ShooterState;
 protected:
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
+
 	FAmmoCount Ammunition;
 	FExternalEnergyCount Energy;
 	FWeapon CurrentWeapon;
 	FProjectile CurrentProjectile;
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
-	//class UDataTable* WeaponTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
@@ -149,25 +184,24 @@ protected:
 	/**on aiming succeed*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
 	void OnAimingSucceed();
+
 	/**for press trigger*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void Fire();
-	/**for automatic trigger*/
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void AutoFire();
-	/**repeat fire for automatic trigger*/
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void RepeatFire();
+	void OnFire();
+
 	/**ammo is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponRunOutOfAmmo();
 	bool CheckAndCallRunOutOfAmmo(int ammo);
+
 	/**energy is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponRunOutOfEnergy();
+
 	/**it is overheating*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponIsOverheating();
+
 	/**also use this for interface to anim BP*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Weapon", meta = (KeyWords = "change interface"))
 	void OnSwitchWeaponSuccess();
@@ -177,12 +211,15 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToSwitchWeapon();
 	virtual bool IsAbleToSwitchWeapon_Implementation();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Aiming")
 	bool IsAbleToAim();
 	virtual bool IsAbleToAim_Implementation();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToRepeatAutoFire();
 	virtual bool IsAbleToRepeatAutoFire_Implementation();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
@@ -206,24 +243,25 @@ protected:
 	float StopAimingSpeed = 0.1f;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int GetWeaponIndex();
+	int GetWeaponIndex() const; 
 	int WeaponIndex;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int GetLastWeaponIndex();
+	int GetLastWeaponIndex() const;
 	int LastWeaponIndex;
-
-
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void LookRightAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 	bool bIsTriggerPressed;
+
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void SetIsTransitioningAiming(bool isTransitioningAiming);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	bool GetTransitioningAiming();
+	bool GetTransitioningAiming() const;
+
 	bool bIsTransitioningAiming;
 private:
 	void SetWeaponIndexWithNumpad(const int numberInput);

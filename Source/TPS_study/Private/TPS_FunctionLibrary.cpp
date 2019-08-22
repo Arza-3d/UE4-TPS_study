@@ -13,5 +13,6 @@ float UTPS_FunctionLibrary::GetNewPlayRateForMontage(float targetDuration, UAnim
 UParticleSystem* UTPS_FunctionLibrary::GetRandomParticle(TArray<UParticleSystem*> particleSystems) {
 	int maxInt = particleSystems.Num();
 	int randInt = UKismetMathLibrary::RandomInteger(maxInt);
+	UE_LOG(LogTemp, Log, TEXT("particle num %i"), maxInt);
 	return particleSystems[randInt];
 }
