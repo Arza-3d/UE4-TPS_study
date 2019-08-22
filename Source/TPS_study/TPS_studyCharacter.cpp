@@ -384,7 +384,7 @@ void ATPS_studyCharacter::FirePress()
 		FireAutomaticTrigger();
 		break;
 	case ETriggerMechanism::ReleaseTrigger:
-		Fire_Hold();
+		FireHold();
 		break;
 	case ETriggerMechanism::OnePressAutoTrigger:
 		FireAutomaticTriggerOnePress();
@@ -399,7 +399,7 @@ void ATPS_studyCharacter::FireRelease()
 	bIsTriggerPressed = false;
 	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) 
 	{
-		Fire_Release();
+		FireReleaseAfterHold();
 	}
 }
 
@@ -418,11 +418,11 @@ void ATPS_studyCharacter::FireAutomaticTriggerOnePress()
 {
 }
 
-void ATPS_studyCharacter::Fire_Hold() 
+void ATPS_studyCharacter::FireHold() 
 {
 }
 
-void ATPS_studyCharacter::Fire_Release() 
+void ATPS_studyCharacter::FireReleaseAfterHold() 
 {
 }
 

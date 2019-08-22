@@ -121,28 +121,37 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed() const;
 	
-	void SetWeaponMode(int MyWeaponIndex);
-
+	bool bIsFireRatePassed = true;
+	
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 
+	/** This will be connected to controller to fire action input press*/
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FirePress();
 
+	/** This will be connected to controller to fire action input releases*/
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
+
+	// FirePress() will call one of these: 
+	void FireStandardTrigger(); // activate OnWeaponFires()
+	void FireAutomaticTrigger(); // will call FireStandardTrigger() and activate OnWeaponFires()
+	void FireHold();
+	void FireAutomaticTriggerOnePress(); // will call FireStandardTrigger()
+
 
 	void FireUnlimited();
 	void FireAmmo();
 	void FireEnergy();
+
 	void FireAmmoProjectile(int* Ammo);
 	void FireEnergyProjectile(float* Energy);
-	void FireStandardTrigger();
+	
 	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
 
-	void FireAutomaticTrigger();
-	void Fire_Hold();
-	void Fire_Release();
-	void FireAutomaticTriggerOnePress();
+	
+	void FireReleaseAfterHold();
+	
 	void PlayFireMontage();
 
 	// 3.z FIRE
@@ -173,9 +182,14 @@ protected:
 
 	bool IsWeaponNotOverheating();
 
+	///////////////////////
 	// 4.a SWITCH WEAPON
+	///////////////////////
+
 	USceneComponent* WeaponInWorld;
 	void SwitchWeaponMesh();
+
+	void SetWeaponMode(int MyWeaponIndex);
 
 	// 5.a PICKUP
 public:
@@ -185,8 +199,7 @@ public:
 	////////////////
 	// 5.z PICKUP
 	///////////////
-public:
-	bool bIsFireRatePassed = true;
+	
 
 protected:
 
@@ -203,7 +216,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponFires();
 
-	/**ammo is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnNoAmmo();
 
