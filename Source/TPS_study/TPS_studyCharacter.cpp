@@ -16,7 +16,6 @@
 #include "TPS_FunctionLibrary.h"
 #include "TPS_Projectile.h"
 #include "DrawDebugHelpers.h"
-#include "TPS_Weapon.h"
 
 // 0.a CONSTRUCTION
 ATPS_studyCharacter::ATPS_studyCharacter()
@@ -24,7 +23,6 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
 
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;
