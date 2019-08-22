@@ -36,15 +36,20 @@ private:
 
 public:
 
-	float GetHP();
+	float GetHP() const;
+
 	void SetHP(float val);
-	float GetMP();
+
+	float GetMP() const;
+
 	void SetMP(float val);
 
 protected:
 
 	virtual void BeginPlay() override;
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	/////////////////
@@ -90,8 +95,6 @@ protected:
 	void AimingStop();
 	void Aiming_Setup(const bool isAiming);
 	
-	
-
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
 
@@ -107,26 +110,27 @@ protected:
 	UPROPERTY()
 	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
 
-	// 2.z AIMING
-
 	// 3.a FIRE
+
 protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
-	bool GetIsAiming();
+	bool GetIsAiming() const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	bool GetIsTriggerPressed();
+	bool GetIsTriggerPressed() const;
 	
-	//UFUNCTION(BlueprintCallable)
 	void SetWeaponMode(int MyWeaponIndex);
 
 	bool IsThereStillAmmoLeft();
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FirePress();
 
+	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
+
 	void FireUnlimited();
 	void FireAmmo();
 	void FireEnergy();
@@ -137,8 +141,7 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnRunOutOfAmmoDuringMultipleFire();
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnRunOutOfAmmoDuringMultipleFire();
+
 	void FireAutomaticTrigger();
 	void Fire_Hold();
 	void Fire_Release();
@@ -152,29 +155,35 @@ public:
 protected:
 
 	FAmmoCount Ammunition;
+
 	FExternalEnergyCount Energy;
+
 	FWeapon CurrentWeapon;
+
 	FProjectile CurrentProjectile;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	class UDataTable* WeaponModeTable;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+
 	/**
 	* FAimingStatCompact
 	* contain aiming stat related
 	*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	class UDataTable* AimingTable;
+
 	// 4.a SWITCH WEAPON
-	//USkeletalMeshComponent* WeaponMesh;
 	USceneComponent* WeaponInWorld;
 	void SwitchWeaponMesh();
-	// 4.z SWITCH WEAPON
 
 	// 5.a PICKUP
 public:
 	UFUNCTION(BlueprintCallable)
 	void AddAmmo(int addAmmo, EAmmoType ammoType);
-	// 5.z PICKUP
 
+	////////////////
+	// 5.z PICKUP
+	///////////////
 public:
 	bool bIsFireRatePassed = true;
 
@@ -232,7 +241,6 @@ protected:
 	void TimerFireRateStart();
 	void TimerFireRateReset();
 	
-
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNames;
 
@@ -264,14 +272,17 @@ protected:
 
 	bool bIsTransitioningAiming;
 private:
+
 	void SetWeaponIndexWithNumpad(const int numberInput);
 	void SetWeaponIndexWithNumpad_1();
 	void SetWeaponIndexWithNumpad_2();
 	void SetWeaponIndexWithNumpad_3();
 	void SetWeaponIndexWithNumpad_4();
+
 	void SetWeaponIndexWithMouseWheel(const bool isUp);
 	void SetWeaponIndexWithMouseWheel_Up();
 	void SetWeaponIndexWithMouseWheel_Down();
+
 	const float BaseTurnRate = 45.0f;
 	const float BaseLookUpRate = 45.0f;
 	float NormalizedForward;
@@ -281,9 +292,12 @@ private:
 	bool bForwardInputPressed;
 	bool bRightInputPressed;
 	float AssignNormalizedVelo(float MyValue,  bool bOtherButtonPressed);
+
 public:
 
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
 	FORCEINLINE class UTPS_Weapon* GetRangedWeapon() const { return RangedWeapon; }
 };

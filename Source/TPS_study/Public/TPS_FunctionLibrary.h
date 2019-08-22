@@ -26,7 +26,8 @@ public:
 
 // 0 character state
 UENUM(BlueprintType)
-enum class ECharacterMobility : uint8 {
+enum class ECharacterMobility : uint8 
+{
 	Idle,
 	Jog,
 	Sprint,
@@ -34,15 +35,19 @@ enum class ECharacterMobility : uint8 {
 	Jump,
 	Ragdoll
 };
+
 UENUM(BlueprintType)
-enum class ECharacterHealthState : uint8 {
+enum class ECharacterHealthState : uint8 
+{
 	Idle,
 	Damaged,
 	Stunned,
 	Died
 };
+
 UENUM(BlueprintType)
-enum class ECharacterShooterState : uint8 {
+enum class ECharacterShooterState : uint8 
+{
 	Idle,
 	Aiming,
 	Shooting
@@ -50,20 +55,25 @@ enum class ECharacterShooterState : uint8 {
 
 // 1.a weapon table
 UENUM(BlueprintType)
-enum class ETriggerMechanism : uint8 {
+enum class ETriggerMechanism : uint8 
+{
 	PressTrigger,
 	ReleaseTrigger,
 	AutomaticTrigger,
 	OnePressAutoTrigger
 };
+
 UENUM(BlueprintType)
-enum class EWeaponCost : uint8 {
+enum class EWeaponCost : uint8 
+{
 	Nothing,
 	Ammo,
 	Energy
 };
+
 UENUM(BlueprintType)
-enum class EAmmoType : uint8 {
+enum class EAmmoType : uint8 
+{
 	StandardAmmo,
 	RifleAmmo,
 	ShotgunAmmo,
@@ -72,8 +82,10 @@ enum class EAmmoType : uint8 {
 	Grenade,
 	Mine
 };
+
 UENUM(BlueprintType)
-enum class EEnergyType : uint8 {
+enum class EEnergyType : uint8 
+{
 	MP,
 	Fuel,
 	Battery,
@@ -81,44 +93,63 @@ enum class EEnergyType : uint8 {
 };
 
 USTRUCT(BlueprintType)
-struct FCharacterStat {
+struct FCharacterStat 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
 	float HP = 100.0f;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
 	float MP = 100.0f;
 };
+
 USTRUCT(BlueprintType)
-struct FAmmoCount {
+struct FAmmoCount 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int StandardAmmo = 15;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int RifleAmmo = 30;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int ShotgunAmmo = 10;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Rocket = 3;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Arrow = 18;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Grenade = 2;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
 	int Mine = 3;
 };
+
 /**Only external energy mana is not included*/
 USTRUCT(BlueprintType)
-struct FExternalEnergyCount {
+struct FExternalEnergyCount 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
 	float Fuel = 100.0f;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
 	float Battery = 100.0f;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
 	float Overheat = 0.0f;
 };
+
 USTRUCT(BlueprintType)
-struct FShooter {
+struct FShooter 
+{
 	GENERATED_BODY();
 	/**
 	* 0 = FireMontage,
@@ -130,8 +161,10 @@ struct FShooter {
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* FireCry;
 };
+
 USTRUCT(BlueprintType)
-struct FWeapon {
+struct FWeapon 
+{
 	GENERATED_BODY();
 	/** name/names of the socket where the projectile is spawned*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")

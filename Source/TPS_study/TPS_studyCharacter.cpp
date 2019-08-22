@@ -19,17 +19,20 @@
 #include "TPS_Weapon.h"
 
 // 0.a CONSTRUCTION
-ATPS_studyCharacter::ATPS_studyCharacter() {
+ATPS_studyCharacter::ATPS_studyCharacter()
+{
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	RangedWeapon = CreateDefaultSubobject<UTPS_Weapon>(TEXT("RangedWeapon"));
+
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.0f;
 	FollowCamera->bUsePawnControlRotation = false;
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+
 	// inherited component setup:
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -42,6 +45,7 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 	PrimaryActorTick.bStartWithTickEnabled = false;
+
 	// aiming setup:
 	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
 	AimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
@@ -49,17 +53,22 @@ ATPS_studyCharacter::ATPS_studyCharacter() {
 	AimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
+
 	// fire setup:
 	SwitchWeaponMesh();
 }
 
-float ATPS_studyCharacter::GetHP() { return CharacterStat.HP; }
+float ATPS_studyCharacter::GetHP() const { return CharacterStat.HP; }
+
 void ATPS_studyCharacter::SetHP(float val) { CharacterStat.HP = val; }
-float ATPS_studyCharacter::GetMP() { return CharacterStat.MP; }
+
+float ATPS_studyCharacter::GetMP() const { return CharacterStat.MP; }
+
 void ATPS_studyCharacter::SetMP(float val) { CharacterStat.MP = val; }
 
 void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
+
 	// aiming setup:
 	if (AimingTable != nullptr) 
 	{ 
@@ -84,6 +93,7 @@ void ATPS_studyCharacter::BeginPlay() {
 	// aiming timeline setup:
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
+
 	if (FloatCurve) 
 	{
 		AimingTimeline = NewObject<UTimelineComponent>(this, FName("AimingTimeline"));
@@ -102,6 +112,7 @@ void ATPS_studyCharacter::BeginPlay() {
 		AimingTimeline->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
 		AimingTimeline->RegisterComponent();
 	}
+
 	// weapon setup:
 	if (WeaponModeTable != nullptr) { WeaponNames = WeaponModeTable->GetRowNames(); }
 	SetWeaponMode(0);
@@ -110,7 +121,6 @@ void ATPS_studyCharacter::BeginPlay() {
 void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) 
 {
 	check(PlayerInputComponent);
-	//AttackAction
 	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
 	PlayerInputComponent->BindAction("AttackAction", IE_Released, this, &ATPS_studyCharacter::FireRelease);
 	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPS_studyCharacter::Aiming);
@@ -123,6 +133,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_4);
 	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up);
 	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
@@ -206,7 +217,7 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate)
 // 1.z NAVIGATION
 
 // 2.a AIMING
-bool ATPS_studyCharacter::GetIsAiming() { return bIsAiming; }
+bool ATPS_studyCharacter::GetIsAiming() const { return bIsAiming; }
 
 void ATPS_studyCharacter::Aiming() {
 	if (!IsAbleToAim()) { return; }
@@ -307,7 +318,7 @@ bool ATPS_studyCharacter::IsThereStillAmmoLeft()
 	}
 }
 
-bool ATPS_studyCharacter::GetIsTriggerPressed() { return bIsTriggerPressed; }
+bool ATPS_studyCharacter::GetIsTriggerPressed() const { return bIsTriggerPressed; }
 
 FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform) 
 {
@@ -321,15 +332,17 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	FVector EndTrace = StartTrace + LookDirection * 100.0f * 3000.0f;
 	FVector TargetLocation;
 	FRotator MuzzleLookRotation;
+
 	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams)) 
 	{
 		TargetLocation = HitTrace.Location;
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
 	}
-	//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::White, false, 3.0f, 0, 1.0f);
-	DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), TargetLocation, FColor::Blue, false, 3.0f, 0, 1.0f);
+
+	DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), TargetLocation, FColor::Blue, false, 3.0f, 0, 1.0f); // debug
 	return MuzzleLookRotation;
 }
+
 void ATPS_studyCharacter::FirePress() 
 {
 	bIsTriggerPressed = true;
