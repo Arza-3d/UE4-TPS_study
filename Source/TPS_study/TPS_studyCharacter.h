@@ -60,11 +60,11 @@ public:
 
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedForward();
+	float GetNormalizedForward() const;
 
 	/**only used for aim anim blend walk*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedRight();
+	float GetNormalizedRight() const;
 
 	////////////
 	// 2.Aiming
@@ -79,7 +79,7 @@ protected:
 	ETriggerMechanism GetTriggerMechanism() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	FName GetWeaponName();
+	FName GetWeaponName() const;
 
 	/**
 	* 0 = default
@@ -87,13 +87,14 @@ protected:
 	* 2, 3, x extra mode
 	*/
 	TArray<FAimingStat> AimStats;
+
 	int AimStatStartIndex = 0;
 	int AimStatTargetIndex = 1;
 	TArray<FName> AimingNames;
 
 	void Aiming();
 	void AimingStop();
-	void Aiming_Setup(const bool isAiming);
+	void AimingSetup(const bool isAiming);
 	
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
@@ -114,7 +115,7 @@ protected:
 
 protected:
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming", meta = (ToolTip = "is character aiming?"))
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetIsAiming() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
@@ -122,7 +123,6 @@ protected:
 	
 	void SetWeaponMode(int MyWeaponIndex);
 
-	bool IsThereStillAmmoLeft();
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
@@ -138,9 +138,6 @@ protected:
 	void FireEnergyProjectile(float* Energy);
 	void FireStandardTrigger();
 	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnRunOutOfAmmoDuringMultipleFire();
 
 	void FireAutomaticTrigger();
 	void Fire_Hold();
@@ -172,6 +169,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	class UDataTable* AimingTable;
 
+	bool IsEnergyEnoughToShoot(float MyEnergy, float MyEnergyPerShot);
+
+	bool IsWeaponNotOverheating();
+
 	// 4.a SWITCH WEAPON
 	USceneComponent* WeaponInWorld;
 	void SwitchWeaponMesh();
@@ -189,34 +190,42 @@ public:
 
 protected:
 
-	// a EVENT
-	/**on aiming succeed*/
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
-	void OnAimingSucceed();
+	////////////
+	// a Event
+	////////////
 
-	/**for press trigger*/
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
+	void OnAiming();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
+	void OnStopAiming();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnFire();
+	void OnWeaponFires();
 
 	/**ammo is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnWeaponRunOutOfAmmo();
-	bool CheckAndCallRunOutOfAmmo(int ammo);
+	void OnNoAmmo();
 
 	/**energy is 0*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnWeaponRunOutOfEnergy();
+	void OnNoEnergy();
 
 	/**it is overheating*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnWeaponIsOverheating();
+	void OnWeaponOverheats();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	void OnNoMoreAmmoDuringFire();
 
 	/**also use this for interface to anim BP*/
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Weapon", meta = (KeyWords = "change interface"))
 	void OnSwitchWeaponSuccess();
-	// z Event
 
-	// a Overriden Function
+	/////////////////////////
+	// overriden function:
+	////////////////////////
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
 	bool IsAbleToSwitchWeapon();
 	virtual bool IsAbleToSwitchWeapon_Implementation();
@@ -232,7 +241,10 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
-	// z Overriden Function
+	
+	/////////////
+	// and other
+	/////////////
 
 	bool IsEnoughForWeaponCost();
 	bool IsAmmoEnough(EAmmoType ammo);
@@ -240,6 +252,9 @@ protected:
 	FTimerHandle FireRateTimer;
 	void TimerFireRateStart();
 	void TimerFireRateReset();
+
+	// will call OnNoAmmo
+	bool IsAmmoNotEmpty(int ammo);
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	TArray<FName> WeaponNames;

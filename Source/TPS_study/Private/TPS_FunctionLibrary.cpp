@@ -7,12 +7,15 @@
 *if target duration is below 0,
 *it will return 1 playrate
 */
-float UTPS_FunctionLibrary::GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage) {
+float UTPS_FunctionLibrary::GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage) 
+{
 	return (targetDuration <= 0.0f) ? 1.0f : animMontage->SequenceLength / targetDuration;
 }
-UParticleSystem* UTPS_FunctionLibrary::GetRandomParticle(TArray<UParticleSystem*> particleSystems) {
+
+UParticleSystem* UTPS_FunctionLibrary::GetRandomParticle(TArray<UParticleSystem*> particleSystems) 
+{
 	int maxInt = particleSystems.Num();
 	int randInt = UKismetMathLibrary::RandomInteger(maxInt);
-	UE_LOG(LogTemp, Log, TEXT("particle num %i"), maxInt);
+
 	return particleSystems[randInt];
 }

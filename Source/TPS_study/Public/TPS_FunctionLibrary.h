@@ -151,6 +151,7 @@ USTRUCT(BlueprintType)
 struct FShooter 
 {
 	GENERATED_BODY();
+
 	/**
 	* 0 = FireMontage,
 	* 1 = EquipMontage,
@@ -158,6 +159,7 @@ struct FShooter
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<UAnimMontage*> CharacterWeaponMontage;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* FireCry;
 };
@@ -166,9 +168,11 @@ USTRUCT(BlueprintType)
 struct FWeapon 
 {
 	GENERATED_BODY();
+
 	/** name/names of the socket where the projectile is spawned*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		TArray<FName> SocketName = { FName(TEXT("Muzzle_01")) };
+	TArray<FName> SocketName = { FName(TEXT("Muzzle_01")) };
+
 	/**
 	* 0 = fire rate,
 	* 1 = reload time,
@@ -178,37 +182,51 @@ struct FWeapon
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<float> FireRateAndOther = {0.5f};
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	ETriggerMechanism Trigger;
+
 	/* is the weapon cost int (ammo), or float (energy), or nothing (unlimited)*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EWeaponCost WeaponCost;
+
 	/** used only if WeaponCost is "Ammo"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EAmmoType AmmoType;
+
 	/** used only if WeaponCost is "Energy"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	EEnergyType EnergyType;
+
 	/** used only if WeaponCost is "Energy", this is in %*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	float EnergyUsePerShot = 10.0f;
 };
+
 USTRUCT(BlueprintType)
-struct F_FX {
+struct F_FX 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	USoundBase* SoundEffect;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	TArray<UParticleSystem*> VisualEffect = {nullptr};
 };
+
 USTRUCT(BlueprintType)
-struct FProjectileMuzzle {
+struct FProjectileMuzzle 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX MuzzleFX;
+
 	/** Should be setup as PlayerProjectile collision channel */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
 	TEnumAsByte<ECollisionChannel> CollisionComp;
+
 	/**
 	* 0 = InitialSpeed,
 	* 1 = ProjectileMultiplier,
@@ -218,90 +236,128 @@ struct FProjectileMuzzle {
 	TArray<float> InitialSpeedAndOther = { 1200.0f };
 };
 USTRUCT(BlueprintType)
-struct FProjectileTrail {
+struct FProjectileTrail 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	F_FX TrailFX;
 };
+
 USTRUCT(BlueprintType)
-struct FProjectileHit {
+struct FProjectileHit 
+{
 	GENERATED_BODY();
+
 	/**
 	* 0 = Hit FX,
 	* 1 = AoE FX
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	TArray<F_FX> HitFX;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	float DamagePoint = 10.0f;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	float CriticalChance = 0.05f;
 };
+
 USTRUCT(BlueprintType)
-struct FProjectile {
+struct FProjectile 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileMuzzle Muzzle;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileTrail Trail;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileHit Hit;
 };
+
 USTRUCT(BlueprintType)
-struct FWeaponMode {
+struct FWeaponMode 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FShooter Shooter;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FWeapon Weapon;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FProjectile Projectile;
 };
+
 USTRUCT(BlueprintType)
-struct FWeaponModeCompact : public FTableRowBase {
+struct FWeaponModeCompact : public FTableRowBase 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FWeaponMode WeaponMode;
 };
-// 1.z weapon table
 
-// 2.a Aiming
+/////////////
+// 2.Aiming
+/////////////
 USTRUCT(BlueprintType)
-struct FCharMovAimingStat {
+struct FCharMovAimingStat 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float MaxAcceleration = 2048.0f;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float MaxWalkSpeed = 600.0f;
 };
+
 USTRUCT(BlueprintType)
-struct FCamBoomAimingStat {
+struct FCamBoomAimingStat 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FVector SocketOffset;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float TargetArmLength = 300.0f;
 };
+
 USTRUCT(BlueprintType)
-struct FllowCamAimingStat {
+struct FllowCamAimingStat 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float FieldOfView = 90.0f;
 };
+
 USTRUCT(BlueprintType)
-struct FAimingStat {
+struct FAimingStat 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FCharMovAimingStat CharMov;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FCamBoomAimingStat CamBoom;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FllowCamAimingStat FollCam;
 };
+
 USTRUCT(BlueprintType)
-struct FAimingStatCompact : public FTableRowBase {
+struct FAimingStatCompact : public FTableRowBase 
+{
 	GENERATED_BODY();
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FAimingStat AimStat;
 };
-// 2.z Aiming

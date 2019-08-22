@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Arza3d
 
 #pragma once
 
@@ -6,8 +6,6 @@
 #include "UObject/Interface.h"
 #include "TPS_studyCharacter.h"
 #include "TPSAnimInterface.generated.h"
-
-
 
 // This class does not need to be modified.
 UINTERFACE(BlueprintType, Blueprintable)
