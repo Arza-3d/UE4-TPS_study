@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
-#include "TPS_FunctionLibrary.h"
+#include "TPSFunctionLibrary.h"
 #include "TPS_studyCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -32,6 +32,9 @@ private:
 	FExternalEnergyCount EnergyExternal;
 
 public:
+
+	/*UFUNCTION(BlueprintCallable)
+	void ChangeControl();*/
 
 	float GetHP() const;
 

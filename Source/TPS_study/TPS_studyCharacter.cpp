@@ -13,7 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "TimerManager.h"
 #include "TPSAnimInterface.h"
-#include "TPS_FunctionLibrary.h"
+#include "TPSFunctionLibrary.h"
 #include "TPS_Projectile.h"
 #include "DrawDebugHelpers.h"
 
@@ -56,7 +56,12 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	SwitchWeaponMesh();
 }
 
-float ATPS_studyCharacter::GetHP() const 
+/*void ATPS_studyCharacter::ChangeControl()
+{
+	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
+}*/
+
+float ATPS_studyCharacter::GetHP() const
 { 
 	return CharacterStat.HP; 
 }
@@ -155,6 +160,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 void ATPS_studyCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
 	if (AimingTimeline) 
 	{
 		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
@@ -287,16 +293,19 @@ void ATPS_studyCharacter::TimeAiming(float val)
 {
 	int A = AimStatStartIndex;
 	int B = AimStatTargetIndex;
-	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
-	float aimingMaxAcceleration = AimStats[B].CharMov.MaxAcceleration;
-	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
-	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
+	
 	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
 	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
 	float defaultTargetArmLength = AimStats[A].CamBoom.TargetArmLength;
 	float defaultWalkSpeed = AimStats[A].CharMov.MaxWalkSpeed;
-	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
 	FVector defaultSocketOffset = AimStats[A].CamBoom.SocketOffset;
+
+	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
+	float aimingMaxAcceleration = AimStats[B].CharMov.MaxAcceleration;
+	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
+	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
+	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
+	
 	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
 	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
 	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
@@ -363,7 +372,6 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
 	}
 
-	DrawDebugLine(GetWorld(), SocketTransform.GetLocation(), TargetLocation, FColor::Blue, false, 3.0f, 0, 1.0f); // debug
 	return MuzzleLookRotation;
 }
 
@@ -378,15 +386,19 @@ void ATPS_studyCharacter::FirePress()
 		FireStandardTrigger();
 		OnWeaponFires();
 		break;
+
 	case ETriggerMechanism::AutomaticTrigger:
 		FireAutomaticTrigger();
 		break;
+
 	case ETriggerMechanism::ReleaseTrigger:
 		FireHold();
 		break;
+
 	case ETriggerMechanism::OnePressAutoTrigger:
 		FireAutomaticTriggerOnePress();
 		break;
+
 	default:
 		FireStandardTrigger();
 	}
@@ -586,7 +598,7 @@ void ATPS_studyCharacter::PlayFireMontage()
 
 		if (fireMontage)
 		{
-			float playRate = UTPS_FunctionLibrary::GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
+			float playRate = UTPSFunctionLibrary::GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
 			PlayAnimMontage(fireMontage, playRate);
 		}
 	}

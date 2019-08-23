@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "TPS_FunctionLibrary.h"
+#include "TPSFunctionLibrary.h"
 #include "TPS_Projectile.generated.h"
 
 class UProjectileMovementComponent;
@@ -17,9 +17,12 @@ class TPS_STUDY_API ATPS_Projectile : public AActor
 	
 public:	
 	ATPS_Projectile();
+
 	FProjectileMuzzle ProjectileMuzzle;
 	FProjectileTrail ProjectileTrail;
 	FProjectileHit ProjectileHit;
+	UProjectileFXDataAsset* ProjectileVX;
+	UProjectileSXDataAsset* ProjectileSound;
 
 	void SetUpProjectile(FProjectile MyProjectile);
 	void SpawnFX(TArray<UParticleSystem*> MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);

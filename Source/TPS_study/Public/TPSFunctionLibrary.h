@@ -4,29 +4,31 @@
 #include "Engine/DataTable.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Particles/ParticleSystem.h"
-#include "TPS_FunctionLibrary.generated.h"
+#include "TPSFunctionLibrary.generated.h"
 
 class UAnimMontage;
 class USoundBase;
 class UParticleSystem;
+class UProjectileFXDataAsset;
+class UProjectileSXDataAsset;
 
 /**
  * Will put some extra struct and enum in this class
  */
 UCLASS()
-class TPS_STUDY_API UTPS_FunctionLibrary : public UBlueprintFunctionLibrary {
+class TPS_STUDY_API UTPSFunctionLibrary : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
 
-
 public:
+
 	static float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
+
 	static UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
 };
 
 // 0 character state
 UENUM(BlueprintType)
-enum class ECharacterMobility : uint8 
+enum class ECharacterMobility : uint8
 {
 	Idle,
 	Jog,
@@ -37,7 +39,7 @@ enum class ECharacterMobility : uint8
 };
 
 UENUM(BlueprintType)
-enum class ECharacterHealthState : uint8 
+enum class ECharacterHealthState : uint8
 {
 	Idle,
 	Damaged,
@@ -46,7 +48,7 @@ enum class ECharacterHealthState : uint8
 };
 
 UENUM(BlueprintType)
-enum class ECharacterShooterState : uint8 
+enum class ECharacterShooterState : uint8
 {
 	Idle,
 	Aiming,
@@ -55,7 +57,7 @@ enum class ECharacterShooterState : uint8
 
 // 1.a weapon table
 UENUM(BlueprintType)
-enum class ETriggerMechanism : uint8 
+enum class ETriggerMechanism : uint8
 {
 	PressTrigger,
 	ReleaseTrigger,
@@ -64,7 +66,7 @@ enum class ETriggerMechanism : uint8
 };
 
 UENUM(BlueprintType)
-enum class EWeaponCost : uint8 
+enum class EWeaponCost : uint8
 {
 	Nothing,
 	Ammo,
@@ -72,7 +74,7 @@ enum class EWeaponCost : uint8
 };
 
 UENUM(BlueprintType)
-enum class EAmmoType : uint8 
+enum class EAmmoType : uint8
 {
 	StandardAmmo,
 	RifleAmmo,
@@ -84,7 +86,7 @@ enum class EAmmoType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EEnergyType : uint8 
+enum class EEnergyType : uint8
 {
 	MP,
 	Fuel,
@@ -93,7 +95,7 @@ enum class EEnergyType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FCharacterStat 
+struct FCharacterStat
 {
 	GENERATED_BODY();
 
@@ -105,7 +107,7 @@ struct FCharacterStat
 };
 
 USTRUCT(BlueprintType)
-struct FAmmoCount 
+struct FAmmoCount
 {
 	GENERATED_BODY();
 
@@ -133,7 +135,7 @@ struct FAmmoCount
 
 /**Only external energy mana is not included*/
 USTRUCT(BlueprintType)
-struct FExternalEnergyCount 
+struct FExternalEnergyCount
 {
 	GENERATED_BODY();
 
@@ -148,7 +150,7 @@ struct FExternalEnergyCount
 };
 
 USTRUCT(BlueprintType)
-struct FShooter 
+struct FShooter
 {
 	GENERATED_BODY();
 
@@ -165,7 +167,7 @@ struct FShooter
 };
 
 USTRUCT(BlueprintType)
-struct FWeapon 
+struct FWeapon
 {
 	GENERATED_BODY();
 
@@ -181,7 +183,7 @@ struct FWeapon
 	* all of that are in second
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-	TArray<float> FireRateAndOther = {0.5f};
+	TArray<float> FireRateAndOther = { 0.3f };
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
 	ETriggerMechanism Trigger;
@@ -204,7 +206,7 @@ struct FWeapon
 };
 
 USTRUCT(BlueprintType)
-struct F_FX 
+struct F_FX
 {
 	GENERATED_BODY();
 
@@ -212,11 +214,11 @@ struct F_FX
 	USoundBase* SoundEffect;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-	TArray<UParticleSystem*> VisualEffect = {nullptr};
+	TArray<UParticleSystem*> VisualEffect = { nullptr };
 };
 
 USTRUCT(BlueprintType)
-struct FProjectileMuzzle 
+struct FProjectileMuzzle
 {
 	GENERATED_BODY();
 
@@ -233,10 +235,10 @@ struct FProjectileMuzzle
 	* 2 = GravityScale
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Physics")
-	TArray<float> InitialSpeedAndOther = { 1200.0f };
+	TArray<float> InitialSpeedAndOther = { 9000.0f };
 };
 USTRUCT(BlueprintType)
-struct FProjectileTrail 
+struct FProjectileTrail
 {
 	GENERATED_BODY();
 
@@ -245,7 +247,7 @@ struct FProjectileTrail
 };
 
 USTRUCT(BlueprintType)
-struct FProjectileHit 
+struct FProjectileHit
 {
 	GENERATED_BODY();
 
@@ -264,7 +266,7 @@ struct FProjectileHit
 };
 
 USTRUCT(BlueprintType)
-struct FProjectile 
+struct FProjectile
 {
 	GENERATED_BODY();
 
@@ -276,10 +278,16 @@ struct FProjectile
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
 	FProjectileHit Hit;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	UProjectileFXDataAsset* ProjectileVX;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
+	UProjectileSXDataAsset* ProjectileSoundEffect;
 };
 
 USTRUCT(BlueprintType)
-struct FWeaponMode 
+struct FWeaponMode
 {
 	GENERATED_BODY();
 
@@ -294,7 +302,7 @@ struct FWeaponMode
 };
 
 USTRUCT(BlueprintType)
-struct FWeaponModeCompact : public FTableRowBase 
+struct FWeaponModeCompact : public FTableRowBase
 {
 	GENERATED_BODY();
 
@@ -306,7 +314,7 @@ struct FWeaponModeCompact : public FTableRowBase
 // 2.Aiming
 /////////////
 USTRUCT(BlueprintType)
-struct FCharMovAimingStat 
+struct FCharMovAimingStat
 {
 	GENERATED_BODY();
 
@@ -318,7 +326,7 @@ struct FCharMovAimingStat
 };
 
 USTRUCT(BlueprintType)
-struct FCamBoomAimingStat 
+struct FCamBoomAimingStat
 {
 	GENERATED_BODY();
 
@@ -330,7 +338,7 @@ struct FCamBoomAimingStat
 };
 
 USTRUCT(BlueprintType)
-struct FllowCamAimingStat 
+struct FllowCamAimingStat
 {
 	GENERATED_BODY();
 
@@ -339,7 +347,7 @@ struct FllowCamAimingStat
 };
 
 USTRUCT(BlueprintType)
-struct FAimingStat 
+struct FAimingStat
 {
 	GENERATED_BODY();
 
@@ -354,7 +362,7 @@ struct FAimingStat
 };
 
 USTRUCT(BlueprintType)
-struct FAimingStatCompact : public FTableRowBase 
+struct FAimingStatCompact : public FTableRowBase
 {
 	GENERATED_BODY();
 
