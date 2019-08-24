@@ -53,7 +53,7 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 
 	// fire setup:
-	SwitchWeaponMesh();
+	SetWeaponMesh();
 }
 
 /*void ATPS_studyCharacter::ChangeControl()
@@ -138,7 +138,7 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
 	PlayerInputComponent->BindAction("AttackAction", IE_Released, this, &ATPS_studyCharacter::FireRelease);
-	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPS_studyCharacter::Aiming);
+	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPS_studyCharacter::AimingPress);
 	PlayerInputComponent->BindAction("AimAction", IE_Released, this, &ATPS_studyCharacter::AimingStop);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -244,16 +244,16 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate)
 // 1.z NAVIGATION
 
 // 2.a AIMING
-bool ATPS_studyCharacter::GetIsAiming()
+bool ATPS_studyCharacter::GetIsAiming() const
 {
 	return (bWeaponIsAlwaysAiming) ? true : bIsAiming;
 }
 
-void ATPS_studyCharacter::Aiming() {
+void ATPS_studyCharacter::AimingPress() {
 
 	if (!IsAbleToAim()) { return; }
 
-	AimingSetup(true);
+	Aiming(true);
 
 	bIsTransitioningAiming = true;
 
@@ -262,7 +262,7 @@ void ATPS_studyCharacter::Aiming() {
 
 void ATPS_studyCharacter::AimingStop()
 {
-	AimingSetup(false);
+	Aiming(false);
 	
 	AimingTimeline->Reverse();
 
@@ -271,11 +271,11 @@ void ATPS_studyCharacter::AimingStop()
 	bOnePressToggle = false;
 }
 
-void ATPS_studyCharacter::AimingSetup(const bool bMyIsAiming)
+void ATPS_studyCharacter::Aiming(const bool bMyIsAiming)
 {
 	bIsAiming = bMyIsAiming;
 	OrientCharacter(bMyIsAiming);
-	SetIsTransitioningAiming(bMyIsAiming);
+	bIsTransitioningAiming = bMyIsAiming;
 
 	float speed = (bMyIsAiming) ? AimingSpeed : StopAimingSpeed;
 
@@ -291,7 +291,7 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
-void ATPS_studyCharacter::TimeAiming(float val)
+void ATPS_studyCharacter::TimeAiming(float Alpha)
 {
 	int A = AimStatStartIndex;
 	int B = AimStatTargetIndex;
@@ -308,11 +308,11 @@ void ATPS_studyCharacter::TimeAiming(float val)
 	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
 	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
 	
-	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, val);
-	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, val);
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, val);
-	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, val);
-	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, val));
+	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, Alpha);
+	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, Alpha);
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, Alpha);
+	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, Alpha);
+	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, Alpha));
 }
 
 void ATPS_studyCharacter::TimeFinishAiming() 
@@ -392,7 +392,7 @@ void ATPS_studyCharacter::FirePress()
 	{
 	case ETriggerMechanism::PressTrigger:
 		FireStandardTrigger();
-		OnWeaponFires();
+		//OnWeaponFires();
 		break;
 
 	case ETriggerMechanism::AutomaticTrigger:
@@ -430,7 +430,6 @@ void ATPS_studyCharacter::FireAutomaticTrigger()
 	}
 
 	FireStandardTrigger();
-	OnWeaponFires();
 }
 
 bool ATPS_studyCharacter::IsWeaponAbleToFire()
@@ -438,27 +437,57 @@ bool ATPS_studyCharacter::IsWeaponAbleToFire()
 	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
 }
 
-void ATPS_studyCharacter::FireAutomaticTriggerOnePress() 
+void ATPS_studyCharacter::FireAutomaticTriggerOnePress()
 {
 	if (bOnePressToggle && IsWeaponAbleToFire()) 
 	{
 		FireStandardTrigger();
-		OnWeaponFires();
 	}
 }
 
 void ATPS_studyCharacter::FireHold() 
 {
+	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+	GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &ATPS_studyCharacter::CountHoldTriggerTime, HoldTimeRateCount, true);
+}
+
+void ATPS_studyCharacter::CountHoldTriggerTime()
+{
+	HoldTime += HoldTimeRateCount;
+
+	if (!bMaxHoldIsReach)
+	{
+		if (HoldTime >= MaxFireHoldTime)
+		{
+			bMaxHoldIsReach = true;
+			OnMaxFireHold();
+		}
+	}
 }
 
 void ATPS_studyCharacter::FireReleaseAfterHold() 
 {
+	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+
+	if (bMaxHoldIsReach)
+	{
+		FireStandardTrigger();
+		OnMaxFireHoldRelease();
+	}
+	else if (HoldTime >= CurrentWeapon.FireRateAndOther[0])
+	{
+		FireStandardTrigger();
+	}
+
+	bMaxHoldIsReach = false;
+	HoldTime = 0.0f;
 }
 
 void ATPS_studyCharacter::FireStandardTrigger()
 {
 	TimerFireRateStart();
 	PlayFireMontage();
+	OnWeaponFires();
 
 	switch (CurrentWeapon.WeaponCost)
 	{
@@ -471,7 +500,7 @@ void ATPS_studyCharacter::FireStandardTrigger()
 		break;
 
 	case EWeaponCost::Energy:
-		FireProjectile(CurrentWeapon.EnergyType);//FireEnergy();
+		FireProjectile(CurrentWeapon.EnergyType);
 		break;
 
 	default:
@@ -479,7 +508,7 @@ void ATPS_studyCharacter::FireStandardTrigger()
 	}
 }
 
-void ATPS_studyCharacter::FireProjectile(EAmmoType AmmoType)
+void ATPS_studyCharacter::FireProjectile(const EAmmoType AmmoType)
 {
 	switch (AmmoType)
 	{
@@ -516,28 +545,7 @@ void ATPS_studyCharacter::FireProjectile(EAmmoType AmmoType)
 	}
 }
 
-/*void ATPS_studyCharacter::FireEnergy()
-{
-	switch (CurrentWeapon.EnergyType) 
-	{
-	case EEnergyType::MP:
-		FireProjectile( &CharacterStat.MP );
-		break;
-
-	case EEnergyType::Battery:
-		FireProjectile( &EnergyExternal.Battery );
-		break;
-
-	case EEnergyType::Fuel:
-		FireProjectile( &EnergyExternal.Fuel );
-		break;
-
-	case EEnergyType::Overheat:
-		FireProjectile( &EnergyExternal.Overheat );
-	}
-}*/
-
-void ATPS_studyCharacter::FireProjectile(EEnergyType EnergyType)
+void ATPS_studyCharacter::FireProjectile(const EEnergyType EnergyType)
 {
 	switch (EnergyType)
 	{
@@ -731,18 +739,6 @@ bool ATPS_studyCharacter::IsAmmoEnough(const float MyEnergy, const float MyEnerg
 	return !bIsNotEnoughEnergy;
 }
 
-bool ATPS_studyCharacter::IsWeaponNotOverheating()
-{
-	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
-
-	if (bIsOverheat) 
-	{ 
-		OnWeaponOverheats(); 
-	}
-
-	return !bIsOverheat;
-}
-
 bool ATPS_studyCharacter::IsAmmoEnough(const EEnergyType EnergyType)
 {
 	switch (CurrentWeapon.EnergyType)
@@ -762,6 +758,18 @@ bool ATPS_studyCharacter::IsAmmoEnough(const EEnergyType EnergyType)
 	default:
 		return false;
 	}
+}
+
+bool ATPS_studyCharacter::IsWeaponNotOverheating()
+{
+	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
+
+	if (bIsOverheat)
+	{
+		OnWeaponOverheats();
+	}
+
+	return !bIsOverheat;
 }
 // 3.z FIRE
 
@@ -789,7 +797,7 @@ int ATPS_studyCharacter::GetWeaponIndex() const
 	return WeaponIndex; 
 }
 
-void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex) 
+void ATPS_studyCharacter::SetWeaponMode(const int MyWeaponIndex) 
 {
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
@@ -799,11 +807,22 @@ void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex)
 	if (WeaponModeRow) 
 	{
 		FWeaponMode CurrentWeaponMode = WeaponModeRow->WeaponMode;
+
 		ShooterState = CurrentWeaponMode.Shooter;
 		CurrentWeapon = CurrentWeaponMode.Weapon;
 		CurrentProjectile = CurrentWeaponMode.Projectile;
+
+		if (CurrentWeapon.FireRateAndOther.Num() >= 2 )
+		{
+			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[1];
+		}
+		else
+		{
+			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[0];
+		}
 	}
 }
+
 void ATPS_studyCharacter::SetWeaponIndex(bool isUp) 
 {
 	LastWeaponIndex = WeaponIndex;
@@ -815,7 +834,7 @@ void ATPS_studyCharacter::SetWeaponIndex(bool isUp)
 
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
 		SetWeaponMode(WeaponIndex);
-		OnSwitchWeaponSuccess();
+		OnSwitchWeapon();
 	}
 }
 
@@ -838,7 +857,7 @@ void ATPS_studyCharacter::SetWeaponIndex(int NumberInput)
 	{
 		WeaponIndex = NumberInput;
 		SetWeaponMode(WeaponIndex);
-		OnSwitchWeaponSuccess();
+		OnSwitchWeapon();
 	}
 }
 
@@ -849,7 +868,7 @@ void ATPS_studyCharacter::SetWeaponIndex4() { SetWeaponIndex(3); }
 
 // 4.z SWITCH WEAPON
 
-void ATPS_studyCharacter::SwitchWeaponMesh()
+void ATPS_studyCharacter::SetWeaponMesh()
 {
 	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(WeaponMesh);

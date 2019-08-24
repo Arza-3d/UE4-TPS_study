@@ -176,12 +176,13 @@ struct FWeapon
 	TArray<FName> SocketName = { FName(TEXT("Muzzle_01")) };
 
 	/**
-	* 0 = fire rate,
-	* 1 = reload time,
-	* 2 = equip time,
-	* 3 = unequip time
-	* all of that are in second
-	*/
+	 * 0 = fire rate,
+	 * 1 = max hold rate,
+	 * 2 = reload time,
+	 * 3 = equip time,
+	 * 4 = unequip time
+	 * all of that are in second
+	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
 	TArray<float> FireRateAndOther = { 0.3f };
 
