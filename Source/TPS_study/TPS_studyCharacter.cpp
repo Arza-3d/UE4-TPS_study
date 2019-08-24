@@ -142,12 +142,12 @@ void ATPS_studyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAction("AimAction", IE_Released, this, &ATPS_studyCharacter::AimingStop);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_1);
-	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_2);
-	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_3);
-	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithNumpad_4);
-	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up);
-	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down);
+	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex1);
+	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex2);
+	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex3);
+	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex4);
+	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexUp);
+	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexDown);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
@@ -333,9 +333,12 @@ bool ATPS_studyCharacter::IsAbleToFire_Implementation()
 	return !GetCharacterMovement()->IsFalling(); 
 }
 
-bool ATPS_studyCharacter::IsEnoughForWeaponCost() 
+bool ATPS_studyCharacter::IsAmmoEnough() 
 {
-	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) { return true; }
+	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) 
+	{ 
+		return true; 
+	}
 
 	switch (CurrentWeapon.WeaponCost) 
 	{
@@ -360,6 +363,7 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
 	QueryParams.AddIgnoredActor(this);
+
 	FHitResult HitTrace;
 	FVector StartTrace = GetFollowCamera()->GetComponentLocation();
 	FRotator CameraRotation = GetFollowCamera()->GetComponentRotation();
@@ -431,7 +435,7 @@ void ATPS_studyCharacter::FireAutomaticTrigger()
 
 bool ATPS_studyCharacter::IsWeaponAbleToFire()
 {
-	return GetIsAiming() && bIsFireRatePassed && IsEnoughForWeaponCost();
+	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
 }
 
 void ATPS_studyCharacter::FireAutomaticTriggerOnePress() 
@@ -673,50 +677,56 @@ void ATPS_studyCharacter::TimerFireRateReset()
 	}
 }
 
-bool ATPS_studyCharacter::IsAmmoNotEmpty(int Ammo)
+bool ATPS_studyCharacter::IsAmmoEnough(const int Ammo)
 {
 	bool bAmmoIsEmpty = Ammo <= 0;
 
-	if (bAmmoIsEmpty) { OnNoAmmo(); }
+	if (bAmmoIsEmpty) 
+	{ 
+		OnNoAmmo(); 
+	}
 
 	return !bAmmoIsEmpty;
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(EAmmoType Ammo)
+bool ATPS_studyCharacter::IsAmmoEnough(const EAmmoType Ammo)
 {
 	switch (Ammo)
 	{
 	case EAmmoType::StandardAmmo:
-		return IsAmmoNotEmpty(Ammunition.StandardAmmo);
+		return IsAmmoEnough(Ammunition.StandardAmmo);
 
 	case EAmmoType::RifleAmmo:
-		return IsAmmoNotEmpty(Ammunition.RifleAmmo);
+		return IsAmmoEnough(Ammunition.RifleAmmo);
 
 	case EAmmoType::ShotgunAmmo:
-		return IsAmmoNotEmpty(Ammunition.ShotgunAmmo);
+		return IsAmmoEnough(Ammunition.ShotgunAmmo);
 
 	case EAmmoType::Rocket:
-		return IsAmmoNotEmpty(Ammunition.Rocket);
+		return IsAmmoEnough(Ammunition.Rocket);
 
 	case EAmmoType::Arrow:
-		return IsAmmoNotEmpty(Ammunition.Arrow);
+		return IsAmmoEnough(Ammunition.Arrow);
 
 	case EAmmoType::Grenade:
-		return IsAmmoNotEmpty(Ammunition.Grenade);
+		return IsAmmoEnough(Ammunition.Grenade);
 
 	case EAmmoType::Mine:
-		return IsAmmoNotEmpty(Ammunition.Mine);
+		return IsAmmoEnough(Ammunition.Mine);
 
 	default:
 		return false;
 	}
 }
 
-bool ATPS_studyCharacter::IsEnergyEnoughToShoot(float MyEnergy, float MyEnergyPerShot)
+bool ATPS_studyCharacter::IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot)
 {
 	bool bIsNotEnoughEnergy = MyEnergy < MyEnergyPerShot;
 
-	if (bIsNotEnoughEnergy) { OnNoEnergy(); }
+	if (bIsNotEnoughEnergy) 
+	{
+		OnNoEnergy(); 
+	}
 
 	return !bIsNotEnoughEnergy;
 }
@@ -725,23 +735,26 @@ bool ATPS_studyCharacter::IsWeaponNotOverheating()
 {
 	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
 
-	if (bIsOverheat) { OnWeaponOverheats(); }
+	if (bIsOverheat) 
+	{ 
+		OnWeaponOverheats(); 
+	}
 
 	return !bIsOverheat;
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(EEnergyType EnergyType)
+bool ATPS_studyCharacter::IsAmmoEnough(const EEnergyType EnergyType)
 {
 	switch (CurrentWeapon.EnergyType)
 	{
 	case EEnergyType::MP:
-		return IsEnergyEnoughToShoot(CharacterStat.MP, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(CharacterStat.MP, CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Fuel:
-		return IsEnergyEnoughToShoot(EnergyExternal.Fuel, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.Fuel, CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Battery:
-		return IsEnergyEnoughToShoot(EnergyExternal.Battery, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.Battery, CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Overheat:
 		return IsWeaponNotOverheating();
@@ -791,7 +804,7 @@ void ATPS_studyCharacter::SetWeaponMode(int MyWeaponIndex)
 		CurrentProjectile = CurrentWeaponMode.Projectile;
 	}
 }
-void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp) 
+void ATPS_studyCharacter::SetWeaponIndex(bool isUp) 
 {
 	LastWeaponIndex = WeaponIndex;
 
@@ -806,33 +819,33 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 	}
 }
 
-void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up() { SetWeaponIndexWithMouseWheel(true); }
-void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down() { SetWeaponIndexWithMouseWheel(false); }
+void ATPS_studyCharacter::SetWeaponIndexUp() { SetWeaponIndex(true); }
+void ATPS_studyCharacter::SetWeaponIndexDown() { SetWeaponIndex(false); }
 
 void ATPS_studyCharacter::FlipOnePressTriggerSwitch()
 {
 	bOnePressToggle = (bOnePressToggle) ? false : true;
 }
 
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
+void ATPS_studyCharacter::SetWeaponIndex(int NumberInput)
 {
 
-	if (numberInput >= WeaponNames.Num()) { return; }
+	if (NumberInput >= WeaponNames.Num()) { return; }
 
 	LastWeaponIndex = WeaponIndex;
 
 	if ((WeaponNames.Num() > WeaponIndex) && IsAbleToSwitchWeapon()) 
 	{
-		WeaponIndex = numberInput;
+		WeaponIndex = NumberInput;
 		SetWeaponMode(WeaponIndex);
 		OnSwitchWeaponSuccess();
 	}
 }
 
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad_1() { SetWeaponIndexWithNumpad(0); }
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad_2() { SetWeaponIndexWithNumpad(1); }
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad_3() { SetWeaponIndexWithNumpad(2); }
-void ATPS_studyCharacter::SetWeaponIndexWithNumpad_4() { SetWeaponIndexWithNumpad(3); }
+void ATPS_studyCharacter::SetWeaponIndex1() { SetWeaponIndex(0); }
+void ATPS_studyCharacter::SetWeaponIndex2() { SetWeaponIndex(1); }
+void ATPS_studyCharacter::SetWeaponIndex3() { SetWeaponIndex(2); }
+void ATPS_studyCharacter::SetWeaponIndex4() { SetWeaponIndex(3); }
 
 // 4.z SWITCH WEAPON
 
