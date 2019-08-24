@@ -46,16 +46,11 @@ void ATPS_Projectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (ProjectileVX) {
-		SpawnFX(
-			ProjectileVX->ProjectileVX.MuzzleVX,//ProjectileMuzzle.MuzzleFX.VisualEffect, 
-			ProjectileSound->ProjectileSoundEffect.MuzzleSX,//ProjectileMuzzle.MuzzleFX.SoundEffect,
-			GetActorTransform(), 1.0f
-		);
+	if (ProjectileVX) 
+	{
+		SpawnFX(ProjectileVX->ProjectileVX.MuzzleVX, ProjectileSound->ProjectileSoundEffect.MuzzleSX, GetActorTransform(), 1.0f);
 
-		ProjectileTrailParticle->SetTemplate(UTPSFunctionLibrary::GetRandomParticle(
-			ProjectileVX->ProjectileVX.TrailVX//ProjectileTrail.TrailFX.VisualEffect
-		));
+		ProjectileTrailParticle->SetTemplate(UTPSFunctionLibrary::GetRandomParticle(ProjectileVX->ProjectileVX.TrailVX));
 	}
 }
 
@@ -63,16 +58,16 @@ void ATPS_Projectile::DestroySelf() { GetWorld()->DestroyActor(this); }
 
 void ATPS_Projectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UPrimitiveComponent * OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit) 
 {
-	if (ProjectileVX && ProjectileSound) {
-		SpawnFX(
-			ProjectileVX->ProjectileVX.HitVX, //ProjectileHit.HitFX[0].VisualEffect
-			ProjectileSound->ProjectileSoundEffect.HitSX,//ProjectileHit.HitFX[0].SoundEffect, 
-			GetActorTransform(), 1.0f
-		);
+	if (ProjectileVX && ProjectileSound) 
+	{
+		SpawnFX(ProjectileVX->ProjectileVX.HitVX, ProjectileSound->ProjectileSoundEffect.HitSX, GetActorTransform(), 1.0f);
 	}
-	if (ProjectileTrailParticle) {
+
+	if (ProjectileTrailParticle) 
+	{
 		ProjectileTrailParticle->DestroyComponent();
 	}
+
 	GetWorldTimerManager().ClearTimer(TimerDestroy);
 	GetWorldTimerManager().SetTimer(TimerDestroy, this, &ATPS_Projectile::DestroySelf, 3.0f);
 }
@@ -91,7 +86,7 @@ void ATPS_Projectile::SpawnFX(TArray<UParticleSystem*> MyParticles, USoundBase* 
 	}
 }
 
-void ATPS_Projectile::SpawnFX(UParticleSystem * MyParticle, USoundBase * MySoundEffect, FTransform MyTransform, float MyScaleEmitter)
+void ATPS_Projectile::SpawnFX(UParticleSystem* MyParticle, USoundBase * MySoundEffect, FTransform MyTransform, float MyScaleEmitter)
 {
 	if (MyParticle)
 	{

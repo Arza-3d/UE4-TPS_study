@@ -244,9 +244,9 @@ void ATPS_studyCharacter::LookUpAtRate(float Rate)
 // 1.z NAVIGATION
 
 // 2.a AIMING
-bool ATPS_studyCharacter::GetIsAiming() const
+bool ATPS_studyCharacter::GetIsAiming()
 {
-	return bIsAiming;
+	return (bWeaponIsAlwaysAiming) ? true : bIsAiming;
 }
 
 void ATPS_studyCharacter::Aiming() {
@@ -267,6 +267,8 @@ void ATPS_studyCharacter::AimingStop()
 	AimingTimeline->Reverse();
 
 	OnStopAiming();
+
+	bOnePressToggle = false;
 }
 
 void ATPS_studyCharacter::AimingSetup(const bool bMyIsAiming)
@@ -341,7 +343,7 @@ bool ATPS_studyCharacter::IsEnoughForWeaponCost()
 		return IsAmmoEnough(CurrentWeapon.AmmoType);
 
 	case EWeaponCost::Energy:
-		return IsEnergyEnough(CurrentWeapon.EnergyType);
+		return IsAmmoEnough(CurrentWeapon.EnergyType);
 
 	default:
 		return false;
@@ -378,7 +380,9 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 void ATPS_studyCharacter::FirePress() 
 {
 	bIsTriggerPressed = true;
-	if (!(bIsAiming && bIsFireRatePassed && IsEnoughForWeaponCost())) { return; }
+	FlipOnePressTriggerSwitch();
+
+	if (!(IsWeaponAbleToFire())) { return; }
 
 	switch (CurrentWeapon.Trigger) 
 	{
@@ -407,6 +411,7 @@ void ATPS_studyCharacter::FirePress()
 void ATPS_studyCharacter::FireRelease()
 {
 	bIsTriggerPressed = false;
+
 	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) 
 	{
 		FireReleaseAfterHold();
@@ -415,7 +420,7 @@ void ATPS_studyCharacter::FireRelease()
 
 void ATPS_studyCharacter::FireAutomaticTrigger()
 {
-	if (!(bIsTriggerPressed && bIsAiming && bIsFireRatePassed && IsEnoughForWeaponCost()))
+	if (!(bIsTriggerPressed && IsWeaponAbleToFire()))
 	{
 		return; 
 	}
@@ -424,8 +429,18 @@ void ATPS_studyCharacter::FireAutomaticTrigger()
 	OnWeaponFires();
 }
 
+bool ATPS_studyCharacter::IsWeaponAbleToFire()
+{
+	return GetIsAiming() && bIsFireRatePassed && IsEnoughForWeaponCost();
+}
+
 void ATPS_studyCharacter::FireAutomaticTriggerOnePress() 
 {
+	if (bOnePressToggle && IsWeaponAbleToFire()) 
+	{
+		FireStandardTrigger();
+		OnWeaponFires();
+	}
 }
 
 void ATPS_studyCharacter::FireHold() 
@@ -444,15 +459,15 @@ void ATPS_studyCharacter::FireStandardTrigger()
 	switch (CurrentWeapon.WeaponCost)
 	{
 	case EWeaponCost::Nothing:
-		FireUnlimited();
+		FireProjectile();
 		break;
 
 	case EWeaponCost::Ammo:
-		FireAmmo();
+		FireProjectile(CurrentWeapon.AmmoType);
 		break;
 
 	case EWeaponCost::Energy:
-		FireEnergy();
+		FireProjectile(CurrentWeapon.EnergyType);//FireEnergy();
 		break;
 
 	default:
@@ -460,55 +475,86 @@ void ATPS_studyCharacter::FireStandardTrigger()
 	}
 }
 
-void ATPS_studyCharacter::FireAmmo() 
+void ATPS_studyCharacter::FireProjectile(EAmmoType AmmoType)
 {
-	switch (CurrentWeapon.AmmoType) 
+	switch (AmmoType)
 	{
 	case EAmmoType::StandardAmmo:
-		FireAmmoProjectile(&Ammunition.StandardAmmo);
+		FireProjectile(&Ammunition.StandardAmmo);
 		break;
+
 	case EAmmoType::RifleAmmo:
-		FireAmmoProjectile(&Ammunition.RifleAmmo);
+		FireProjectile(&Ammunition.RifleAmmo);
 		break;
+
 	case EAmmoType::ShotgunAmmo:
-		FireAmmoProjectile(&Ammunition.ShotgunAmmo);
+		FireProjectile(&Ammunition.ShotgunAmmo);
 		break;
+
 	case EAmmoType::Rocket:
-		FireAmmoProjectile(&Ammunition.Rocket);
+		FireProjectile(&Ammunition.Rocket);
 		break;
+
 	case EAmmoType::Arrow:
-		FireAmmoProjectile(&Ammunition.Arrow);
+		FireProjectile(&Ammunition.Arrow);
 		break;
+
 	case EAmmoType::Grenade:
-		FireAmmoProjectile(&Ammunition.Grenade);
+		FireProjectile(&Ammunition.Grenade);
 		break;
+
 	case EAmmoType::Mine:
-		FireAmmoProjectile(&Ammunition.Mine);
+		FireProjectile(&Ammunition.Mine);
 		break;
+
 	default:
 		break;
 	}
 }
 
-void ATPS_studyCharacter::FireEnergy()
+/*void ATPS_studyCharacter::FireEnergy()
 {
 	switch (CurrentWeapon.EnergyType) 
 	{
 	case EEnergyType::MP:
-		FireEnergyProjectile( &CharacterStat.MP );
+		FireProjectile( &CharacterStat.MP );
 		break;
+
 	case EEnergyType::Battery:
-		FireEnergyProjectile( &EnergyExternal.Battery );
+		FireProjectile( &EnergyExternal.Battery );
 		break;
+
 	case EEnergyType::Fuel:
-		FireEnergyProjectile( &EnergyExternal.Fuel );
+		FireProjectile( &EnergyExternal.Fuel );
 		break;
+
 	case EEnergyType::Overheat:
-		FireEnergyProjectile( &EnergyExternal.Overheat );
+		FireProjectile( &EnergyExternal.Overheat );
+	}
+}*/
+
+void ATPS_studyCharacter::FireProjectile(EEnergyType EnergyType)
+{
+	switch (EnergyType)
+	{
+	case EEnergyType::MP:
+		FireProjectile(&CharacterStat.MP);
+		break;
+
+	case EEnergyType::Battery:
+		FireProjectile(&EnergyExternal.Battery);
+		break;
+
+	case EEnergyType::Fuel:
+		FireProjectile(&EnergyExternal.Fuel);
+		break;
+
+	case EEnergyType::Overheat:
+		FireProjectile(&EnergyExternal.Overheat);
 	}
 }
 
-void ATPS_studyCharacter::FireUnlimited() 
+void ATPS_studyCharacter::FireProjectile() 
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
@@ -519,7 +565,7 @@ void ATPS_studyCharacter::FireUnlimited()
 	}
 }
 
-void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo)
+void ATPS_studyCharacter::FireProjectile(int* Ammo)
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
@@ -539,7 +585,7 @@ void ATPS_studyCharacter::FireAmmoProjectile(int* Ammo)
 	*Ammo = CurrentAmmo;
 }
 
-void ATPS_studyCharacter::FireEnergyProjectile(float* MyEnergy) 
+void ATPS_studyCharacter::FireProjectile(float* MyEnergy) 
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
@@ -620,6 +666,10 @@ void ATPS_studyCharacter::TimerFireRateReset()
 	if (CurrentWeapon.Trigger == ETriggerMechanism::AutomaticTrigger)
 	{
 		FireAutomaticTrigger();
+	} 
+	else if (CurrentWeapon.Trigger == ETriggerMechanism::OnePressAutoTrigger)
+	{
+		FireAutomaticTriggerOnePress();
 	}
 }
 
@@ -680,7 +730,7 @@ bool ATPS_studyCharacter::IsWeaponNotOverheating()
 	return !bIsOverheat;
 }
 
-bool ATPS_studyCharacter::IsEnergyEnough(EEnergyType EnergyType)
+bool ATPS_studyCharacter::IsAmmoEnough(EEnergyType EnergyType)
 {
 	switch (CurrentWeapon.EnergyType)
 	{
@@ -758,6 +808,11 @@ void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel(bool isUp)
 
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Up() { SetWeaponIndexWithMouseWheel(true); }
 void ATPS_studyCharacter::SetWeaponIndexWithMouseWheel_Down() { SetWeaponIndexWithMouseWheel(false); }
+
+void ATPS_studyCharacter::FlipOnePressTriggerSwitch()
+{
+	bOnePressToggle = (bOnePressToggle) ? false : true;
+}
 
 void ATPS_studyCharacter::SetWeaponIndexWithNumpad(int numberInput)
 {

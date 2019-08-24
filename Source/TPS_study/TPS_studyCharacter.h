@@ -6,6 +6,7 @@
 #include "TPSFunctionLibrary.h"
 #include "TPS_studyCharacter.generated.h"
 
+
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter {
 	GENERATED_BODY()
@@ -15,7 +16,10 @@ class ATPS_studyCharacter : public ACharacter {
 	///////////////////
 
 public:
+
 	ATPS_studyCharacter();
+
+	
 	
 private:
 
@@ -25,8 +29,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class ATPS_Projectile> TheProjectile;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	class ATPS_Projectile* TheProjectile;
 	
 	FCharacterStat CharacterStat;
 	FExternalEnergyCount EnergyExternal;
@@ -45,6 +49,8 @@ public:
 	void SetMP(float val);
 
 protected:
+
+	
 
 	virtual void BeginPlay() override;
 
@@ -72,8 +78,15 @@ public:
 
 protected:
 
+	/** Only use this for stationary/vehicle/drone weapon */
+	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
+	bool bWeaponIsAlwaysAiming;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<class UUserWidget> Crosshair;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	bool GetIsAiming();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	ETriggerMechanism GetTriggerMechanism() const;
@@ -115,9 +128,6 @@ protected:
 
 protected:
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	bool GetIsAiming() const;
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed() const;
 	
@@ -133,31 +143,33 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
 
+private:
 	// FirePress() will call one of these: 
+
 	void FireStandardTrigger(); // activate OnWeaponFires()
 	void FireAutomaticTrigger(); // will call FireStandardTrigger() and activate OnWeaponFires()
 	void FireHold();
 	void FireAutomaticTriggerOnePress(); // will call FireStandardTrigger()
 
-
-	void FireUnlimited();
-	void FireAmmo();
-	void FireEnergy();
-
-	void FireAmmoProjectile(int* Ammo);
-	void FireEnergyProjectile(float* Energy);
+	void FireReleaseAfterHold();
+	
+	bool IsWeaponAbleToFire();
+	
+	void FireProjectile();
+	void FireProjectile(EAmmoType AmmoType);
+	void FireProjectile(EEnergyType EnergyType);
+	void FireProjectile(int* Ammo);
+	void FireProjectile(float* Energy);
 	
 	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
 
-	
-	void FireReleaseAfterHold();
-	
 	void PlayFireMontage();
-
 	// 3.z FIRE
 
 public:
+
 	FShooter ShooterState;
+
 protected:
 
 	FAmmoCount Ammunition;
@@ -259,9 +271,12 @@ protected:
 	/////////////
 
 	bool IsEnoughForWeaponCost();
+
 	bool IsAmmoEnough(EAmmoType ammo);
-	bool IsEnergyEnough(EEnergyType EnergyType);
+	bool IsAmmoEnough(EEnergyType EnergyType);
+
 	FTimerHandle FireRateTimer;
+
 	void TimerFireRateStart();
 	void TimerFireRateReset();
 
@@ -299,6 +314,8 @@ protected:
 
 	bool bIsTransitioningAiming;
 private:
+	bool bOnePressToggle;
+	void FlipOnePressTriggerSwitch();
 
 	void SetWeaponIndexWithNumpad(const int numberInput);
 	void SetWeaponIndexWithNumpad_1();

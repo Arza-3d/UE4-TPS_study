@@ -10,6 +10,8 @@ class UProjectileMovementComponent;
 class USphereComponent;
 class UParticleSystemComponent;
 
+
+
 UCLASS()
 class TPS_STUDY_API ATPS_Projectile : public AActor
 {
@@ -25,7 +27,11 @@ public:
 	UProjectileSXDataAsset* ProjectileSound;
 
 	void SetUpProjectile(FProjectile MyProjectile);
+
 	void SpawnFX(TArray<UParticleSystem*> MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
+
+	void SpawnFX(UParticleSystem* MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
+
 	void DestroySelf();
 
 	virtual void NotifyHit(class UPrimitiveComponent* MyComp, AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
