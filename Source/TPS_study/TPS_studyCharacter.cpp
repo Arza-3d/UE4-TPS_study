@@ -269,15 +269,22 @@ void ATPS_studyCharacter::AimingStop()
 	OnStopAiming();
 
 	bOnePressToggle = false;
+
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
+	{
+		GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+		bMaxHoldIsReach = false;
+		HoldTime = 0.0f;
+	}
 }
 
-void ATPS_studyCharacter::Aiming(const bool bMyIsAiming)
+void ATPS_studyCharacter::Aiming(const bool bInIsAiming)
 {
-	bIsAiming = bMyIsAiming;
-	OrientCharacter(bMyIsAiming);
-	bIsTransitioningAiming = bMyIsAiming;
+	bIsAiming = bInIsAiming;
+	OrientCharacter(bInIsAiming);
+	bIsTransitioningAiming = bInIsAiming;
 
-	float speed = (bMyIsAiming) ? AimingSpeed : StopAimingSpeed;
+	float speed = (bInIsAiming) ? AimingSpeed : StopAimingSpeed;
 
 	if (speed <= 0.0f) { speed = 1.0f; };
 
@@ -293,8 +300,8 @@ void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
 
 void ATPS_studyCharacter::TimeAiming(float Alpha)
 {
-	int A = AimStatStartIndex;
-	int B = AimStatTargetIndex;
+	int32 A = AimStatStartIndex;
+	int32 B = AimStatTargetIndex;
 	
 	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
 	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
@@ -580,8 +587,8 @@ void ATPS_studyCharacter::FireProjectile()
 void ATPS_studyCharacter::FireProjectile(int* Ammo)
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
-	int MuzzleCount = MuzzleName.Num();
-	int CurrentAmmo = *Ammo;
+	int32 MuzzleCount = MuzzleName.Num();
+	int32 CurrentAmmo = *Ammo;
 
 	for (int i = 0; i < MuzzleCount; i++)
 	{
@@ -600,7 +607,7 @@ void ATPS_studyCharacter::FireProjectile(int* Ammo)
 void ATPS_studyCharacter::FireProjectile(float* MyEnergy) 
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
-	int MuzzleCount = MuzzleName.Num();
+	int32 MuzzleCount = MuzzleName.Num();
 	float CurrentEnergy = *MyEnergy;
 	float EnergyCostPerShot = CurrentWeapon.EnergyUsePerShot;
 
@@ -635,7 +642,7 @@ void ATPS_studyCharacter::FireProjectile(float* MyEnergy)
 	*MyEnergy = CurrentEnergy;
 }
 
-void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i)
+void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i)
 {
 	FTransform MuzzleTransform = MyWeaponInWorld->GetSocketTransform(MuzzleName[i]);
 	FTransform SpawnTransform = FTransform(GetNewMuzzleRotationFromLineTrace(MuzzleTransform), MuzzleTransform.GetLocation(), MuzzleTransform.GetScale3D());
@@ -685,9 +692,9 @@ void ATPS_studyCharacter::TimerFireRateReset()
 	}
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(const int Ammo)
+bool ATPS_studyCharacter::IsAmmoEnough(const int32 InAmmo)
 {
-	bool bAmmoIsEmpty = Ammo <= 0;
+	bool bAmmoIsEmpty = InAmmo <= 0;
 
 	if (bAmmoIsEmpty) 
 	{ 
@@ -787,17 +794,17 @@ bool ATPS_studyCharacter::IsAbleToAim_Implementation()
 	return !GetCharacterMovement()->IsFalling();
 }
 
-int ATPS_studyCharacter::GetLastWeaponIndex() const 
+int32 ATPS_studyCharacter::GetLastWeaponIndex() const 
 {
 	return LastWeaponIndex; 
 }
 
-int ATPS_studyCharacter::GetWeaponIndex() const
+int32 ATPS_studyCharacter::GetWeaponIndex() const
 {
 	return WeaponIndex; 
 }
 
-void ATPS_studyCharacter::SetWeaponMode(const int MyWeaponIndex) 
+void ATPS_studyCharacter::SetWeaponMode(const int32 MyWeaponIndex) 
 {
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
@@ -829,8 +836,8 @@ void ATPS_studyCharacter::SetWeaponIndex(bool isUp)
 
 	if (IsAbleToSwitchWeapon()) 
 	{
-		int counter = isUp ? 1 : -1;
-		int withinRange = (WeaponIndex + counter) % WeaponNames.Num();
+		int32 counter = isUp ? 1 : -1;
+		int32 withinRange = (WeaponIndex + counter) % WeaponNames.Num();
 
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
 		SetWeaponMode(WeaponIndex);
@@ -846,16 +853,16 @@ void ATPS_studyCharacter::FlipOnePressTriggerSwitch()
 	bOnePressToggle = (bOnePressToggle) ? false : true;
 }
 
-void ATPS_studyCharacter::SetWeaponIndex(int NumberInput)
+void ATPS_studyCharacter::SetWeaponIndex(const int32 InNumber)
 {
 
-	if (NumberInput >= WeaponNames.Num()) { return; }
+	if (InNumber >= WeaponNames.Num()) { return; }
 
 	LastWeaponIndex = WeaponIndex;
 
 	if ((WeaponNames.Num() > WeaponIndex) && IsAbleToSwitchWeapon()) 
 	{
-		WeaponIndex = NumberInput;
+		WeaponIndex = InNumber;
 		SetWeaponMode(WeaponIndex);
 		OnSwitchWeapon();
 	}
@@ -875,7 +882,7 @@ void ATPS_studyCharacter::SetWeaponMesh()
 }
 
 // 5.a PICKUP
-void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType) 
+void ATPS_studyCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType) 
 {
 	switch (ammoType) 
 	{
@@ -909,9 +916,9 @@ void ATPS_studyCharacter::AddAmmo(int addAmmo, EAmmoType ammoType)
 }
 // 5.z PICKUP
 
-void ATPS_studyCharacter::SetIsTransitioningAiming(bool isTransitioningAiming) 
+void ATPS_studyCharacter::SetIsTransitioningAiming(bool bInBool) 
 {
-	bIsTransitioningAiming = isTransitioningAiming;
+	bIsTransitioningAiming = bInBool;
 }
 
 bool ATPS_studyCharacter::GetTransitioningAiming() const

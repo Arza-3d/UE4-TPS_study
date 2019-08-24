@@ -6,6 +6,11 @@
 #include "TPSFunctionLibrary.h"
 #include "TPS_studyCharacter.generated.h"
 
+class UDataTable;
+class UUserWidget;
+class USpringArmComponent;
+class UCameraComponent;
+class ATPS_Projectile;
 
 UCLASS(config=Game)
 class ATPS_studyCharacter : public ACharacter {
@@ -16,9 +21,9 @@ public:
 
 	ATPS_studyCharacter();
 
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetIsAiming() const;
@@ -31,10 +36,8 @@ public:
 
 	void SetMP(float val);
 
-	
-
 	UFUNCTION(BlueprintCallable)
-	void AddAmmo(int addAmmo, EAmmoType ammoType);
+	void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
 
 protected:
 
@@ -49,13 +52,13 @@ protected:
 	float StopAimingSpeed = 0.1f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	TSubclassOf<class UUserWidget> Crosshair;
+	TSubclassOf<UUserWidget> Crosshair;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	class UDataTable* WeaponModeTable;
+	UDataTable* WeaponModeTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	class UDataTable* AimingTable;
+	UDataTable* AimingTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
 	bool bWeaponIsAlwaysAiming;
@@ -83,10 +86,10 @@ protected:
 	FName GetWeaponName() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int GetWeaponIndex() const;
+	int32 GetWeaponIndex() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int GetLastWeaponIndex() const;
+	int32 GetLastWeaponIndex() const;
 
 	////////////////////////
 	// Function (protected)
@@ -163,7 +166,7 @@ protected:
 	/////////////
 	
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void SetIsTransitioningAiming(bool isTransitioningAiming);
+	void SetIsTransitioningAiming(bool bInBool);
 
 	virtual void BeginPlay() override;
 
@@ -178,13 +181,13 @@ private:
 	//////////////
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* FollowCamera;
+	UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
-	class ATPS_Projectile* TheProjectile;
+	ATPS_Projectile* TheProjectile;
 
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
@@ -201,17 +204,14 @@ private:
 	UPROPERTY()
 	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
 
-	
-
-
 	///////////
 	// Aiming
 	///////////
 
 	// 0 = default, 1 = aiming, 2, 3, x extra mode
 	TArray<FAimingStat> AimStats;
-	int AimStatStartIndex = 0;
-	int AimStatTargetIndex = 1;
+	int32 AimStatStartIndex = 0;
+	int32 AimStatTargetIndex = 1;
 	TArray<FName> AimingNames;
 
 	bool bIsAiming;
@@ -219,14 +219,13 @@ private:
 	bool bMaxHoldIsReach;
 	float MaxFireHoldTime;
 
-	void Aiming(const bool isAiming);
+	void Aiming(const bool bInIsAiming);
 	
 	void OrientCharacter(const bool bMyCharIsAiming);
 
 	FCharacterStat CharacterStat;
 	FAmmoCount Ammunition;
 	FExternalEnergyCount EnergyExternal;
-	//FExternalEnergyCount Energy;
 
 	FShooter ShooterState;
 	FWeapon CurrentWeapon;
@@ -256,7 +255,7 @@ private:
 	void FireProjectile(const EEnergyType EnergyType);
 	void FireProjectile(int* Ammo);
 	void FireProjectile(float* Energy);
-	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int i);
+	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i);
 
 	FTimerHandle TimerOfHoldTrigger;
 	void CountHoldTriggerTime();
@@ -273,8 +272,8 @@ private:
 	//////////////////
 
 	// variables:
-	int WeaponIndex;
-	int LastWeaponIndex;
+	int32 WeaponIndex;
+	int32 LastWeaponIndex;
 	TArray<FName> WeaponNames;
 	USceneComponent* WeaponInWorld;
 
@@ -284,11 +283,11 @@ private:
 	bool IsAmmoEnough();
 	bool IsAmmoEnough(const EAmmoType ammo);
 	bool IsAmmoEnough(const EEnergyType EnergyType);
-	bool IsAmmoEnough(const int ammo);
+	bool IsAmmoEnough(const int32 InAmmo);
 	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
 	bool IsWeaponNotOverheating();
 
-	void SetWeaponIndex(const int NumberInput);
+	void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex1();
 	void SetWeaponIndex2();
 	void SetWeaponIndex3();
@@ -298,7 +297,7 @@ private:
 	void SetWeaponIndexUp();
 	void SetWeaponIndexDown();
 
-	void SetWeaponMode(const int MyWeaponIndex);
+	void SetWeaponMode(const int32 MyWeaponIndex);
 	
 	///////////////
 	// Navigation
