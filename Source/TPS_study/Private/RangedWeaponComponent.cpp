@@ -19,6 +19,8 @@ void URangedWeaponComponent::BeginPlay()
 		WeaponNames = WeaponTable->GetRowNames();
 		SetWeaponMode(0);
 	}
+
+	SetWeaponMesh();
 }
 
 FName URangedWeaponComponent::GetWeaponName() const
@@ -106,3 +108,9 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 		GetRangedWeapon()->SetWeaponMode(0);
 	}
 }*/
+
+void URangedWeaponComponent::SetWeaponMesh()
+{
+	USkeletalMeshComponent* weaponMesh = Shooter->GetMesh(); // change it to accept additional weapon mesh later
+	WeaponInWorld = Cast<USceneComponent>(weaponMesh);
+}

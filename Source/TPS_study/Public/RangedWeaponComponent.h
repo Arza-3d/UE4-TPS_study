@@ -72,6 +72,9 @@ private:
 //===========================================================================
 
 	ATPShooterCharacter* Shooter;
+	USceneComponent* WeaponInWorld;
+
+	void SetWeaponMesh();
 
 	int32 WeaponIndex;
 	int32 LastWeaponIndex;

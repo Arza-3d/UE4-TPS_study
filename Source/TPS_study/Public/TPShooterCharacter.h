@@ -279,10 +279,10 @@ private:
 
 	// variables:
 	//TArray<FName> WeaponNames;
-	USceneComponent* WeaponInWorld;
+	//USceneComponent* WeaponInWorld;
 
 	// function:
-	void SetWeaponMesh();
+	//void SetWeaponMesh();
 
 	bool IsAmmoEnough();
 	bool IsAmmoEnough(const EAmmoType ammo);

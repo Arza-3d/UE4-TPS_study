@@ -55,7 +55,7 @@ ATPShooterCharacter::ATPShooterCharacter()
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 
 	// fire setup:
-	SetWeaponMesh();
+	//GetRangedWeapon()->SetWeaponMesh();
 }
 
 /*void ATPShooterCharacter::ChangeControl()
@@ -595,7 +595,7 @@ void ATPShooterCharacter::FireProjectile()
 
 	for (int i = 0; i < MuzzleCount; i++)
 	{
-		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+		SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
 }
 
@@ -613,7 +613,7 @@ void ATPShooterCharacter::FireProjectile(int* Ammo)
 		}
 
 		CurrentAmmo--;
-		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+		SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
 
 	*Ammo = CurrentAmmo;
@@ -637,7 +637,7 @@ void ATPShooterCharacter::FireProjectile(float* MyEnergy)
 			}
 
 			CurrentEnergy -= EnergyCostPerShot;
-			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+			SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
 	}
 	else
@@ -651,7 +651,7 @@ void ATPShooterCharacter::FireProjectile(float* MyEnergy)
 			}
 
 			CurrentEnergy += EnergyCostPerShot;
-			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+			SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
 	}
 	*MyEnergy = CurrentEnergy;
@@ -891,11 +891,11 @@ void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(
 
 // 4.z SWITCH WEAPON
 
-void ATPShooterCharacter::SetWeaponMesh()
+/*void ATPShooterCharacter::SetWeaponMesh()
 {
 	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
-	WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
-}
+	GetRangedWeapon()->WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
+}*/
 
 // 5.a PICKUP
 void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
