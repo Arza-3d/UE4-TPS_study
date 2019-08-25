@@ -26,6 +26,8 @@ ATPShooterCharacter::ATPShooterCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
 
+
+
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraBoom->SetupAttachment(RootComponent);
@@ -247,6 +249,7 @@ void ATPShooterCharacter::LookUpAtRate(float Rate)
 // 1.z NAVIGATION
 
 // 2.a AIMING
+
 bool ATPShooterCharacter::GetIsAiming() const
 {
 	return (bWeaponIsAlwaysAiming) ? true : bIsAiming;
@@ -273,13 +276,13 @@ void ATPShooterCharacter::AimingRelease()
 
 	OnStopAiming();
 
-	bOnePressToggle = false;
+	GetRangedWeapon()->bOnePressToggle = false;
 
 	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
 	{
-		GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+		GetWorldTimerManager().ClearTimer(GetRangedWeapon()->TimerOfHoldTrigger);
 		bMaxHoldIsReach = false;
-		HoldTime = 0.0f;
+		GetRangedWeapon()->HoldTime = 0.0f;
 	}
 }
 
@@ -331,6 +334,7 @@ void ATPShooterCharacter::TimeFinishAiming()
 {
 	bIsTransitioningAiming = false;
 	OnAiming();
+	GetWorldTimerManager();//////////////////
 }
 
 /*void ATPShooterCharacter::SetupRangedWeaponVariables()
@@ -348,7 +352,7 @@ void ATPShooterCharacter::TimeFinishAiming()
 // 3.a FIRE
 bool ATPShooterCharacter::IsAbleToRepeatAutoFire_Implementation()
 {
-	return bIsTriggerPressed;
+	return GetRangedWeapon()->bIsTriggerPressed;
 }
 
 bool ATPShooterCharacter::IsAbleToFire_Implementation()
@@ -358,334 +362,50 @@ bool ATPShooterCharacter::IsAbleToFire_Implementation()
 
 bool ATPShooterCharacter::GetIsTriggerPressed() const
 {
-	return bIsTriggerPressed;
-}
-
-FRotator ATPShooterCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform)
-{
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(GetOwner());
-	QueryParams.AddIgnoredActor(this);
-
-	FHitResult HitTrace;
-	FVector StartTrace = GetFollowCamera()->GetComponentLocation();
-	FRotator CameraRotation = GetFollowCamera()->GetComponentRotation();
-	FVector LookDirection = UKismetMathLibrary::GetForwardVector(CameraRotation);
-	FVector EndTrace = StartTrace + LookDirection * 100.0f * 3000.0f;
-	FVector TargetLocation;
-	FRotator MuzzleLookRotation;
-
-	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
-	{
-		TargetLocation = HitTrace.Location;
-		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
-	}
-
-	return MuzzleLookRotation;
+	return GetRangedWeapon()->bIsTriggerPressed;
 }
 
 void ATPShooterCharacter::FirePress()
 {
-	bIsTriggerPressed = true;
-	FlipOnePressTriggerSwitch();
+	GetRangedWeapon()->bIsTriggerPressed = true;
+	GetRangedWeapon()->FlipOnePressTriggerSwitch();
 
-	if (!(IsWeaponAbleToFire())) { return; }
+	if (!(GetRangedWeapon()->IsWeaponAbleToFire())) { return; }
 
 	switch (CurrentWeapon.Trigger)
 	{
 	case ETriggerMechanism::PressTrigger:
-		FireStandardTrigger();
+		GetRangedWeapon()->FireStandardTrigger();
 		break;
 
 	case ETriggerMechanism::AutomaticTrigger:
-		FireAutomaticTrigger();
+		GetRangedWeapon()->FireAutomaticTrigger();
 		break;
 
 	case ETriggerMechanism::ReleaseTrigger:
-		FireHold();
+		GetRangedWeapon()->FireHold();
 		break;
 
 	case ETriggerMechanism::OnePressAutoTrigger:
-		FireAutomaticTriggerOnePress();
+		GetRangedWeapon()->FireAutomaticTriggerOnePress();
 		break;
 
 	default:
-		FireStandardTrigger();
+		GetRangedWeapon()->FireStandardTrigger();
 	}
 }
 
 void ATPShooterCharacter::FireRelease()
 {
-	bIsTriggerPressed = false;
+	GetRangedWeapon()->bIsTriggerPressed = false;
 
 	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
 	{
-		FireReleaseAfterHold();
+		GetRangedWeapon()->FireReleaseAfterHold();
 	}
 }
 
-void ATPShooterCharacter::FireAutomaticTrigger()
-{
-	if (!(bIsTriggerPressed && IsWeaponAbleToFire()))
-	{
-		return;
-	}
 
-	FireStandardTrigger();
-}
-
-bool ATPShooterCharacter::IsWeaponAbleToFire()
-{
-	return GetIsAiming() && bIsFireRatePassed && GetRangedWeapon()->IsAmmoEnough();
-}
-
-void ATPShooterCharacter::FireAutomaticTriggerOnePress()
-{
-	if (bOnePressToggle && IsWeaponAbleToFire())
-	{
-		FireStandardTrigger();
-	}
-}
-
-void ATPShooterCharacter::FireHold()
-{
-	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
-	GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &ATPShooterCharacter::CountHoldTriggerTime, HoldTimeRateCount, true);
-}
-
-void ATPShooterCharacter::CountHoldTriggerTime()
-{
-	HoldTime += HoldTimeRateCount;
-
-	if (!bMaxHoldIsReach)
-	{
-		if (HoldTime >= MaxFireHoldTime)
-		{
-			bMaxHoldIsReach = true;
-			OnMaxFireHold();
-		}
-	}
-}
-
-void ATPShooterCharacter::FireReleaseAfterHold()
-{
-	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
-
-	if (bMaxHoldIsReach)
-	{
-		FireStandardTrigger();
-		OnMaxFireHoldRelease();
-	}
-	else if (HoldTime >= CurrentWeapon.FireRateAndOther[0])
-	{
-		FireStandardTrigger();
-	}
-
-	bMaxHoldIsReach = false;
-	HoldTime = 0.0f;
-}
-
-void ATPShooterCharacter::FireStandardTrigger()
-{
-	TimerFireRateStart();
-	PlayFireMontage();
-	OnWeaponFires();
-
-	switch (CurrentWeapon.WeaponCost)
-	{
-	case EWeaponCost::Nothing:
-		FireProjectile();
-		break;
-
-	case EWeaponCost::Ammo:
-		FireProjectile(CurrentWeapon.AmmoType);
-		break;
-
-	case EWeaponCost::Energy:
-		FireProjectile(CurrentWeapon.EnergyType);
-		break;
-
-	default:
-		break;
-	}
-}
-
-void ATPShooterCharacter::FireProjectile(const EAmmoType AmmoType)
-{
-	switch (AmmoType)
-	{
-	case EAmmoType::StandardAmmo:
-		FireProjectile(&Ammunition.StandardAmmo);
-		break;
-
-	case EAmmoType::RifleAmmo:
-		FireProjectile(&Ammunition.RifleAmmo);
-		break;
-
-	case EAmmoType::ShotgunAmmo:
-		FireProjectile(&Ammunition.ShotgunAmmo);
-		break;
-
-	case EAmmoType::Rocket:
-		FireProjectile(&Ammunition.Rocket);
-		break;
-
-	case EAmmoType::Arrow:
-		FireProjectile(&Ammunition.Arrow);
-		break;
-
-	case EAmmoType::Grenade:
-		FireProjectile(&Ammunition.Grenade);
-		break;
-
-	case EAmmoType::Mine:
-		FireProjectile(&Ammunition.Mine);
-		break;
-
-	default:
-		break;
-	}
-}
-
-void ATPShooterCharacter::FireProjectile(const EEnergyType EnergyType)
-{
-	switch (EnergyType)
-	{
-	case EEnergyType::MP:
-		FireProjectile(&CharacterStat.MP);
-		break;
-
-	case EEnergyType::Battery:
-		FireProjectile(&EnergyExternal.Battery);
-		break;
-
-	case EEnergyType::Fuel:
-		FireProjectile(&EnergyExternal.Fuel);
-		break;
-
-	case EEnergyType::Overheat:
-		FireProjectile(&EnergyExternal.Overheat);
-	}
-}
-
-void ATPShooterCharacter::FireProjectile()
-{
-	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
-	int MuzzleCount = MuzzleName.Num();
-
-	for (int i = 0; i < MuzzleCount; i++)
-	{
-		SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
-	}
-}
-
-void ATPShooterCharacter::FireProjectile(int* Ammo)
-{
-	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
-	int32 MuzzleCount = MuzzleName.Num();
-	int32 CurrentAmmo = *Ammo;
-
-	for (int i = 0; i < MuzzleCount; i++)
-	{
-		if (CurrentAmmo <= 0) {
-			OnNoMoreAmmoDuringFire();
-			break;
-		}
-
-		CurrentAmmo--;
-		SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
-	}
-
-	*Ammo = CurrentAmmo;
-}
-
-void ATPShooterCharacter::FireProjectile(float* MyEnergy)
-{
-	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
-	int32 MuzzleCount = MuzzleName.Num();
-	float CurrentEnergy = *MyEnergy;
-	float EnergyCostPerShot = CurrentWeapon.EnergyUsePerShot;
-
-	if (CurrentWeapon.EnergyType != EEnergyType::Overheat)
-	{
-		for (int i = 0; i < MuzzleCount; i++)
-		{
-			if (CurrentEnergy < EnergyCostPerShot)
-			{
-				OnNoMoreAmmoDuringFire();
-				break;
-			}
-
-			CurrentEnergy -= EnergyCostPerShot;
-			SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < MuzzleCount; i++)
-		{
-			if (CurrentEnergy >= 100.0f)
-			{
-				OnNoMoreAmmoDuringFire();
-				break;
-			}
-
-			CurrentEnergy += EnergyCostPerShot;
-			SpawnProjectile(GetRangedWeapon()->WeaponInWorld, MuzzleName, GetWorld(), i);
-		}
-	}
-	*MyEnergy = CurrentEnergy;
-}
-
-void ATPShooterCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i)
-{
-	FTransform MuzzleTransform = MyWeaponInWorld->GetSocketTransform(MuzzleName[i]);
-	FTransform SpawnTransform = FTransform(GetNewMuzzleRotationFromLineTrace(MuzzleTransform), MuzzleTransform.GetLocation(), MuzzleTransform.GetScale3D());
-
-	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(ATPS_Projectile::StaticClass(), SpawnTransform);
-
-	MyProjectile->SetUpProjectile(CurrentProjectile);
-	MyProjectile->FinishSpawning(SpawnTransform);
-}
-
-void ATPShooterCharacter::PlayFireMontage()
-{
-	UAnimMontage* fireMontage;
-
-	if (ShooterState.CharacterWeaponMontage.Num() > 0)
-	{
-		fireMontage = ShooterState.CharacterWeaponMontage[0];
-
-		if (fireMontage)
-		{
-			float playRate = UTPSFunctionLibrary::GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
-			PlayAnimMontage(fireMontage, playRate);
-		}
-	}
-}
-
-void ATPShooterCharacter::TimerFireRateStart()
-{
-	bIsFireRatePassed = false;
-
-	GetWorldTimerManager().ClearTimer(FireRateTimer);
-	GetWorldTimerManager().SetTimer(FireRateTimer, this, &ATPShooterCharacter::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
-}
-
-void ATPShooterCharacter::TimerFireRateReset()
-{
-	bIsFireRatePassed = true;
-	GetWorldTimerManager().ClearTimer(FireRateTimer);
-
-	if (CurrentWeapon.Trigger == ETriggerMechanism::AutomaticTrigger)
-	{
-		FireAutomaticTrigger();
-	}
-	else if (CurrentWeapon.Trigger == ETriggerMechanism::OnePressAutoTrigger)
-	{
-		FireAutomaticTriggerOnePress();
-	}
-}
 
 // 3.z FIRE
 
@@ -740,10 +460,7 @@ int32 ATPShooterCharacter::GetWeaponIndex() const
 	}
 }*/
 
-void ATPShooterCharacter::FlipOnePressTriggerSwitch()
-{
-	bOnePressToggle = (bOnePressToggle) ? false : true;
-}
+
 
 /*void ATPShooterCharacter::SetWeaponIndex(bool isUp)
 {

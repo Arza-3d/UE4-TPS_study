@@ -73,6 +73,7 @@ private:
 //===========================================================================
 
 	ATPShooterCharacter* Shooter;
+	AActor* TheActor;
 	USceneComponent* WeaponInWorld;
 
 	void SetWeaponMesh();
@@ -91,4 +92,37 @@ private:
 	bool IsAmmoEnough(const int32 InAmmo);
 	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
 	bool IsWeaponNotOverheating();
+
+	bool bIsFireRatePassed = true;
+	bool bIsTriggerPressed;
+	bool bOnePressToggle;
+
+	void FireStandardTrigger();
+	void FireAutomaticTrigger();
+	void FireHold();
+	float HoldTime;
+	float HoldTimeRateCount = 0.2f;
+	void FireAutomaticTriggerOnePress();
+
+	void FireReleaseAfterHold();
+	void FlipOnePressTriggerSwitch();
+	bool IsWeaponAbleToFire();
+
+	void FireProjectile();
+	void FireProjectile(const EAmmoType AmmoType);
+	void FireProjectile(const EEnergyType EnergyType);
+	void FireProjectile(int* Ammo);
+	void FireProjectile(float* Energy);
+	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i);
+
+	FTimerHandle TimerOfHoldTrigger;
+	void CountHoldTriggerTime();
+
+	FTimerHandle FireRateTimer;
+	void TimerFireRateStart();
+	void TimerFireRateReset();
+
+	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
+	void PlayFireMontage();
+
 };

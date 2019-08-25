@@ -1,6 +1,10 @@
 #include "RangedWeaponComponent.h"
-//#include "TPSFunctionLibrary.h"
+#include "TPS_Projectile.h"
+#include "TimerManager.h"
+#include "Camera/CameraComponent.h"
 #include "TPShooterCharacter.h"
+#include "Blueprint/UserWidget.h"
+
 
 URangedWeaponComponent::URangedWeaponComponent()
 {
@@ -8,12 +12,12 @@ URangedWeaponComponent::URangedWeaponComponent()
 
 }
 
-
 void URangedWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Shooter = Cast<ATPShooterCharacter>(GetOwner());
+	TheActor = Cast<AActor>(Shooter);
 
 	if (WeaponTable != nullptr)
 	{
@@ -210,4 +214,295 @@ bool URangedWeaponComponent::IsWeaponNotOverheating()
 	}
 
 	return !bIsOverheat;
+}
+
+void URangedWeaponComponent::FireAutomaticTrigger()
+{
+	if (!(bIsTriggerPressed && IsWeaponAbleToFire()))
+	{
+		return;
+	}
+
+	FireStandardTrigger();
+}
+
+bool URangedWeaponComponent::IsWeaponAbleToFire()
+{
+	return Shooter->GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
+}
+
+void URangedWeaponComponent::FireAutomaticTriggerOnePress()
+{
+	if (bOnePressToggle && IsWeaponAbleToFire())
+	{
+		FireStandardTrigger();
+	}
+}
+
+void URangedWeaponComponent::FireHold()
+{
+
+	Shooter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+	Shooter->GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &URangedWeaponComponent::CountHoldTriggerTime, HoldTimeRateCount, true);
+}
+
+void URangedWeaponComponent::CountHoldTriggerTime()
+{
+	HoldTime += HoldTimeRateCount;
+
+	if (!Shooter->bMaxHoldIsReach)
+	{
+		if (HoldTime >= Shooter->MaxFireHoldTime)
+		{
+			Shooter->bMaxHoldIsReach = true;
+			Shooter->OnMaxFireHold();
+		}
+	}
+}
+
+void URangedWeaponComponent::FireReleaseAfterHold()
+{
+	Shooter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+	if (Shooter->bMaxHoldIsReach)
+	{
+		FireStandardTrigger();
+		Shooter->OnMaxFireHoldRelease();
+	}
+	else if (HoldTime >= Shooter->CurrentWeapon.FireRateAndOther[0])
+	{
+		FireStandardTrigger();
+	}
+
+	Shooter->bMaxHoldIsReach = false;
+	HoldTime = 0.0f;
+}
+
+void URangedWeaponComponent::FireStandardTrigger()
+{
+	TimerFireRateStart();
+	PlayFireMontage();
+	Shooter->OnWeaponFires();
+
+	switch (Shooter->CurrentWeapon.WeaponCost)
+	{
+	case EWeaponCost::Nothing:
+		FireProjectile();
+		break;
+
+	case EWeaponCost::Ammo:
+		FireProjectile(Shooter->CurrentWeapon.AmmoType);
+		break;
+
+	case EWeaponCost::Energy:
+		FireProjectile(Shooter->CurrentWeapon.EnergyType);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void URangedWeaponComponent::FireProjectile(const EAmmoType AmmoType)
+{
+	switch (AmmoType)
+	{
+	case EAmmoType::StandardAmmo:
+		FireProjectile(&Shooter->Ammunition.StandardAmmo);
+		break;
+
+	case EAmmoType::RifleAmmo:
+		FireProjectile(&Shooter->Ammunition.RifleAmmo);
+		break;
+
+	case EAmmoType::ShotgunAmmo:
+		FireProjectile(&Shooter->Ammunition.ShotgunAmmo);
+		break;
+
+	case EAmmoType::Rocket:
+		FireProjectile(&Shooter->Ammunition.Rocket);
+		break;
+
+	case EAmmoType::Arrow:
+		FireProjectile(&Shooter->Ammunition.Arrow);
+		break;
+
+	case EAmmoType::Grenade:
+		FireProjectile(&Shooter->Ammunition.Grenade);
+		break;
+
+	case EAmmoType::Mine:
+		FireProjectile(&Shooter->Ammunition.Mine);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void URangedWeaponComponent::FireProjectile(const EEnergyType EnergyType)
+{
+	switch (EnergyType)
+	{
+	case EEnergyType::MP:
+		FireProjectile(&Shooter->CharacterStat.MP);
+		break;
+
+	case EEnergyType::Battery:
+		FireProjectile(&Shooter->EnergyExternal.Battery);
+		break;
+
+	case EEnergyType::Fuel:
+		FireProjectile(&Shooter->EnergyExternal.Fuel);
+		break;
+
+	case EEnergyType::Overheat:
+		FireProjectile(&Shooter->EnergyExternal.Overheat);
+	}
+}
+
+void URangedWeaponComponent::FireProjectile()
+{
+	TArray<FName> MuzzleName = Shooter->CurrentWeapon.SocketName;
+	int MuzzleCount = MuzzleName.Num();
+
+	for (int i = 0; i < MuzzleCount; i++)
+	{
+		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+	}
+}
+
+void URangedWeaponComponent::FireProjectile(int* Ammo)
+{
+	TArray<FName> MuzzleName = Shooter->CurrentWeapon.SocketName;
+	int32 MuzzleCount = MuzzleName.Num();
+	int32 CurrentAmmo = *Ammo;
+
+	for (int i = 0; i < MuzzleCount; i++)
+	{
+		if (CurrentAmmo <= 0) {
+			Shooter->OnNoMoreAmmoDuringFire();
+			break;
+		}
+
+		CurrentAmmo--;
+		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+	}
+
+	*Ammo = CurrentAmmo;
+}
+
+void URangedWeaponComponent::FireProjectile(float* MyEnergy)
+{
+	TArray<FName> MuzzleName = Shooter->CurrentWeapon.SocketName;
+	int32 MuzzleCount = MuzzleName.Num();
+	float CurrentEnergy = *MyEnergy;
+	float EnergyCostPerShot = Shooter->CurrentWeapon.EnergyUsePerShot;
+
+	if (Shooter->CurrentWeapon.EnergyType != EEnergyType::Overheat)
+	{
+		for (int i = 0; i < MuzzleCount; i++)
+		{
+			if (CurrentEnergy < EnergyCostPerShot)
+			{
+				Shooter->OnNoMoreAmmoDuringFire();
+				break;
+			}
+
+			CurrentEnergy -= EnergyCostPerShot;
+			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < MuzzleCount; i++)
+		{
+			if (CurrentEnergy >= 100.0f)
+			{
+				Shooter->OnNoMoreAmmoDuringFire();
+				break;
+			}
+
+			CurrentEnergy += EnergyCostPerShot;
+			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
+		}
+	}
+	*MyEnergy = CurrentEnergy;
+}
+
+void URangedWeaponComponent::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i)
+{
+	FTransform MuzzleTransform = MyWeaponInWorld->GetSocketTransform(MuzzleName[i]);
+	FTransform SpawnTransform = FTransform(GetNewMuzzleRotationFromLineTrace(MuzzleTransform), MuzzleTransform.GetLocation(), MuzzleTransform.GetScale3D());
+
+	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(ATPS_Projectile::StaticClass(), SpawnTransform);
+
+	MyProjectile->SetUpProjectile(Shooter->CurrentProjectile);
+	MyProjectile->FinishSpawning(SpawnTransform);
+}
+
+void URangedWeaponComponent::PlayFireMontage()
+{
+	UAnimMontage* fireMontage;
+
+	if (Shooter->ShooterState.CharacterWeaponMontage.Num() > 0)
+	{
+		fireMontage = Shooter->ShooterState.CharacterWeaponMontage[0];
+
+		if (fireMontage)
+		{
+			float playRate = UTPSFunctionLibrary::GetNewPlayRateForMontage(Shooter->CurrentWeapon.FireRateAndOther[0], fireMontage);
+			Shooter->PlayAnimMontage(fireMontage, playRate);
+		}
+	}
+}
+
+void URangedWeaponComponent::TimerFireRateStart()
+{
+	bIsFireRatePassed = false;
+
+	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
+	Shooter->GetWorldTimerManager().SetTimer(FireRateTimer, this, &URangedWeaponComponent::TimerFireRateReset, Shooter->CurrentWeapon.FireRateAndOther[0]);
+}
+
+void URangedWeaponComponent::TimerFireRateReset()
+{
+	bIsFireRatePassed = true;
+	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
+
+	if (Shooter->CurrentWeapon.Trigger == ETriggerMechanism::AutomaticTrigger)
+	{
+		FireAutomaticTrigger();
+	}
+	else if (Shooter->CurrentWeapon.Trigger == ETriggerMechanism::OnePressAutoTrigger)
+	{
+		FireAutomaticTriggerOnePress();
+	}
+}
+
+void URangedWeaponComponent::FlipOnePressTriggerSwitch()
+{
+	bOnePressToggle = (bOnePressToggle) ? false : true;
+}
+
+FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform)
+{
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());
+	QueryParams.AddIgnoredActor(Shooter);
+
+	FHitResult HitTrace;
+	FVector StartTrace = Shooter->GetFollowCamera()->GetComponentLocation();
+	FRotator CameraRotation = Shooter->GetFollowCamera()->GetComponentRotation();
+	FVector LookDirection = UKismetMathLibrary::GetForwardVector(CameraRotation);
+	FVector EndTrace = StartTrace + LookDirection * 100.0f * 3000.0f;
+	FVector TargetLocation;
+	FRotator MuzzleLookRotation;
+
+	if (Shooter->GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	{
+		TargetLocation = HitTrace.Location;
+		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
+	}
+
+	return MuzzleLookRotation;
 }

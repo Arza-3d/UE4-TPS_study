@@ -241,7 +241,7 @@ private:
 	// Fire:
 	//======
 
-	bool bIsFireRatePassed = true;
+	/*bool bIsFireRatePassed = true;
 	bool bIsTriggerPressed;
 	bool bOnePressToggle;
 
@@ -271,7 +271,7 @@ private:
 	void TimerFireRateReset();
 
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
-	void PlayFireMontage();
+	void PlayFireMontage();*/
 
 	//===============
 	// Switch Weapon:
