@@ -1,4 +1,4 @@
-#include "TPS_studyCharacter.h"
+#include "TPShooterCharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -19,7 +19,7 @@
 #include "DrawDebugHelpers.h"
 
 // 0.a CONSTRUCTION
-ATPS_studyCharacter::ATPS_studyCharacter()
+ATPShooterCharacter::ATPShooterCharacter()
 {
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -58,38 +58,38 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	SetWeaponMesh();
 }
 
-/*void ATPS_studyCharacter::ChangeControl()
+/*void ATPShooterCharacter::ChangeControl()
 {
-	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
+	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPShooterCharacter::FirePress);
 }*/
 
-float ATPS_studyCharacter::GetHP() const
-{ 
-	return CharacterStat.HP; 
+float ATPShooterCharacter::GetHP() const
+{
+	return CharacterStat.HP;
 }
 
-void ATPS_studyCharacter::SetHP(float val)
-{ 
-	CharacterStat.HP = val; 
+void ATPShooterCharacter::SetHP(float val)
+{
+	CharacterStat.HP = val;
 }
 
-float ATPS_studyCharacter::GetMP() const 
+float ATPShooterCharacter::GetMP() const
 {
 	return CharacterStat.MP;
 }
 
-void ATPS_studyCharacter::SetMP(float val) 
+void ATPShooterCharacter::SetMP(float val)
 {
-	CharacterStat.MP = val; 
+	CharacterStat.MP = val;
 }
 
-void ATPS_studyCharacter::BeginPlay() {
+void ATPShooterCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	// aiming setup:
-	if (RangedWeapon->AimingTable != nullptr)
-	{ 
-		AimingNames = RangedWeapon->AimingTable->GetRowNames(); 
+	if (GetRangedWeapon()->AimingTable != nullptr)
+	{
+		AimingNames = GetRangedWeapon()->AimingTable->GetRowNames();
 	}
 
 	int aimingNamesCount = AimingNames.Num();
@@ -98,10 +98,10 @@ void ATPS_studyCharacter::BeginPlay() {
 	struct FAimingStatCompact* aimStatRow;
 	AimStats.SetNum(1 + aimingNamesCount);
 
-	for (int i = 0; i < AimingNames.Num(); i++) 
+	for (int i = 0; i < AimingNames.Num(); i++)
 	{
 		currentAimingName = AimingNames[i];
-		aimStatRow = RangedWeapon->AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
+		aimStatRow = GetRangedWeapon()->AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
 		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
@@ -111,7 +111,7 @@ void ATPS_studyCharacter::BeginPlay() {
 	FOnTimelineFloat onAimingTimeCallback;
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
 
-	if (FloatCurve) 
+	if (FloatCurve)
 	{
 		AimingTimeline = NewObject<UTimelineComponent>(this, FName("AimingTimeline"));
 		AimingTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
@@ -131,43 +131,39 @@ void ATPS_studyCharacter::BeginPlay() {
 	}
 
 	// weapon setup:
-	if (/*WeaponModeTable*/RangedWeapon->WeaponTable != nullptr)
-	{ 
-		WeaponNames = /*WeaponModeTable*/RangedWeapon->WeaponTable->GetRowNames();
-	}
-
-	SetWeaponMode(0);
+	//GetWorldTimerManager().ClearTimer(RangedWeaponSetupTimer);
+	//GetWorldTimerManager().SetTimer(RangedWeaponSetupTimer, this, &ATPShooterCharacter::SetupRangedWeaponVariables, 0.3f);
 }
 
-void ATPS_studyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) 
+void ATPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
-	PlayerInputComponent->BindAction("AttackAction", IE_Released, this, &ATPS_studyCharacter::FireRelease);
-	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPS_studyCharacter::AimingPress);
-	PlayerInputComponent->BindAction("AimAction", IE_Released, this, &ATPS_studyCharacter::AimingRelease);
+	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPShooterCharacter::FirePress);
+	PlayerInputComponent->BindAction("AttackAction", IE_Released, this, &ATPShooterCharacter::FireRelease);
+	PlayerInputComponent->BindAction("AimAction", IE_Pressed, this, &ATPShooterCharacter::AimingPress);
+	PlayerInputComponent->BindAction("AimAction", IE_Released, this, &ATPShooterCharacter::AimingRelease);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex1);
-	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex2);
-	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex3);
-	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndex4);
-	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexUp);
-	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPS_studyCharacter::SetWeaponIndexDown);
+	PlayerInputComponent->BindAction("Weapon1", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndex1);
+	PlayerInputComponent->BindAction("Weapon2", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndex2);
+	PlayerInputComponent->BindAction("Weapon3", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndex3);
+	PlayerInputComponent->BindAction("Weapon4", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndex4);
+	PlayerInputComponent->BindAction("ChangeWeaponUp", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndexUp);
+	PlayerInputComponent->BindAction("ChangeWeaponDown", IE_Pressed, this, &ATPShooterCharacter::SetWeaponIndexDown);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATPS_studyCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &ATPS_studyCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveForward", this, &ATPShooterCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ATPShooterCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &ATPS_studyCharacter::LookRightAtRate);
+	PlayerInputComponent->BindAxis("TurnRate", this, &ATPShooterCharacter::LookRightAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPS_studyCharacter::LookUpAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPShooterCharacter::LookUpAtRate);
 }
 
-void ATPS_studyCharacter::Tick(float DeltaSeconds)
+void ATPShooterCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (AimingTimeline) 
+	if (AimingTimeline)
 	{
 		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
 	}
@@ -175,27 +171,27 @@ void ATPS_studyCharacter::Tick(float DeltaSeconds)
 // 0.z CONSTRUCTION
 
 // 1.a NAVIGATION
-float ATPS_studyCharacter::GetNormalizedForward() const
+float ATPShooterCharacter::GetNormalizedForward() const
 {
-	return NormalizedForward; 
+	return NormalizedForward;
 }
 
-float ATPS_studyCharacter::GetNormalizedRight() const 
+float ATPShooterCharacter::GetNormalizedRight() const
 {
 	return NormalizedRight;
 }
 
-ETriggerMechanism ATPS_studyCharacter::GetTriggerMechanism() const 
+ETriggerMechanism ATPShooterCharacter::GetTriggerMechanism() const
 {
 	return CurrentWeapon.Trigger;
 }
 
-FName ATPS_studyCharacter::GetWeaponName() const 
+/*FName ATPShooterCharacter::GetWeaponName() const
 {
-	return WeaponNames[WeaponIndex];
-}
+	return WeaponNames[GetRangedWeapon()->WeaponIndex];
+}*/
 
-void ATPS_studyCharacter::MoveForward(float Value)
+void ATPShooterCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
@@ -209,54 +205,54 @@ void ATPS_studyCharacter::MoveForward(float Value)
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
 		}
-	} 
-	else 
+	}
+	else
 	{
 		bForwardInputPressed = false;
 		NormalizedForward = 0.0f;
 	}
 }
 
-void ATPS_studyCharacter::MoveRight(float Value)
+void ATPShooterCharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f)) 
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 
-		if (bIsAiming) 
+		if (bIsAiming)
 		{
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
 		}
-	} 
-	else 
+	}
+	else
 	{
 		bRightInputPressed = false;
 		NormalizedRight = 0.0f;
 	}
 }
 
-void ATPS_studyCharacter::LookRightAtRate(float Rate)
+void ATPShooterCharacter::LookRightAtRate(float Rate)
 {
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
-void ATPS_studyCharacter::LookUpAtRate(float Rate)
+void ATPShooterCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 // 1.z NAVIGATION
 
 // 2.a AIMING
-bool ATPS_studyCharacter::GetIsAiming() const
+bool ATPShooterCharacter::GetIsAiming() const
 {
 	return (bWeaponIsAlwaysAiming) ? true : bIsAiming;
 }
 
-void ATPS_studyCharacter::AimingPress() {
+void ATPShooterCharacter::AimingPress() {
 
 	if (!IsAbleToAim()) { return; }
 
@@ -269,10 +265,10 @@ void ATPS_studyCharacter::AimingPress() {
 	AimingTimeline->Play();
 }
 
-void ATPS_studyCharacter::AimingRelease()
+void ATPShooterCharacter::AimingRelease()
 {
 	Aiming(false);
-	
+
 	AimingTimeline->Reverse();
 
 	OnStopAiming();
@@ -287,31 +283,31 @@ void ATPS_studyCharacter::AimingRelease()
 	}
 }
 
-void ATPS_studyCharacter::Aiming(const bool bInIsAiming)
+void ATPShooterCharacter::Aiming(const bool bInIsAiming)
 {
 	bIsAiming = bInIsAiming;
 	OrientCharacter(bInIsAiming);
 	bIsTransitioningAiming = bInIsAiming;
 
-	float speed = (bInIsAiming) ? RangedWeapon->AimingSpeed : RangedWeapon->StopAimingSpeed;
+	float speed = (bInIsAiming) ? GetRangedWeapon()->AimingSpeed : GetRangedWeapon()->StopAimingSpeed;
 
 	if (speed <= 0.0f) { speed = 1.0f; };
 
 	AimingTimeline->SetPlayRate(1.0f / speed);
 }
 
-void ATPS_studyCharacter::OrientCharacter(bool bMyCharIsAiming)
+void ATPShooterCharacter::OrientCharacter(bool bMyCharIsAiming)
 {
 	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
 	bUseControllerRotationYaw = bMyCharIsAiming;
 	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
-void ATPS_studyCharacter::TimeAiming(float Alpha)
+void ATPShooterCharacter::TimeAiming(float InAlpha)
 {
 	int32 A = AimStatStartIndex;
 	int32 B = AimStatTargetIndex;
-	
+
 	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
 	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
 	float defaultTargetArmLength = AimStats[A].CamBoom.TargetArmLength;
@@ -323,40 +319,51 @@ void ATPS_studyCharacter::TimeAiming(float Alpha)
 	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
 	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
 	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
-	
-	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, Alpha);
-	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, Alpha);
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, Alpha);
-	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, Alpha);
-	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, Alpha));
+
+	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, InAlpha);
+	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, InAlpha);
+	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, InAlpha);
+	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, InAlpha);
+	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, InAlpha));
 }
 
-void ATPS_studyCharacter::TimeFinishAiming() 
-{ 
-	bIsTransitioningAiming = false; 
+void ATPShooterCharacter::TimeFinishAiming()
+{
+	bIsTransitioningAiming = false;
 	OnAiming();
 }
+
+/*void ATPShooterCharacter::SetupRangedWeaponVariables()
+{
+	GetWorldTimerManager().ClearTimer(RangedWeaponSetupTimer);
+
+	if (GetRangedWeapon()->WeaponTable != nullptr)
+	{
+		WeaponNames = GetRangedWeapon()->WeaponTable->GetRowNames();
+		GetRangedWeapon()->SetWeaponMode(0);
+	}
+}*/
 // 2.z AIMING
 
 // 3.a FIRE
-bool ATPS_studyCharacter::IsAbleToRepeatAutoFire_Implementation() 
+bool ATPShooterCharacter::IsAbleToRepeatAutoFire_Implementation()
 {
-	return bIsTriggerPressed; 
+	return bIsTriggerPressed;
 }
 
-bool ATPS_studyCharacter::IsAbleToFire_Implementation()
+bool ATPShooterCharacter::IsAbleToFire_Implementation()
 {
-	return !GetCharacterMovement()->IsFalling(); 
+	return !GetCharacterMovement()->IsFalling();
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough() 
+bool ATPShooterCharacter::IsAmmoEnough()
 {
-	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing) 
-	{ 
-		return true; 
+	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing)
+	{
+		return true;
 	}
 
-	switch (CurrentWeapon.WeaponCost) 
+	switch (CurrentWeapon.WeaponCost)
 	{
 	case EWeaponCost::Ammo:
 		return IsAmmoEnough(CurrentWeapon.AmmoType);
@@ -369,12 +376,12 @@ bool ATPS_studyCharacter::IsAmmoEnough()
 	}
 }
 
-bool ATPS_studyCharacter::GetIsTriggerPressed() const
+bool ATPShooterCharacter::GetIsTriggerPressed() const
 {
 	return bIsTriggerPressed;
 }
 
-FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform) 
+FRotator ATPShooterCharacter::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform)
 {
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
@@ -388,7 +395,7 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	FVector TargetLocation;
 	FRotator MuzzleLookRotation;
 
-	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams)) 
+	if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
 	{
 		TargetLocation = HitTrace.Location;
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
@@ -397,14 +404,14 @@ FRotator ATPS_studyCharacter::GetNewMuzzleRotationFromLineTrace(FTransform Socke
 	return MuzzleLookRotation;
 }
 
-void ATPS_studyCharacter::FirePress() 
+void ATPShooterCharacter::FirePress()
 {
 	bIsTriggerPressed = true;
 	FlipOnePressTriggerSwitch();
 
 	if (!(IsWeaponAbleToFire())) { return; }
 
-	switch (CurrentWeapon.Trigger) 
+	switch (CurrentWeapon.Trigger)
 	{
 	case ETriggerMechanism::PressTrigger:
 		FireStandardTrigger();
@@ -427,46 +434,46 @@ void ATPS_studyCharacter::FirePress()
 	}
 }
 
-void ATPS_studyCharacter::FireRelease()
+void ATPShooterCharacter::FireRelease()
 {
 	bIsTriggerPressed = false;
 
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger) 
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
 	{
 		FireReleaseAfterHold();
 	}
 }
 
-void ATPS_studyCharacter::FireAutomaticTrigger()
+void ATPShooterCharacter::FireAutomaticTrigger()
 {
 	if (!(bIsTriggerPressed && IsWeaponAbleToFire()))
 	{
-		return; 
+		return;
 	}
 
 	FireStandardTrigger();
 }
 
-bool ATPS_studyCharacter::IsWeaponAbleToFire()
+bool ATPShooterCharacter::IsWeaponAbleToFire()
 {
 	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
 }
 
-void ATPS_studyCharacter::FireAutomaticTriggerOnePress()
+void ATPShooterCharacter::FireAutomaticTriggerOnePress()
 {
-	if (bOnePressToggle && IsWeaponAbleToFire()) 
+	if (bOnePressToggle && IsWeaponAbleToFire())
 	{
 		FireStandardTrigger();
 	}
 }
 
-void ATPS_studyCharacter::FireHold() 
+void ATPShooterCharacter::FireHold()
 {
 	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
-	GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &ATPS_studyCharacter::CountHoldTriggerTime, HoldTimeRateCount, true);
+	GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &ATPShooterCharacter::CountHoldTriggerTime, HoldTimeRateCount, true);
 }
 
-void ATPS_studyCharacter::CountHoldTriggerTime()
+void ATPShooterCharacter::CountHoldTriggerTime()
 {
 	HoldTime += HoldTimeRateCount;
 
@@ -480,7 +487,7 @@ void ATPS_studyCharacter::CountHoldTriggerTime()
 	}
 }
 
-void ATPS_studyCharacter::FireReleaseAfterHold() 
+void ATPShooterCharacter::FireReleaseAfterHold()
 {
 	GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
 
@@ -498,7 +505,7 @@ void ATPS_studyCharacter::FireReleaseAfterHold()
 	HoldTime = 0.0f;
 }
 
-void ATPS_studyCharacter::FireStandardTrigger()
+void ATPShooterCharacter::FireStandardTrigger()
 {
 	TimerFireRateStart();
 	PlayFireMontage();
@@ -523,7 +530,7 @@ void ATPS_studyCharacter::FireStandardTrigger()
 	}
 }
 
-void ATPS_studyCharacter::FireProjectile(const EAmmoType AmmoType)
+void ATPShooterCharacter::FireProjectile(const EAmmoType AmmoType)
 {
 	switch (AmmoType)
 	{
@@ -560,7 +567,7 @@ void ATPS_studyCharacter::FireProjectile(const EAmmoType AmmoType)
 	}
 }
 
-void ATPS_studyCharacter::FireProjectile(const EEnergyType EnergyType)
+void ATPShooterCharacter::FireProjectile(const EEnergyType EnergyType)
 {
 	switch (EnergyType)
 	{
@@ -581,18 +588,18 @@ void ATPS_studyCharacter::FireProjectile(const EEnergyType EnergyType)
 	}
 }
 
-void ATPS_studyCharacter::FireProjectile() 
+void ATPShooterCharacter::FireProjectile()
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int MuzzleCount = MuzzleName.Num();
 
-	for (int i = 0; i < MuzzleCount; i++) 
+	for (int i = 0; i < MuzzleCount; i++)
 	{
 		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
 }
 
-void ATPS_studyCharacter::FireProjectile(int* Ammo)
+void ATPShooterCharacter::FireProjectile(int* Ammo)
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int32 MuzzleCount = MuzzleName.Num();
@@ -612,7 +619,7 @@ void ATPS_studyCharacter::FireProjectile(int* Ammo)
 	*Ammo = CurrentAmmo;
 }
 
-void ATPS_studyCharacter::FireProjectile(float* MyEnergy) 
+void ATPShooterCharacter::FireProjectile(float* MyEnergy)
 {
 	TArray<FName> MuzzleName = CurrentWeapon.SocketName;
 	int32 MuzzleCount = MuzzleName.Num();
@@ -621,7 +628,7 @@ void ATPS_studyCharacter::FireProjectile(float* MyEnergy)
 
 	if (CurrentWeapon.EnergyType != EEnergyType::Overheat)
 	{
-		for (int i = 0; i < MuzzleCount; i++) 
+		for (int i = 0; i < MuzzleCount; i++)
 		{
 			if (CurrentEnergy < EnergyCostPerShot)
 			{
@@ -633,7 +640,7 @@ void ATPS_studyCharacter::FireProjectile(float* MyEnergy)
 			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
 	}
-	else 
+	else
 	{
 		for (int i = 0; i < MuzzleCount; i++)
 		{
@@ -650,7 +657,7 @@ void ATPS_studyCharacter::FireProjectile(float* MyEnergy)
 	*MyEnergy = CurrentEnergy;
 }
 
-void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i)
+void ATPShooterCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i)
 {
 	FTransform MuzzleTransform = MyWeaponInWorld->GetSocketTransform(MuzzleName[i]);
 	FTransform SpawnTransform = FTransform(GetNewMuzzleRotationFromLineTrace(MuzzleTransform), MuzzleTransform.GetLocation(), MuzzleTransform.GetScale3D());
@@ -661,11 +668,11 @@ void ATPS_studyCharacter::SpawnProjectile(USceneComponent* MyWeaponInWorld, TArr
 	MyProjectile->FinishSpawning(SpawnTransform);
 }
 
-void ATPS_studyCharacter::PlayFireMontage() 
+void ATPShooterCharacter::PlayFireMontage()
 {
 	UAnimMontage* fireMontage;
 
-	if (ShooterState.CharacterWeaponMontage.Num() > 0) 
+	if (ShooterState.CharacterWeaponMontage.Num() > 0)
 	{
 		fireMontage = ShooterState.CharacterWeaponMontage[0];
 
@@ -677,15 +684,15 @@ void ATPS_studyCharacter::PlayFireMontage()
 	}
 }
 
-void ATPS_studyCharacter::TimerFireRateStart() 
+void ATPShooterCharacter::TimerFireRateStart()
 {
 	bIsFireRatePassed = false;
 
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
-	GetWorldTimerManager().SetTimer(FireRateTimer, this, &ATPS_studyCharacter::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
+	GetWorldTimerManager().SetTimer(FireRateTimer, this, &ATPShooterCharacter::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
 }
 
-void ATPS_studyCharacter::TimerFireRateReset()
+void ATPShooterCharacter::TimerFireRateReset()
 {
 	bIsFireRatePassed = true;
 	GetWorldTimerManager().ClearTimer(FireRateTimer);
@@ -693,26 +700,26 @@ void ATPS_studyCharacter::TimerFireRateReset()
 	if (CurrentWeapon.Trigger == ETriggerMechanism::AutomaticTrigger)
 	{
 		FireAutomaticTrigger();
-	} 
+	}
 	else if (CurrentWeapon.Trigger == ETriggerMechanism::OnePressAutoTrigger)
 	{
 		FireAutomaticTriggerOnePress();
 	}
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(const int32 InAmmo)
+bool ATPShooterCharacter::IsAmmoEnough(const int32 InAmmo)
 {
 	bool bAmmoIsEmpty = InAmmo <= 0;
 
-	if (bAmmoIsEmpty) 
-	{ 
-		OnNoAmmo(); 
+	if (bAmmoIsEmpty)
+	{
+		OnNoAmmo();
 	}
 
 	return !bAmmoIsEmpty;
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(const EAmmoType Ammo)
+bool ATPShooterCharacter::IsAmmoEnough(const EAmmoType Ammo)
 {
 	switch (Ammo)
 	{
@@ -742,19 +749,19 @@ bool ATPS_studyCharacter::IsAmmoEnough(const EAmmoType Ammo)
 	}
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot)
+bool ATPShooterCharacter::IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot)
 {
 	bool bIsNotEnoughEnergy = MyEnergy < MyEnergyPerShot;
 
-	if (bIsNotEnoughEnergy) 
+	if (bIsNotEnoughEnergy)
 	{
-		OnNoEnergy(); 
+		OnNoEnergy();
 	}
 
 	return !bIsNotEnoughEnergy;
 }
 
-bool ATPS_studyCharacter::IsAmmoEnough(const EEnergyType EnergyType)
+bool ATPShooterCharacter::IsAmmoEnough(const EEnergyType EnergyType)
 {
 	switch (CurrentWeapon.EnergyType)
 	{
@@ -775,7 +782,7 @@ bool ATPS_studyCharacter::IsAmmoEnough(const EEnergyType EnergyType)
 	}
 }
 
-bool ATPS_studyCharacter::IsWeaponNotOverheating()
+bool ATPShooterCharacter::IsWeaponNotOverheating()
 {
 	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
 
@@ -789,7 +796,8 @@ bool ATPS_studyCharacter::IsWeaponNotOverheating()
 // 3.z FIRE
 
 // 4.a SWITCH WEAPON
-bool ATPS_studyCharacter::IsAbleToSwitchWeapon_Implementation() 
+
+bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
 {
 	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
 	bool bIsNotAiming = !GetIsAiming();
@@ -797,29 +805,29 @@ bool ATPS_studyCharacter::IsAbleToSwitchWeapon_Implementation()
 	return bIsOnTheGround && bIsNotAiming;
 }
 
-bool ATPS_studyCharacter::IsAbleToAim_Implementation() 
+bool ATPShooterCharacter::IsAbleToAim_Implementation()
 {
 	return !GetCharacterMovement()->IsFalling();
 }
 
-int32 ATPS_studyCharacter::GetLastWeaponIndex() const 
+/*int32 ATPShooterCharacter::GetLastWeaponIndex() const
 {
-	return LastWeaponIndex; 
+	return GetRangedWeapon()->LastWeaponIndex;
 }
 
-int32 ATPS_studyCharacter::GetWeaponIndex() const
+int32 ATPShooterCharacter::GetWeaponIndex() const
 {
-	return WeaponIndex; 
-}
+	return GetRangedWeapon()->WeaponIndex;
+}*/
 
-void ATPS_studyCharacter::SetWeaponMode(const int32 MyWeaponIndex) 
+/*void ATPShooterCharacter::SetWeaponMode(const int32 MyWeaponIndex)
 {
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
 	struct FWeaponModeCompact* WeaponModeRow;
-	WeaponModeRow = RangedWeapon->WeaponTable->FindRow<FWeaponModeCompact>(CurrentWeaponName, ContextString, true);
+	WeaponModeRow = GetRangedWeapon()->WeaponTable->FindRow<FWeaponModeCompact>(CurrentWeaponName, ContextString, true);
 
-	if (WeaponModeRow) 
+	if (WeaponModeRow)
 	{
 		FWeaponMode CurrentWeaponMode = WeaponModeRow->WeaponMode;
 
@@ -827,7 +835,7 @@ void ATPS_studyCharacter::SetWeaponMode(const int32 MyWeaponIndex)
 		CurrentWeapon = CurrentWeaponMode.Weapon;
 		CurrentProjectile = CurrentWeaponMode.Projectile;
 
-		if (CurrentWeapon.FireRateAndOther.Num() >= 2 )
+		if (CurrentWeapon.FireRateAndOther.Num() >= 2)
 		{
 			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[1];
 		}
@@ -836,63 +844,63 @@ void ATPS_studyCharacter::SetWeaponMode(const int32 MyWeaponIndex)
 			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[0];
 		}
 	}
-}
+}*/
 
-void ATPS_studyCharacter::SetWeaponIndex(bool isUp) 
-{
-	LastWeaponIndex = WeaponIndex;
-
-	if (IsAbleToSwitchWeapon()) 
-	{
-		int32 counter = isUp ? 1 : -1;
-		int32 withinRange = (WeaponIndex + counter) % WeaponNames.Num();
-
-		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
-		SetWeaponMode(WeaponIndex);
-		OnSwitchWeapon();
-	}
-}
-
-void ATPS_studyCharacter::SetWeaponIndexUp() { SetWeaponIndex(true); }
-void ATPS_studyCharacter::SetWeaponIndexDown() { SetWeaponIndex(false); }
-
-void ATPS_studyCharacter::FlipOnePressTriggerSwitch()
+void ATPShooterCharacter::FlipOnePressTriggerSwitch()
 {
 	bOnePressToggle = (bOnePressToggle) ? false : true;
 }
 
-void ATPS_studyCharacter::SetWeaponIndex(const int32 InNumber)
+/*void ATPShooterCharacter::SetWeaponIndex(bool isUp)
+{
+	GetRangedWeapon()->LastWeaponIndex = GetRangedWeapon()->WeaponIndex;
+
+	if (IsAbleToSwitchWeapon())
+	{
+		int32 counter = isUp ? 1 : -1;
+		int32 withinRange = (GetRangedWeapon()->WeaponIndex + counter) % WeaponNames.Num();
+
+		GetRangedWeapon()->WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
+		SetWeaponMode(GetRangedWeapon()->WeaponIndex);
+		OnSwitchWeapon();
+	}
+}*/
+
+void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndex(true); }
+void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndex(false); }
+
+/*void ATPShooterCharacter::SetWeaponIndex(const int32 InNumber)
 {
 
 	if (InNumber >= WeaponNames.Num()) { return; }
 
-	LastWeaponIndex = WeaponIndex;
+	GetRangedWeapon()->LastWeaponIndex = GetRangedWeapon()->WeaponIndex;
 
-	if ((WeaponNames.Num() > WeaponIndex) && IsAbleToSwitchWeapon()) 
+	if ((WeaponNames.Num() > GetRangedWeapon()->WeaponIndex) && IsAbleToSwitchWeapon())
 	{
-		WeaponIndex = InNumber;
-		SetWeaponMode(WeaponIndex);
+		GetRangedWeapon()->WeaponIndex = InNumber;
+		SetWeaponMode(GetRangedWeapon()->WeaponIndex);
 		OnSwitchWeapon();
 	}
-}
+}*/
 
-void ATPS_studyCharacter::SetWeaponIndex1() { SetWeaponIndex(0); }
-void ATPS_studyCharacter::SetWeaponIndex2() { SetWeaponIndex(1); }
-void ATPS_studyCharacter::SetWeaponIndex3() { SetWeaponIndex(2); }
-void ATPS_studyCharacter::SetWeaponIndex4() { SetWeaponIndex(3); }
+void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndex(0); }
+void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(1); }
+void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
+void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
 
 // 4.z SWITCH WEAPON
 
-void ATPS_studyCharacter::SetWeaponMesh()
+void ATPShooterCharacter::SetWeaponMesh()
 {
 	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
 }
 
 // 5.a PICKUP
-void ATPS_studyCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType) 
+void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
 {
-	switch (ammoType) 
+	switch (ammoType)
 	{
 	case EAmmoType::StandardAmmo:
 		Ammunition.StandardAmmo += addAmmo;
@@ -924,17 +932,17 @@ void ATPS_studyCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
 }
 // 5.z PICKUP
 
-void ATPS_studyCharacter::SetIsTransitioningAiming(bool bInBool) 
+void ATPShooterCharacter::SetIsTransitioningAiming(bool bInBool)
 {
 	bIsTransitioningAiming = bInBool;
 }
 
-bool ATPS_studyCharacter::GetTransitioningAiming() const
+bool ATPShooterCharacter::GetTransitioningAiming() const
 {
 	return bIsTransitioningAiming;
 }
 
-float ATPS_studyCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed) 
+float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
 {
 	FVector myVelo = GetVelocity();
 	float mySpeed = FVector(myVelo.X, myVelo.Y, 0.0f).Size();

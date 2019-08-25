@@ -4,7 +4,7 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "TPSFunctionLibrary.h"
-#include "TPS_studyCharacter.generated.h"
+#include "TPShooterCharacter.generated.h"
 
 class UDataTable;
 class UUserWidget;
@@ -13,16 +13,18 @@ class UCameraComponent;
 class URangedWeaponComponent;
 class ATPS_Projectile;
 
-UCLASS(config=Game)
-class ATPS_studyCharacter : public ACharacter {
+UCLASS(config = Game)
+class ATPShooterCharacter : public ACharacter {
 
 	GENERATED_BODY()
+
+	friend URangedWeaponComponent;
 
 //===========================================================================
 public:
 //===========================================================================
 
-	ATPS_studyCharacter();
+	ATPShooterCharacter();
 
 	//==============================
 	// Blueprint Component getter
@@ -31,6 +33,8 @@ public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE URangedWeaponComponent* GetRangedWeapon() const { return RangedWeapon; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetIsAiming() const;
@@ -53,12 +57,6 @@ protected:
 	//===============================
 	// Default variables (protected)
 	//===============================
-
-	//UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-	//float AimingSpeed = 0.1f;
-
-	//UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-	//float StopAimingSpeed = 0.1f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<UUserWidget> Crosshair;
@@ -88,14 +86,14 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	ETriggerMechanism GetTriggerMechanism() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	FName GetWeaponName() const;
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	//FName GetWeaponName() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int32 GetWeaponIndex() const;
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	//int32 GetWeaponIndex() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	int32 GetLastWeaponIndex() const;
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+	//int32 GetLastWeaponIndex() const;
 
 	//======================
 	// Function (protected)
@@ -166,11 +164,11 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
-	
+
 	/////////////
 	// and other
 	/////////////
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void SetIsTransitioningAiming(bool bInBool);
 
@@ -204,7 +202,7 @@ private:
 	UCurveFloat* FloatCurve;
 
 	UFUNCTION()
-	void TimeAiming(float Alpha);
+	void TimeAiming(float InAlpha);
 
 	UFUNCTION()
 	void TimeFinishAiming();
@@ -212,9 +210,9 @@ private:
 	UPROPERTY()
 	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
 
-	///////////
-	// Aiming
-	///////////
+	//========
+	// Aiming:
+	//========
 
 	// 0 = default, 1 = aiming, 2, 3, x extra mode
 	TArray<FAimingStat> AimStats;
@@ -228,7 +226,7 @@ private:
 	float MaxFireHoldTime;
 
 	void Aiming(const bool bInIsAiming);
-	
+
 	void OrientCharacter(const bool bMyCharIsAiming);
 
 	FCharacterStat CharacterStat;
@@ -239,10 +237,10 @@ private:
 	FWeapon CurrentWeapon;
 	FProjectile CurrentProjectile;
 
-	/////////
-	// Fire
-	/////////
-	
+	//======
+	// Fire:
+	//======
+
 	bool bIsFireRatePassed = true;
 	bool bIsTriggerPressed;
 	bool bOnePressToggle;
@@ -275,14 +273,12 @@ private:
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 	void PlayFireMontage();
 
-	//////////////////
+	//===============
 	// Switch Weapon:
-	//////////////////
+	//===============
 
 	// variables:
-	int32 WeaponIndex;
-	int32 LastWeaponIndex;
-	TArray<FName> WeaponNames;
+	//TArray<FName> WeaponNames;
 	USceneComponent* WeaponInWorld;
 
 	// function:
@@ -295,18 +291,18 @@ private:
 	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
 	bool IsWeaponNotOverheating();
 
-	void SetWeaponIndex(const int32 InNumber);
+	//void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex1();
 	void SetWeaponIndex2();
 	void SetWeaponIndex3();
 	void SetWeaponIndex4();
 
-	void SetWeaponIndex(const bool isUp);
+	//void SetWeaponIndex(const bool isUp);
 	void SetWeaponIndexUp();
 	void SetWeaponIndexDown();
 
-	void SetWeaponMode(const int32 MyWeaponIndex);
-	
+	//void SetWeaponMode(const int32 MyWeaponIndex);
+
 	///////////////
 	// Navigation
 	///////////////
