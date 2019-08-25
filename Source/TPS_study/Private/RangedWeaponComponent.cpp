@@ -1,4 +1,5 @@
 #include "RangedWeaponComponent.h"
+//#include "TPSFunctionLibrary.h"
 #include "TPShooterCharacter.h"
 
 URangedWeaponComponent::URangedWeaponComponent()
@@ -98,19 +99,115 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 	}
 }
 
-/*void ATPShooterCharacter::SetupRangedWeaponVariables()
-{
-	GetWorldTimerManager().ClearTimer(RangedWeaponSetupTimer);
-
-	if (GetRangedWeapon()->WeaponTable != nullptr)
-	{
-		WeaponNames = GetRangedWeapon()->WeaponTable->GetRowNames();
-		GetRangedWeapon()->SetWeaponMode(0);
-	}
-}*/
-
 void URangedWeaponComponent::SetWeaponMesh()
 {
 	USkeletalMeshComponent* weaponMesh = Shooter->GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(weaponMesh);
+}
+
+bool URangedWeaponComponent::IsAmmoEnough()
+{
+	if (Shooter->CurrentWeapon.WeaponCost == EWeaponCost::Nothing)
+	{
+		return true;
+	}
+
+	switch (Shooter->CurrentWeapon.WeaponCost)
+	{
+	case EWeaponCost::Ammo:
+		return IsAmmoEnough(Shooter->CurrentWeapon.AmmoType);
+
+	case EWeaponCost::Energy:
+		return IsAmmoEnough(Shooter->CurrentWeapon.EnergyType);
+
+	default:
+		return false;
+	}
+}
+
+bool URangedWeaponComponent::IsAmmoEnough(const int32 InAmmo)
+{
+	bool bAmmoIsEmpty = InAmmo <= 0;
+
+	if (bAmmoIsEmpty)
+	{
+		Shooter->OnNoAmmo();
+	}
+
+	return !bAmmoIsEmpty;
+}
+
+bool URangedWeaponComponent::IsAmmoEnough(const EAmmoType InAmmoType)
+{
+	switch (InAmmoType)
+	{
+	case EAmmoType::StandardAmmo:
+		return IsAmmoEnough(Shooter->Ammunition.StandardAmmo);
+
+	case EAmmoType::RifleAmmo:
+		return IsAmmoEnough(Shooter->Ammunition.RifleAmmo);
+
+	case EAmmoType::ShotgunAmmo:
+		return IsAmmoEnough(Shooter->Ammunition.ShotgunAmmo);
+
+	case EAmmoType::Rocket:
+		return IsAmmoEnough(Shooter->Ammunition.Rocket);
+
+	case EAmmoType::Arrow:
+		return IsAmmoEnough(Shooter->Ammunition.Arrow);
+
+	case EAmmoType::Grenade:
+		return IsAmmoEnough(Shooter->Ammunition.Grenade);
+
+	case EAmmoType::Mine:
+		return IsAmmoEnough(Shooter->Ammunition.Mine);
+
+	default:
+		return false;
+	}
+}
+
+bool URangedWeaponComponent::IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot)
+{
+	bool bIsNotEnoughEnergy = MyEnergy < MyEnergyPerShot;
+
+	if (bIsNotEnoughEnergy)
+	{
+		Shooter->OnNoEnergy();
+	}
+
+	return !bIsNotEnoughEnergy;
+}
+
+bool URangedWeaponComponent::IsAmmoEnough(const EEnergyType InEnergyType)
+{
+	switch (InEnergyType)
+	{
+	case EEnergyType::MP:
+		return IsAmmoEnough(Shooter->CharacterStat.MP, Shooter->CurrentWeapon.EnergyUsePerShot);
+
+	case EEnergyType::Fuel:
+		return IsAmmoEnough(Shooter->EnergyExternal.Fuel, Shooter->CurrentWeapon.EnergyUsePerShot);
+
+	case EEnergyType::Battery:
+		return IsAmmoEnough(Shooter->EnergyExternal.Battery, Shooter->CurrentWeapon.EnergyUsePerShot);
+
+	case EEnergyType::Overheat:
+		return IsWeaponNotOverheating();
+
+	default:
+		return false;
+	}
+}
+
+bool URangedWeaponComponent::IsWeaponNotOverheating()
+{
+	bool bIsOverheat = Shooter->EnergyExternal.Overheat >= 100.0f;
+
+	if (bIsOverheat)
+	{
+		Shooter->OnWeaponOverheats();
+	}
+
+	return !bIsOverheat;
 }

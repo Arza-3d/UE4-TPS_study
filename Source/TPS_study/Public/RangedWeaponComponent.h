@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "TPSFunctionLibrary.h"
 #include "RangedWeaponComponent.generated.h"
 
 class UDataTable;
@@ -83,4 +84,11 @@ private:
 	void SetWeaponMode(const int32 MyWeaponIndex);
 	void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex(const bool isUp);
+
+	bool IsAmmoEnough();
+	bool IsAmmoEnough(const EAmmoType InAmmoType);
+	bool IsAmmoEnough(const EEnergyType InEnergyType);
+	bool IsAmmoEnough(const int32 InAmmo);
+	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
+	bool IsWeaponNotOverheating();
 };

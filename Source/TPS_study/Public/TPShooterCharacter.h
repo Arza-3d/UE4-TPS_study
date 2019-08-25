@@ -284,12 +284,12 @@ private:
 	// function:
 	//void SetWeaponMesh();
 
-	bool IsAmmoEnough();
+	/*bool IsAmmoEnough();
 	bool IsAmmoEnough(const EAmmoType ammo);
 	bool IsAmmoEnough(const EEnergyType EnergyType);
 	bool IsAmmoEnough(const int32 InAmmo);
 	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
-	bool IsWeaponNotOverheating();
+	bool IsWeaponNotOverheating();*/
 
 	//void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex1();

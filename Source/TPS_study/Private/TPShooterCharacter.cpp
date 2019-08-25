@@ -356,26 +356,6 @@ bool ATPShooterCharacter::IsAbleToFire_Implementation()
 	return !GetCharacterMovement()->IsFalling();
 }
 
-bool ATPShooterCharacter::IsAmmoEnough()
-{
-	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing)
-	{
-		return true;
-	}
-
-	switch (CurrentWeapon.WeaponCost)
-	{
-	case EWeaponCost::Ammo:
-		return IsAmmoEnough(CurrentWeapon.AmmoType);
-
-	case EWeaponCost::Energy:
-		return IsAmmoEnough(CurrentWeapon.EnergyType);
-
-	default:
-		return false;
-	}
-}
-
 bool ATPShooterCharacter::GetIsTriggerPressed() const
 {
 	return bIsTriggerPressed;
@@ -456,7 +436,7 @@ void ATPShooterCharacter::FireAutomaticTrigger()
 
 bool ATPShooterCharacter::IsWeaponAbleToFire()
 {
-	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
+	return GetIsAiming() && bIsFireRatePassed && GetRangedWeapon()->IsAmmoEnough();
 }
 
 void ATPShooterCharacter::FireAutomaticTriggerOnePress()
@@ -707,92 +687,6 @@ void ATPShooterCharacter::TimerFireRateReset()
 	}
 }
 
-bool ATPShooterCharacter::IsAmmoEnough(const int32 InAmmo)
-{
-	bool bAmmoIsEmpty = InAmmo <= 0;
-
-	if (bAmmoIsEmpty)
-	{
-		OnNoAmmo();
-	}
-
-	return !bAmmoIsEmpty;
-}
-
-bool ATPShooterCharacter::IsAmmoEnough(const EAmmoType Ammo)
-{
-	switch (Ammo)
-	{
-	case EAmmoType::StandardAmmo:
-		return IsAmmoEnough(Ammunition.StandardAmmo);
-
-	case EAmmoType::RifleAmmo:
-		return IsAmmoEnough(Ammunition.RifleAmmo);
-
-	case EAmmoType::ShotgunAmmo:
-		return IsAmmoEnough(Ammunition.ShotgunAmmo);
-
-	case EAmmoType::Rocket:
-		return IsAmmoEnough(Ammunition.Rocket);
-
-	case EAmmoType::Arrow:
-		return IsAmmoEnough(Ammunition.Arrow);
-
-	case EAmmoType::Grenade:
-		return IsAmmoEnough(Ammunition.Grenade);
-
-	case EAmmoType::Mine:
-		return IsAmmoEnough(Ammunition.Mine);
-
-	default:
-		return false;
-	}
-}
-
-bool ATPShooterCharacter::IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot)
-{
-	bool bIsNotEnoughEnergy = MyEnergy < MyEnergyPerShot;
-
-	if (bIsNotEnoughEnergy)
-	{
-		OnNoEnergy();
-	}
-
-	return !bIsNotEnoughEnergy;
-}
-
-bool ATPShooterCharacter::IsAmmoEnough(const EEnergyType EnergyType)
-{
-	switch (CurrentWeapon.EnergyType)
-	{
-	case EEnergyType::MP:
-		return IsAmmoEnough(CharacterStat.MP, CurrentWeapon.EnergyUsePerShot);
-
-	case EEnergyType::Fuel:
-		return IsAmmoEnough(EnergyExternal.Fuel, CurrentWeapon.EnergyUsePerShot);
-
-	case EEnergyType::Battery:
-		return IsAmmoEnough(EnergyExternal.Battery, CurrentWeapon.EnergyUsePerShot);
-
-	case EEnergyType::Overheat:
-		return IsWeaponNotOverheating();
-
-	default:
-		return false;
-	}
-}
-
-bool ATPShooterCharacter::IsWeaponNotOverheating()
-{
-	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
-
-	if (bIsOverheat)
-	{
-		OnWeaponOverheats();
-	}
-
-	return !bIsOverheat;
-}
 // 3.z FIRE
 
 // 4.a SWITCH WEAPON
