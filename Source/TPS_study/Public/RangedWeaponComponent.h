@@ -47,6 +47,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	FName GetWeaponName() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	bool GetIsTriggerPressed() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
+	ETriggerMechanism GetTriggerMechanism() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Ammo")
+	void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
+
+	UFUNCTION(BlueprintCallable, Category ="Fire")
+	void FirePress();
+
+	UFUNCTION(BlueprintCallable, Category = "Fire")
+	void FireRelease();
+
 //===========================================================================
 protected:
 //===========================================================================
@@ -72,15 +87,39 @@ protected:
 private:
 //===========================================================================
 
-	ATPShooterCharacter* Shooter;
-	AActor* TheActor;
-	USceneComponent* WeaponInWorld;
+	//========================
+	// Shotter stat (private):
+	//========================
 
-	void SetWeaponMesh();
+	ATPShooterCharacter* Shooter;
+
+	//=======================
+	// Weapon stat (private):
+	//=======================
+
+	FAmmoCount Ammunition;
+	FExternalEnergyCount EnergyExternal;
+
+	FWeapon CurrentWeapon;
+	FProjectile CurrentProjectile;
 
 	int32 WeaponIndex;
 	int32 LastWeaponIndex;
 	TArray<FName> WeaponNames;
+	
+	//==================
+	// Aiming (private):
+	//==================
+
+	bool bMaxHoldIsReach;
+	float MaxFireHoldTime;
+
+	//================
+	// Fire (private):
+	//================
+
+	USceneComponent* WeaponInWorld;
+	void SetWeaponMesh();
 
 	void SetWeaponMode(const int32 MyWeaponIndex);
 	void SetWeaponIndex(const int32 InNumber);

@@ -47,8 +47,8 @@ public:
 
 	void SetMP(float val);
 
-	UFUNCTION(BlueprintCallable)
-	void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
+	//UFUNCTION(BlueprintCallable)
+	//void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
 
 //===========================================================================
 protected:
@@ -65,7 +65,7 @@ protected:
 	UDataTable* AimingTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	bool bWeaponIsAlwaysAiming;
+	bool bIsAbleToShootWithoutAiming;
 
 	//====================
 	// Getter (protected)
@@ -80,30 +80,9 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetTransitioningAiming() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	bool GetIsTriggerPressed() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
-	ETriggerMechanism GetTriggerMechanism() const;
-
-	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	//FName GetWeaponName() const;
-
-	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	//int32 GetWeaponIndex() const;
-
-	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-	//int32 GetLastWeaponIndex() const;
-
 	//======================
 	// Function (protected)
 	//======================
-
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void FirePress();
-
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void FireRelease();
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void AimingPress();
@@ -222,90 +201,43 @@ private:
 
 	bool bIsAiming;
 	bool bIsTransitioningAiming;
-	bool bMaxHoldIsReach;
-	float MaxFireHoldTime;
+	/*bool bMaxHoldIsReach;
+	float MaxFireHoldTime;*/
 
 	void Aiming(const bool bInIsAiming);
 
 	void OrientCharacter(const bool bMyCharIsAiming);
 
 	FCharacterStat CharacterStat;
-	FAmmoCount Ammunition;
-	FExternalEnergyCount EnergyExternal;
+	/*FAmmoCount Ammunition;
+	FExternalEnergyCount EnergyExternal;*/
 
 	FShooter ShooterState;
-	FWeapon CurrentWeapon;
-	FProjectile CurrentProjectile;
+	//FWeapon CurrentWeapon;
+	//FProjectile CurrentProjectile;
 
-	//======
-	// Fire:
-	//======
+	//=============
+	// Fire Weapon:
+	//=============
 
-	/*bool bIsFireRatePassed = true;
-	bool bIsTriggerPressed;
-	bool bOnePressToggle;
-
-	void FireStandardTrigger();
-	void FireAutomaticTrigger();
-	void FireHold();
-	float HoldTime;
-	float HoldTimeRateCount = 0.2f;
-	void FireAutomaticTriggerOnePress();
-
-	void FireReleaseAfterHold();
-	void FlipOnePressTriggerSwitch();
-	bool IsWeaponAbleToFire();
-
-	void FireProjectile();
-	void FireProjectile(const EAmmoType AmmoType);
-	void FireProjectile(const EEnergyType EnergyType);
-	void FireProjectile(int* Ammo);
-	void FireProjectile(float* Energy);
-	void SpawnProjectile(USceneComponent* WeaponInWorld, TArray<FName> MuzzleName, UWorld* MyWorld, int32 i);
-
-	FTimerHandle TimerOfHoldTrigger;
-	void CountHoldTriggerTime();
-
-	FTimerHandle FireRateTimer;
-	void TimerFireRateStart();
-	void TimerFireRateReset();
-
-	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
-	void PlayFireMontage();*/
+	void FirePress();
+	void FireRelease();
 
 	//===============
 	// Switch Weapon:
 	//===============
 
-	// variables:
-	//TArray<FName> WeaponNames;
-	//USceneComponent* WeaponInWorld;
-
-	// function:
-	//void SetWeaponMesh();
-
-	/*bool IsAmmoEnough();
-	bool IsAmmoEnough(const EAmmoType ammo);
-	bool IsAmmoEnough(const EEnergyType EnergyType);
-	bool IsAmmoEnough(const int32 InAmmo);
-	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
-	bool IsWeaponNotOverheating();*/
-
-	//void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex1();
 	void SetWeaponIndex2();
 	void SetWeaponIndex3();
 	void SetWeaponIndex4();
 
-	//void SetWeaponIndex(const bool isUp);
 	void SetWeaponIndexUp();
 	void SetWeaponIndexDown();
 
-	//void SetWeaponMode(const int32 MyWeaponIndex);
-
-	///////////////
-	// Navigation
-	///////////////
+	//============
+	// Navigation:
+	//============
 
 	// variables:
 	const float BaseTurnRate = 45.0f;

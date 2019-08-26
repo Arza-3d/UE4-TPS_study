@@ -172,7 +172,10 @@ void ATPShooterCharacter::Tick(float DeltaSeconds)
 }
 // 0.z CONSTRUCTION
 
-// 1.a NAVIGATION
+//================
+// 1.a NAVIGATION:
+//================
+
 float ATPShooterCharacter::GetNormalizedForward() const
 {
 	return NormalizedForward;
@@ -182,16 +185,6 @@ float ATPShooterCharacter::GetNormalizedRight() const
 {
 	return NormalizedRight;
 }
-
-ETriggerMechanism ATPShooterCharacter::GetTriggerMechanism() const
-{
-	return CurrentWeapon.Trigger;
-}
-
-/*FName ATPShooterCharacter::GetWeaponName() const
-{
-	return WeaponNames[GetRangedWeapon()->WeaponIndex];
-}*/
 
 void ATPShooterCharacter::MoveForward(float Value)
 {
@@ -252,7 +245,7 @@ void ATPShooterCharacter::LookUpAtRate(float Rate)
 
 bool ATPShooterCharacter::GetIsAiming() const
 {
-	return (bWeaponIsAlwaysAiming) ? true : bIsAiming;
+	return (bIsAbleToShootWithoutAiming) ? true : bIsAiming;
 }
 
 void ATPShooterCharacter::AimingPress() {
@@ -278,10 +271,10 @@ void ATPShooterCharacter::AimingRelease()
 
 	GetRangedWeapon()->bOnePressToggle = false;
 
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
+	if (GetRangedWeapon()->CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
 	{
 		GetWorldTimerManager().ClearTimer(GetRangedWeapon()->TimerOfHoldTrigger);
-		bMaxHoldIsReach = false;
+		GetRangedWeapon()->bMaxHoldIsReach = false;
 		GetRangedWeapon()->HoldTime = 0.0f;
 	}
 }
@@ -334,20 +327,7 @@ void ATPShooterCharacter::TimeFinishAiming()
 {
 	bIsTransitioningAiming = false;
 	OnAiming();
-	GetWorldTimerManager();//////////////////
 }
-
-/*void ATPShooterCharacter::SetupRangedWeaponVariables()
-{
-	GetWorldTimerManager().ClearTimer(RangedWeaponSetupTimer);
-
-	if (GetRangedWeapon()->WeaponTable != nullptr)
-	{
-		WeaponNames = GetRangedWeapon()->WeaponTable->GetRowNames();
-		GetRangedWeapon()->SetWeaponMode(0);
-	}
-}*/
-// 2.z AIMING
 
 // 3.a FIRE
 bool ATPShooterCharacter::IsAbleToRepeatAutoFire_Implementation()
@@ -360,56 +340,21 @@ bool ATPShooterCharacter::IsAbleToFire_Implementation()
 	return !GetCharacterMovement()->IsFalling();
 }
 
-bool ATPShooterCharacter::GetIsTriggerPressed() const
-{
-	return GetRangedWeapon()->bIsTriggerPressed;
-}
-
 void ATPShooterCharacter::FirePress()
 {
-	GetRangedWeapon()->bIsTriggerPressed = true;
-	GetRangedWeapon()->FlipOnePressTriggerSwitch();
-
-	if (!(GetRangedWeapon()->IsWeaponAbleToFire())) { return; }
-
-	switch (CurrentWeapon.Trigger)
-	{
-	case ETriggerMechanism::PressTrigger:
-		GetRangedWeapon()->FireStandardTrigger();
-		break;
-
-	case ETriggerMechanism::AutomaticTrigger:
-		GetRangedWeapon()->FireAutomaticTrigger();
-		break;
-
-	case ETriggerMechanism::ReleaseTrigger:
-		GetRangedWeapon()->FireHold();
-		break;
-
-	case ETriggerMechanism::OnePressAutoTrigger:
-		GetRangedWeapon()->FireAutomaticTriggerOnePress();
-		break;
-
-	default:
-		GetRangedWeapon()->FireStandardTrigger();
-	}
+	GetRangedWeapon()->FirePress();
 }
 
 void ATPShooterCharacter::FireRelease()
 {
-	GetRangedWeapon()->bIsTriggerPressed = false;
-
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
-	{
-		GetRangedWeapon()->FireReleaseAfterHold();
-	}
+	GetRangedWeapon()->FireRelease();
 }
-
-
 
 // 3.z FIRE
 
-// 4.a SWITCH WEAPON
+//===================
+// 4.a SWITCH WEAPON:
+//===================
 
 bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
 {
@@ -424,92 +369,16 @@ bool ATPShooterCharacter::IsAbleToAim_Implementation()
 	return !GetCharacterMovement()->IsFalling();
 }
 
-/*int32 ATPShooterCharacter::GetLastWeaponIndex() const
-{
-	return GetRangedWeapon()->LastWeaponIndex;
-}
-
-int32 ATPShooterCharacter::GetWeaponIndex() const
-{
-	return GetRangedWeapon()->WeaponIndex;
-}*/
-
-/*void ATPShooterCharacter::SetWeaponMode(const int32 MyWeaponIndex)
-{
-	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
-	static const FString ContextString(TEXT("Weapon Mode"));
-	struct FWeaponModeCompact* WeaponModeRow;
-	WeaponModeRow = GetRangedWeapon()->WeaponTable->FindRow<FWeaponModeCompact>(CurrentWeaponName, ContextString, true);
-
-	if (WeaponModeRow)
-	{
-		FWeaponMode CurrentWeaponMode = WeaponModeRow->WeaponMode;
-
-		ShooterState = CurrentWeaponMode.Shooter;
-		CurrentWeapon = CurrentWeaponMode.Weapon;
-		CurrentProjectile = CurrentWeaponMode.Projectile;
-
-		if (CurrentWeapon.FireRateAndOther.Num() >= 2)
-		{
-			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[1];
-		}
-		else
-		{
-			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[0];
-		}
-	}
-}*/
-
-
-
-/*void ATPShooterCharacter::SetWeaponIndex(bool isUp)
-{
-	GetRangedWeapon()->LastWeaponIndex = GetRangedWeapon()->WeaponIndex;
-
-	if (IsAbleToSwitchWeapon())
-	{
-		int32 counter = isUp ? 1 : -1;
-		int32 withinRange = (GetRangedWeapon()->WeaponIndex + counter) % WeaponNames.Num();
-
-		GetRangedWeapon()->WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
-		SetWeaponMode(GetRangedWeapon()->WeaponIndex);
-		OnSwitchWeapon();
-	}
-}*/
-
 void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndex(true); }
 void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndex(false); }
-
-/*void ATPShooterCharacter::SetWeaponIndex(const int32 InNumber)
-{
-
-	if (InNumber >= WeaponNames.Num()) { return; }
-
-	GetRangedWeapon()->LastWeaponIndex = GetRangedWeapon()->WeaponIndex;
-
-	if ((WeaponNames.Num() > GetRangedWeapon()->WeaponIndex) && IsAbleToSwitchWeapon())
-	{
-		GetRangedWeapon()->WeaponIndex = InNumber;
-		SetWeaponMode(GetRangedWeapon()->WeaponIndex);
-		OnSwitchWeapon();
-	}
-}*/
 
 void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndex(0); }
 void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(1); }
 void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
 void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
 
-// 4.z SWITCH WEAPON
-
-/*void ATPShooterCharacter::SetWeaponMesh()
-{
-	USkeletalMeshComponent* WeaponMesh = GetMesh(); // change it to accept additional weapon mesh later
-	GetRangedWeapon()->WeaponInWorld = Cast<USceneComponent>(WeaponMesh);
-}*/
-
 // 5.a PICKUP
-void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
+/*void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
 {
 	switch (ammoType)
 	{
@@ -540,8 +409,7 @@ void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
 	case EAmmoType::Mine:
 		Ammunition.Mine += addAmmo;
 	}
-}
-// 5.z PICKUP
+}*/
 
 void ATPShooterCharacter::SetIsTransitioningAiming(bool bInBool)
 {
