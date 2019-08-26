@@ -47,8 +47,12 @@ public:
 
 	void SetMP(float val);
 
-	//UFUNCTION(BlueprintCallable)
-	//void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
+	//===========================
+	// TPS Anim Interface Getter:
+	//===========================
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
+	UAnimInstance* GetAnimBlueprint() const;
 
 //===========================================================================
 protected:
@@ -100,8 +104,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
 	void OnStopAiming();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnWeaponFires();
+	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	//void OnWeaponFires();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnMaxFireHoldRelease();
@@ -109,11 +113,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnMaxFireHold();
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnNoAmmo();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	void OnNoEnergy();
+	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
+	//void OnNoEnergy();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
 	void OnWeaponOverheats();
@@ -135,10 +136,6 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Aiming")
 	bool IsAbleToAim();
 	virtual bool IsAbleToAim_Implementation();
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
-	bool IsAbleToRepeatAutoFire();
-	virtual bool IsAbleToRepeatAutoFire_Implementation();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsAbleToFire();
@@ -201,20 +198,12 @@ private:
 
 	bool bIsAiming;
 	bool bIsTransitioningAiming;
-	/*bool bMaxHoldIsReach;
-	float MaxFireHoldTime;*/
 
 	void Aiming(const bool bInIsAiming);
-
 	void OrientCharacter(const bool bMyCharIsAiming);
 
 	FCharacterStat CharacterStat;
-	/*FAmmoCount Ammunition;
-	FExternalEnergyCount EnergyExternal;*/
-
 	FShooter ShooterState;
-	//FWeapon CurrentWeapon;
-	//FProjectile CurrentProjectile;
 
 	//=============
 	// Fire Weapon:
@@ -239,7 +228,6 @@ private:
 	// Navigation:
 	//============
 
-	// variables:
 	const float BaseTurnRate = 45.0f;
 	const float BaseLookUpRate = 45.0f;
 

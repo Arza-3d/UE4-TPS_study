@@ -10,6 +10,12 @@ class UUserWidget;
 class ATPShooterCharacter;
 class ATPS_studyCharacter;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, URangedWeaponComponent*, MyComponent, const float, CurrentEnrrgy, const float, EnergyNeededPerShot);//, FString, EventMessage);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRunOutOfAmmoSignature, URangedWeaponComponent*, MyComponent, FWeapon, MyWeapon);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
+
 //=============================================================================
 /**
  * RangedWeaponComponent handles projectile based attack logic
@@ -62,6 +68,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
 
+	//=======
+	// Event:
+	//=======
+
+	/** Called when actor can't shoot due to no more ammo */
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnRunOutOfAmmoSignature OnAmmoOut;
+
+	/** Called when actor can't shoot due to not enough energy */
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnRunOutOfEnergySignature OnEnergyOut;
+
+	/** Called when actor fire the weapon */
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnFireSignature OnFire;
+
 //===========================================================================
 protected:
 //===========================================================================
@@ -77,8 +99,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
 	TSubclassOf<UUserWidget> Crosshair;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	UDataTable* AimingTable;
+	//UPROPERTY(EditDefaultsOnly, Category = "Aiming")
+	//UDataTable* AimingTable;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UDataTable* WeaponTable;

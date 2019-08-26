@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "CustomCollisionChannel.h"
 #include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -18,15 +19,16 @@
 #include "TPS_Projectile.h"
 #include "DrawDebugHelpers.h"
 
-// 0.a CONSTRUCTION
+//==============
+// Construction:
+//==============
+
 ATPShooterCharacter::ATPShooterCharacter()
 {
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
-
-
 
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;
@@ -56,14 +58,7 @@ ATPShooterCharacter::ATPShooterCharacter()
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
 
-	// fire setup:
-	//GetRangedWeapon()->SetWeaponMesh();
 }
-
-/*void ATPShooterCharacter::ChangeControl()
-{
-	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPShooterCharacter::FirePress);
-}*/
 
 float ATPShooterCharacter::GetHP() const
 {
@@ -85,13 +80,18 @@ void ATPShooterCharacter::SetMP(float val)
 	CharacterStat.MP = val;
 }
 
+UAnimInstance* ATPShooterCharacter::GetAnimBlueprint() const
+{
+	return GetMesh()->GetAnimInstance();
+}
+
 void ATPShooterCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	// aiming setup:
-	if (GetRangedWeapon()->AimingTable != nullptr)
+	if (AimingTable != nullptr)
 	{
-		AimingNames = GetRangedWeapon()->AimingTable->GetRowNames();
+		AimingNames = AimingTable->GetRowNames();
 	}
 
 	int aimingNamesCount = AimingNames.Num();
@@ -103,7 +103,7 @@ void ATPShooterCharacter::BeginPlay() {
 	for (int i = 0; i < AimingNames.Num(); i++)
 	{
 		currentAimingName = AimingNames[i];
-		aimStatRow = GetRangedWeapon()->AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
+		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
 		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
@@ -170,11 +170,10 @@ void ATPShooterCharacter::Tick(float DeltaSeconds)
 		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
 	}
 }
-// 0.z CONSTRUCTION
 
-//================
-// 1.a NAVIGATION:
-//================
+//============
+// Navigation:
+//============
 
 float ATPShooterCharacter::GetNormalizedForward() const
 {
@@ -239,9 +238,20 @@ void ATPShooterCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
-// 1.z NAVIGATION
 
-// 2.a AIMING
+//========
+// Aiming:
+//========
+
+bool ATPShooterCharacter::GetTransitioningAiming() const
+{
+	return bIsTransitioningAiming;
+}
+
+void ATPShooterCharacter::SetIsTransitioningAiming(bool bInBool)
+{
+	bIsTransitioningAiming = bInBool;
+}
 
 bool ATPShooterCharacter::GetIsAiming() const
 {
@@ -329,11 +339,9 @@ void ATPShooterCharacter::TimeFinishAiming()
 	OnAiming();
 }
 
-// 3.a FIRE
-bool ATPShooterCharacter::IsAbleToRepeatAutoFire_Implementation()
-{
-	return GetRangedWeapon()->bIsTriggerPressed;
-}
+//=============
+// Fire Weapon:
+//=============
 
 bool ATPShooterCharacter::IsAbleToFire_Implementation()
 {
@@ -350,11 +358,9 @@ void ATPShooterCharacter::FireRelease()
 	GetRangedWeapon()->FireRelease();
 }
 
-// 3.z FIRE
-
-//===================
-// 4.a SWITCH WEAPON:
-//===================
+//===============
+// Switch Weapon:
+//===============
 
 bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
 {
@@ -377,49 +383,9 @@ void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(
 void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
 void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
 
-// 5.a PICKUP
-/*void ATPShooterCharacter::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
-{
-	switch (ammoType)
-	{
-	case EAmmoType::StandardAmmo:
-		Ammunition.StandardAmmo += addAmmo;
-		break;
-
-	case EAmmoType::RifleAmmo:
-		Ammunition.RifleAmmo += addAmmo;
-		break;
-
-	case EAmmoType::ShotgunAmmo:
-		Ammunition.ShotgunAmmo += addAmmo;
-		break;
-
-	case EAmmoType::Rocket:
-		Ammunition.Rocket += addAmmo;
-		break;
-
-	case EAmmoType::Arrow:
-		Ammunition.Arrow += addAmmo;
-		break;
-
-	case EAmmoType::Grenade:
-		Ammunition.Grenade += addAmmo;
-		break;
-
-	case EAmmoType::Mine:
-		Ammunition.Mine += addAmmo;
-	}
-}*/
-
-void ATPShooterCharacter::SetIsTransitioningAiming(bool bInBool)
-{
-	bIsTransitioningAiming = bInBool;
-}
-
-bool ATPShooterCharacter::GetTransitioningAiming() const
-{
-	return bIsTransitioningAiming;
-}
+//============
+// Navigation:
+//============
 
 float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
 {

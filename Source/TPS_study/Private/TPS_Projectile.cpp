@@ -1,12 +1,15 @@
 #include "TPS_Projectile.h"
+#include "CustomCollisionChannel.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "ConstructorHelpers.h"
+#include "Engine/Engine.h"// delete later
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "ProjectileFXDataAsset.h"
 #include "ProjectileSXDataAsset.h"
-#include "TimerManager.h"
+#include "TimerManager.h" // delete later
 #include "TPSFunctionLibrary.h"
 
 ATPS_Projectile::ATPS_Projectile() 
@@ -21,13 +24,29 @@ ATPS_Projectile::ATPS_Projectile()
 	CollisionComp->AlwaysLoadOnServer = true;
 	CollisionComp->bTraceComplexOnMove = true;
 	CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionComp->SetCollisionObjectType(ProjectileMuzzle.CollisionComp);
+	CollisionComp->SetCollisionObjectType(ECC_PlayerProjectile);//ProjectileMuzzle.CollisionComp);
 	CollisionComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionComp->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionComp->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
-	CollisionComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	CollisionComp->SetCollisionResponseToChannel(ECC_Enemy, ECR_Block);
+	//CollisionComp->SetCollisionResponseToChannel(ECC_Player, ECR_Ignore);
+
+	/*if (CollisionComp->GetCollisionObjectType() == ECC_PlayerProjectile)//ECC_GameTraceChannel1)
+	{
+		CollisionComp->SetCollisionResponseToChannel(ECC_Player, ECR_Ignore);
+		CollisionComp->SetCollisionResponseToChannel(ECC_Enemy, ECR_Block);
+		UE_LOG(LogTemp, Log, TEXT("it's player projectile"));
+
+	}
+	else if (CollisionComp->GetCollisionObjectType() == ECC_EnemyProjectile)
+	{
+		CollisionComp->SetCollisionResponseToChannel(ECC_Player, ECR_Block);
+		CollisionComp->SetCollisionResponseToChannel(ECC_Enemy, ECR_Ignore);
+		UE_LOG(LogTemp, Log, TEXT("it's enemy projectile"));
+	}*/
+
 	RootComponent = CollisionComp;
 	ProjectileTrailParticle->SetupAttachment(CollisionComp);
+
+	UE_LOG(LogTemp, Log, TEXT("Event construct!"));
 }
 
 void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile) 
@@ -40,6 +59,8 @@ void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile)
 
 	MovementComp->InitialSpeed = ProjectileMuzzle.InitialSpeedAndOther[0];
 	MovementComp->ProjectileGravityScale = (ProjectileMuzzle.InitialSpeedAndOther.Num() > 2) ? ProjectileMuzzle.InitialSpeedAndOther[2] : 0.0f;	
+
+	UE_LOG(LogTemp, Log, TEXT("Event setup!"));
 }
 
 void ATPS_Projectile::BeginPlay() 
@@ -52,9 +73,21 @@ void ATPS_Projectile::BeginPlay()
 
 		ProjectileTrailParticle->SetTemplate(UTPSFunctionLibrary::GetRandomParticle(ProjectileVX->ProjectileVX.TrailVX));
 	}
+
+
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ATPS_Projectile::ShowOverlapObjectData);
+	CollisionComp->OnComponentHit.AddDynamic(this, &ATPS_Projectile::ShowHitObjectData);
+
+	UE_LOG(LogTemp, Log, TEXT("Event BEGINPLAY!"));
+	//UKismetSystemLibrary::PrintString(this, FString("Projectile Begin Play"), true, false, FLinearColor::Red, 5.0f);
 }
 
-void ATPS_Projectile::DestroySelf() { GetWorld()->DestroyActor(this); }
+void ATPS_Projectile::DestroySelf() 
+{ 
+	GetWorld()->DestroyActor(this); 
+
+	UE_LOG(LogTemp, Log, TEXT("Event DESTROY!"));
+}
 
 void ATPS_Projectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UPrimitiveComponent * OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit) 
 {
@@ -70,6 +103,61 @@ void ATPS_Projectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UP
 
 	GetWorldTimerManager().ClearTimer(TimerDestroy);
 	GetWorldTimerManager().SetTimer(TimerDestroy, this, &ATPS_Projectile::DestroySelf, 3.0f);
+}
+
+void ATPS_Projectile::ShowOverlapObjectData(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	GEngine->ClearOnScreenDebugMessages();
+	FString sumStr;
+	FString tempStr = UKismetSystemLibrary::GetObjectName(OverlappedComponent);
+	sumStr = tempStr.Append(FString(" has object type of "));
+	tempStr = UEnum::GetValueAsString(OverlappedComponent->GetCollisionObjectType());
+	sumStr = sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Green, 5.0f);
+	sumStr = FString(" OVERLAP!!! with ");
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::White, 5.0f);
+	sumStr = UKismetSystemLibrary::GetObjectName(OtherActor);
+	//sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Blue, 5.0f);
+	sumStr = UKismetSystemLibrary::GetObjectName(OtherComp);;
+	sumStr.Append(" that has object type of ");
+	tempStr = UEnum::GetValueAsString(OtherComp->GetCollisionObjectType());
+	sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Red, 5.0f);
+	USkeletalMeshComponent* skeleton = Cast<USkeletalMeshComponent>(OtherComp);
+	if (skeleton)
+	{
+		
+		//sumStr = skeleton->Bonehit
+	}
+}
+
+void ATPS_Projectile::ShowHitObjectData(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	GEngine->ClearOnScreenDebugMessages();
+	FString sumStr;
+	FString tempStr = UKismetSystemLibrary::GetObjectName(HitComponent);
+	sumStr = tempStr.Append(FString(" has object type of "));
+	tempStr = UEnum::GetValueAsString(HitComponent->GetCollisionObjectType());
+	sumStr = sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Green, 5.0f);
+	sumStr = FString(" HIT!!! with ");
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::White, 5.0f);
+	sumStr = UKismetSystemLibrary::GetObjectName(OtherActor);
+	//sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Blue, 5.0f);
+	sumStr = UKismetSystemLibrary::GetObjectName(OtherComp);;
+	sumStr.Append(" that has object type of ");
+	tempStr = UEnum::GetValueAsString(OtherComp->GetCollisionObjectType());
+	sumStr.Append(tempStr);
+	UKismetSystemLibrary::PrintString(this, sumStr, true, false, FLinearColor::Red, 5.0f);
+	USkeletalMeshComponent* skeleton = Cast<USkeletalMeshComponent>(OtherComp);
+	if (skeleton)
+	{
+
+		//sumStr = skeleton->Bonehit
+	}
+
 }
 
 void ATPS_Projectile::SpawnFX(TArray<UParticleSystem*> MyParticles, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter) 

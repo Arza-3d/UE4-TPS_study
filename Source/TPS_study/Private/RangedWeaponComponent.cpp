@@ -5,7 +5,6 @@
 #include "TPShooterCharacter.h"
 #include "Blueprint/UserWidget.h"
 
-
 URangedWeaponComponent::URangedWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -134,7 +133,7 @@ bool URangedWeaponComponent::IsAmmoEnough(const int32 InAmmo)
 
 	if (bAmmoIsEmpty)
 	{
-		Shooter->OnNoAmmo();
+		OnAmmoOut.Broadcast(this, CurrentWeapon);
 	}
 
 	return !bAmmoIsEmpty;
@@ -176,7 +175,7 @@ bool URangedWeaponComponent::IsAmmoEnough(const float MyEnergy, const float MyEn
 
 	if (bIsNotEnoughEnergy)
 	{
-		Shooter->OnNoEnergy();
+		OnEnergyOut.Broadcast(this, MyEnergy, MyEnergyPerShot);
 	}
 
 	return !bIsNotEnoughEnergy;
@@ -280,7 +279,9 @@ void URangedWeaponComponent::FireStandardTrigger()
 {
 	TimerFireRateStart();
 	PlayFireMontage();
-	Shooter->OnWeaponFires();
+	//Shooter->OnWeaponFires();
+	
+	OnFire.Broadcast(this);
 
 	switch (CurrentWeapon.WeaponCost)
 	{

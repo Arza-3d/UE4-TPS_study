@@ -87,9 +87,9 @@ void ATPS_studyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	// aiming setup:
-	if (RangedWeapon->AimingTable != nullptr)
+	if (AimingTable != nullptr)
 	{ 
-		AimingNames = RangedWeapon->AimingTable->GetRowNames(); 
+		AimingNames = AimingTable->GetRowNames(); 
 	}
 
 	int aimingNamesCount = AimingNames.Num();
@@ -101,7 +101,7 @@ void ATPS_studyCharacter::BeginPlay() {
 	for (int i = 0; i < AimingNames.Num(); i++) 
 	{
 		currentAimingName = AimingNames[i];
-		aimStatRow = RangedWeapon->AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
+		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
 		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
@@ -131,9 +131,9 @@ void ATPS_studyCharacter::BeginPlay() {
 	}
 
 	// weapon setup:
-	if (/*WeaponModeTable*/RangedWeapon->WeaponTable != nullptr)
+	if (RangedWeapon->WeaponTable != nullptr)
 	{ 
-		WeaponNames = /*WeaponModeTable*/RangedWeapon->WeaponTable->GetRowNames();
+		WeaponNames = RangedWeapon->WeaponTable->GetRowNames();
 	}
 
 	SetWeaponMode(0);
