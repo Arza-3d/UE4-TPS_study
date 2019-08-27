@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "HPandMPComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "RangedWeaponComponent.h"
@@ -57,11 +58,6 @@ ATPS_studyCharacter::ATPS_studyCharacter()
 	// fire setup:
 	SetWeaponMesh();
 }
-
-/*void ATPS_studyCharacter::ChangeControl()
-{
-	PlayerInputComponent->BindAction("AttackAction", IE_Pressed, this, &ATPS_studyCharacter::FirePress);
-}*/
 
 float ATPS_studyCharacter::GetHP() const
 { 

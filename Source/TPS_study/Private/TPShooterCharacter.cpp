@@ -10,6 +10,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "HPandMPComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "RangedWeaponComponent.h"
@@ -29,6 +30,7 @@ ATPShooterCharacter::ATPShooterCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
+	HealthAndMana = CreateDefaultSubobject<UHPandMPComponent>(TEXT("HealthAndMana"));
 
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;

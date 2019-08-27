@@ -1,4 +1,6 @@
 #include "RangedWeaponComponent.h"
+#include "Engine/Engine.h"// delete later
+#include "Kismet/GameplayStatics.h"// delete later
 #include "TPS_Projectile.h"
 #include "TimerManager.h"
 #include "Camera/CameraComponent.h"
@@ -22,6 +24,11 @@ void URangedWeaponComponent::BeginPlay()
 	{
 		WeaponNames = WeaponTable->GetRowNames();
 		SetWeaponMode(0);
+	}
+	else 
+	{
+		GEngine->ClearOnScreenDebugMessages();
+		UKismetSystemLibrary::PrintString(this, FString("WEAPON TABLE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
 	}
 
 	SetWeaponMesh();
@@ -52,13 +59,14 @@ void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 
 	if (Shooter->IsAbleToSwitchWeapon())
 	{
-		int32 counter = isUp ? 1 : -1;
-		int32 withinRange = (WeaponIndex + counter) % WeaponNames.Num();
+		int32 inCounter = isUp ? 1 : -1;
+		int32 withinRange = (WeaponIndex + inCounter) % WeaponNames.Num();
 
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
-		SetWeaponMode(WeaponIndex); // TEST2
+		SetWeaponMode(WeaponIndex);
+		UE_LOG(LogTemp, Log, TEXT("Weapon num is %i and index is %i!"), WeaponNames.Num(), WeaponIndex);
+
 		OnSwitchWeapon.Broadcast(this);
-		//Shooter->OnSwitchWeapon();
 	}
 }
 
@@ -72,14 +80,13 @@ void URangedWeaponComponent::SetWeaponIndex(const int32 InNumber)
 	if ((WeaponNames.Num() > WeaponIndex) && Shooter->IsAbleToSwitchWeapon())
 	{
 		WeaponIndex = InNumber;
-		SetWeaponMode(WeaponIndex); // TEST
+		SetWeaponMode(WeaponIndex);
 		OnSwitchWeapon.Broadcast(this);
-		//Shooter->OnSwitchWeapon();
 	}
 }
 
 void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
-{
+{	
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
 	struct FWeaponModeCompact* WeaponModeRow;
@@ -189,7 +196,7 @@ bool URangedWeaponComponent::IsAmmoEnough(const EEnergyType InEnergyType)
 	switch (InEnergyType)
 	{
 	case EEnergyType::MP:
-		return IsAmmoEnough(Shooter->CharacterStat.MP, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.MP, CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Fuel:
 		return IsAmmoEnough(EnergyExternal.Fuel, CurrentWeapon.EnergyUsePerShot);
@@ -346,7 +353,7 @@ void URangedWeaponComponent::FireProjectile(const EEnergyType EnergyType)
 	switch (EnergyType)
 	{
 	case EEnergyType::MP:
-		FireProjectile(&Shooter->CharacterStat.MP);
+		FireProjectile(&EnergyExternal.MP);
 		break;
 
 	case EEnergyType::Battery:
@@ -359,6 +366,10 @@ void URangedWeaponComponent::FireProjectile(const EEnergyType EnergyType)
 
 	case EEnergyType::Overheat:
 		FireProjectile(&EnergyExternal.Overheat);
+		break;
+
+	default:
+		break;
 	}
 }
 
@@ -595,6 +606,10 @@ void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 Add
 
 	case EAmmoType::Mine:
 		AmmunitionCount.Mine += AdditionalAmmo;
+		break;
+
+	default:
+		break;
 	}
 }
 

@@ -10,6 +10,7 @@ class UDataTable;
 class UUserWidget;
 class USpringArmComponent;
 class UCameraComponent;
+class UHPandMPComponent;
 class URangedWeaponComponent;
 class ATPS_Projectile;
 
@@ -31,6 +32,10 @@ public:
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE URangedWeaponComponent* GetRangedWeapon() const { return RangedWeapon; }
+
+	FORCEINLINE UHPandMPComponent* GetHealthAndMana() const { return HealthAndMana; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetIsAiming() const;
@@ -197,6 +202,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	URangedWeaponComponent* RangedWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UHPandMPComponent* HealthAndMana;
+
 	UPROPERTY()
 	UTimelineComponent* AimingTimeline;
 
@@ -231,7 +239,7 @@ private:
 	
 	void OrientCharacter(const bool bMyCharIsAiming);
 
-	FCharacterStat CharacterStat;
+	FCharacterStatBPCPP CharacterStat;
 	FAmmoCount Ammunition;
 	FExternalEnergyCount EnergyExternal;
 

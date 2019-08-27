@@ -95,7 +95,34 @@ enum class EEnergyType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FCharacterStat
+struct FAmmoCount
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int StandardAmmo = 15;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int RifleAmmo = 30;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int ShotgunAmmo = 10;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int Rocket = 3;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int Arrow = 18;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int Grenade = 2;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo", Meta = (ClampMin = "0", ClampMax = "255"))
+	int Mine = 3;
+};
+
+USTRUCT(BlueprintType)
+struct FCharacterStatBPCPP
 {
 	GENERATED_BODY();
 
@@ -106,40 +133,13 @@ struct FCharacterStat
 	float MP = 100.0f;
 };
 
-USTRUCT(BlueprintType)
-struct FAmmoCount
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int StandardAmmo = 15;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int RifleAmmo = 30;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int ShotgunAmmo = 10;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Rocket = 3;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Arrow = 18;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Grenade = 2;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-	int Mine = 3;
-};
-
 /**Only external energy mana is not included*/
 USTRUCT(BlueprintType)
 struct FExternalEnergyCount
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy", Meta = (ClampMin = "0"))
 	float MP = 100.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
