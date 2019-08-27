@@ -9,6 +9,7 @@ URangedWeaponComponent::URangedWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
+	//if (WeaponAmmunition.Num() == 0) WeaponAmmunition = {FAmmoCount()};
 }
 
 void URangedWeaponComponent::BeginPlay()
@@ -146,25 +147,25 @@ bool URangedWeaponComponent::IsAmmoEnough(const EAmmoType InAmmoType)
 	switch (InAmmoType)
 	{
 	case EAmmoType::StandardAmmo:
-		return IsAmmoEnough(Ammunition.StandardAmmo);
+		return IsAmmoEnough(AmmunitionCount.StandardAmmo);
 
 	case EAmmoType::RifleAmmo:
-		return IsAmmoEnough(Ammunition.RifleAmmo);
+		return IsAmmoEnough(AmmunitionCount.RifleAmmo);
 
 	case EAmmoType::ShotgunAmmo:
-		return IsAmmoEnough(Ammunition.ShotgunAmmo);
+		return IsAmmoEnough(AmmunitionCount.ShotgunAmmo);
 
 	case EAmmoType::Rocket:
-		return IsAmmoEnough(Ammunition.Rocket);
+		return IsAmmoEnough(AmmunitionCount.Rocket);
 
 	case EAmmoType::Arrow:
-		return IsAmmoEnough(Ammunition.Arrow);
+		return IsAmmoEnough(AmmunitionCount.Arrow);
 
 	case EAmmoType::Grenade:
-		return IsAmmoEnough(Ammunition.Grenade);
+		return IsAmmoEnough(AmmunitionCount.Grenade);
 
 	case EAmmoType::Mine:
-		return IsAmmoEnough(Ammunition.Mine);
+		return IsAmmoEnough(AmmunitionCount.Mine);
 
 	default:
 		return false;
@@ -257,7 +258,6 @@ void URangedWeaponComponent::CountHoldTriggerTime()
 		{
 			bMaxHoldIsReach = true;
 			OnJustReachMaxHoldTrigger.Broadcast(this, HoldTime, MaxFireHoldTime);
-			//Shooter->OnMaxFireHold();
 		}
 	}
 }
@@ -268,7 +268,6 @@ void URangedWeaponComponent::FireReleaseAfterHold()
 	if (bMaxHoldIsReach)
 	{
 		FireStandardTrigger();
-		//Shooter->OnMaxFireHoldRelease();
 		OnMaxFireHoldRelease.Broadcast(this, HoldTime, MaxFireHoldTime);
 	}
 	else if (HoldTime >= CurrentWeapon.FireRateAndOther[0])
@@ -284,8 +283,6 @@ void URangedWeaponComponent::FireStandardTrigger()
 {
 	TimerFireRateStart();
 	PlayFireMontage();
-	//Shooter->OnWeaponFires();
-	
 	OnFire.Broadcast(this);
 
 	switch (CurrentWeapon.WeaponCost)
@@ -312,31 +309,31 @@ void URangedWeaponComponent::FireProjectile(const EAmmoType AmmoType)
 	switch (AmmoType)
 	{
 	case EAmmoType::StandardAmmo:
-		FireProjectile(&Ammunition.StandardAmmo);
+		FireProjectile(&AmmunitionCount.StandardAmmo);
 		break;
 
 	case EAmmoType::RifleAmmo:
-		FireProjectile(&Ammunition.RifleAmmo);
+		FireProjectile(&AmmunitionCount.RifleAmmo);
 		break;
 
 	case EAmmoType::ShotgunAmmo:
-		FireProjectile(&Ammunition.ShotgunAmmo);
+		FireProjectile(&AmmunitionCount.ShotgunAmmo);
 		break;
 
 	case EAmmoType::Rocket:
-		FireProjectile(&Ammunition.Rocket);
+		FireProjectile(&AmmunitionCount.Rocket);
 		break;
 
 	case EAmmoType::Arrow:
-		FireProjectile(&Ammunition.Arrow);
+		FireProjectile(&AmmunitionCount.Arrow);
 		break;
 
 	case EAmmoType::Grenade:
-		FireProjectile(&Ammunition.Grenade);
+		FireProjectile(&AmmunitionCount.Grenade);
 		break;
 
 	case EAmmoType::Mine:
-		FireProjectile(&Ammunition.Mine);
+		FireProjectile(&AmmunitionCount.Mine);
 		break;
 
 	default:
@@ -519,7 +516,7 @@ ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const
 
 FAmmoCount URangedWeaponComponent::GetAllAmmo() const
 {
-	return Ammunition;
+	return AmmunitionCount;
 }
 
 bool URangedWeaponComponent::GetIsTriggerPressed() const
@@ -567,35 +564,58 @@ void URangedWeaponComponent::FireRelease()
 	}
 }
 
-void URangedWeaponComponent::AddAmmo(const int32 addAmmo, const EAmmoType ammoType)
+void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)
 {
-	switch (ammoType)
+
+	switch (InAmmoType)
 	{
 	case EAmmoType::StandardAmmo:
-		Ammunition.StandardAmmo += addAmmo;
+		AmmunitionCount.StandardAmmo += AdditionalAmmo;
 		break;
 
 	case EAmmoType::RifleAmmo:
-		Ammunition.RifleAmmo += addAmmo;
+		AmmunitionCount.RifleAmmo += AdditionalAmmo;
 		break;
 
 	case EAmmoType::ShotgunAmmo:
-		Ammunition.ShotgunAmmo += addAmmo;
+		AmmunitionCount.ShotgunAmmo += AdditionalAmmo;
 		break;
 
 	case EAmmoType::Rocket:
-		Ammunition.Rocket += addAmmo;
+		AmmunitionCount.Rocket += AdditionalAmmo;
 		break;
 
 	case EAmmoType::Arrow:
-		Ammunition.Arrow += addAmmo;
+		AmmunitionCount.Arrow += AdditionalAmmo;
 		break;
 
 	case EAmmoType::Grenade:
-		Ammunition.Grenade += addAmmo;
+		AmmunitionCount.Grenade += AdditionalAmmo;
 		break;
 
 	case EAmmoType::Mine:
-		Ammunition.Mine += addAmmo;
+		AmmunitionCount.Mine += AdditionalAmmo;
+	}
+}
+
+void URangedWeaponComponent::AddEnergy(const EEnergyType InEnergyType, const float AdditionalEnergy)
+{
+
+	switch (InEnergyType)
+	{
+	case EEnergyType::MP:
+		Shooter->CharacterStat.MP += AdditionalEnergy;
+		break;
+
+	case EEnergyType::Battery:
+		EnergyExternal.Battery += AdditionalEnergy;
+		break;
+
+	case EEnergyType::Fuel:
+		EnergyExternal.Fuel += AdditionalEnergy;
+		break;
+	
+	default:
+		break;
 	}
 }

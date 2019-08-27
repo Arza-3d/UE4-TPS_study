@@ -86,7 +86,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Switch Weapon Event")
 	FOnSwitchWeapon OnSwitchWeapon;
 
-
 	//=================
 	// Getter (public):
 	//=================
@@ -109,8 +108,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	FAmmoCount GetAllAmmo() const;
 
+	//=================
+	// Setter (public):
+	//=================
+
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
-	void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
+	void AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo);
+
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+	void AddEnergy(const EEnergyType InEnergyType, const float AdditionalEnergy);
 
 	//==================================
 	// Function for Controller (public):
@@ -127,6 +133,21 @@ protected:
 //===========================================================================
 
 	virtual void BeginPlay() override;
+
+	//===============================
+	// Default Variables (protected):
+	//===============================
+
+	/**
+	 * if member is 0 will use default value from Struct
+	 *    and will have no max ammunition value
+	 * -------------------------------------------------
+	 * if member is not 0, then (optional):
+	 *  * 0 = initial ammunition
+	 *  * 1 = max ammunition
+	 */
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
+	TArray<FAmmoCount> AmmunitionLimit;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float AimingSpeed = 0.1f;
@@ -157,7 +178,7 @@ private:
 	// Weapon stat (private):
 	//=======================
 
-	FAmmoCount Ammunition;
+	FAmmoCount AmmunitionCount;
 	FExternalEnergyCount EnergyExternal;
 
 	FWeapon CurrentWeapon;

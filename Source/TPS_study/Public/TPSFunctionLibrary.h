@@ -140,6 +140,9 @@ struct FExternalEnergyCount
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
+	float MP = 100.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
 	float Fuel = 100.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Energy")
@@ -311,8 +314,8 @@ struct FWeaponModeCompact : public FTableRowBase
 	FWeaponMode WeaponMode;
 };
 
-/////////////
-// 2.Aiming
+//==========
+// Aiming :
 /////////////
 USTRUCT(BlueprintType)
 struct FCharMovAimingStat
