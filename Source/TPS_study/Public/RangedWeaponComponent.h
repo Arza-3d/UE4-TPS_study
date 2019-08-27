@@ -10,9 +10,19 @@ class UUserWidget;
 class ATPShooterCharacter;
 class ATPS_studyCharacter;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, URangedWeaponComponent*, MyComponent, const float, CurrentEnrrgy, const float, EnergyNeededPerShot);//, FString, EventMessage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, URangedWeaponComponent*, MyComponent, const float, CurrentEnergy, const float, EnergyNeededPerShot);//, FString, EventMessage);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRunOutOfAmmoSignature, URangedWeaponComponent*, MyComponent, FWeapon, MyWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnJustReachMaxFireHoldSignature, URangedWeaponComponent*, MyComponent, const float, MyCurrentHoldTime, const float, MyMaxHoldTime);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMaxFireHoldRelease, URangedWeaponComponent*, MyComponent, const float, MyCurrentHoldTime, const float, MyMaxHoldTime);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoMoreAmmoDuringFire, URangedWeaponComponent*, MyComponent, const int32, MyFireRound);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsOverheatingSignature, URangedWeaponComponent*, MyComponent);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunOutOfAmmoSignature, URangedWeaponComponent*, MyComponent);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWeapon, URangedWeaponComponent*, MyComponent);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
 
@@ -40,6 +50,43 @@ public:
 
 	URangedWeaponComponent();
 
+	//================
+	// Event (public):
+	//================
+
+	/** Called when actor fire the weapon */
+	UPROPERTY(BlueprintAssignable, Category = "Fire Event")
+	FOnFireSignature OnFire;
+
+	/** Called when max fire hold is reach */
+	UPROPERTY(BlueprintAssignable, Category = "Fire Event")
+	FOnJustReachMaxFireHoldSignature OnJustReachMaxHoldTrigger;
+
+	/** Called when actor can't shoot more during multiple shot  */
+	UPROPERTY(BlueprintAssignable, Category = "Fire Event")
+	FOnMaxFireHoldRelease OnMaxFireHoldRelease;
+
+	/** Called when actor can't shoot more during multiple shot  */
+	UPROPERTY(BlueprintAssignable, Category = "Fire Event")
+	FOnNoMoreAmmoDuringFire OnNoMoreAmmoDuringMultipleShot;
+
+	/** Called when actor can't shoot due to no more ammo */
+	UPROPERTY(BlueprintAssignable, Category = "Can't Shoot Event")
+	FOnRunOutOfAmmoSignature OnAmmoOut;
+
+	/** Called when actor can't shoot due to not enough energy */
+	UPROPERTY(BlueprintAssignable, Category = "Can't Shoot Event")
+	FOnRunOutOfEnergySignature OnEnergyOut;
+
+	/** Called when actor can't shoot due to weapon overheating */
+	UPROPERTY(BlueprintAssignable, Category = "Can't Shoot Event")
+	FOnIsOverheatingSignature OnOverhating;
+
+	/** Called when actor switch weapon */
+	UPROPERTY(BlueprintAssignable, Category = "Switch Weapon Event")
+	FOnSwitchWeapon OnSwitchWeapon;
+
+
 	//=================
 	// Getter (public):
 	//=================
@@ -59,30 +106,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	ETriggerMechanism GetTriggerMechanism() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
+	FAmmoCount GetAllAmmo() const;
+
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
 	void AddAmmo(const int32 addAmmo, const EAmmoType ammoType);
+
+	//==================================
+	// Function for Controller (public):
+	//==================================
 
 	UFUNCTION(BlueprintCallable, Category ="Fire")
 	void FirePress();
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
-
-	//=======
-	// Event:
-	//=======
-
-	/** Called when actor can't shoot due to no more ammo */
-	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FOnRunOutOfAmmoSignature OnAmmoOut;
-
-	/** Called when actor can't shoot due to not enough energy */
-	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FOnRunOutOfEnergySignature OnEnergyOut;
-
-	/** Called when actor fire the weapon */
-	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FOnFireSignature OnFire;
 
 //===========================================================================
 protected:

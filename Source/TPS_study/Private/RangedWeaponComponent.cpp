@@ -56,7 +56,8 @@ void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
 		SetWeaponMode(WeaponIndex); // TEST2
-		Shooter->OnSwitchWeapon();
+		OnSwitchWeapon.Broadcast(this);
+		//Shooter->OnSwitchWeapon();
 	}
 }
 
@@ -71,7 +72,8 @@ void URangedWeaponComponent::SetWeaponIndex(const int32 InNumber)
 	{
 		WeaponIndex = InNumber;
 		SetWeaponMode(WeaponIndex); // TEST
-		Shooter->OnSwitchWeapon();
+		OnSwitchWeapon.Broadcast(this);
+		//Shooter->OnSwitchWeapon();
 	}
 }
 
@@ -133,7 +135,7 @@ bool URangedWeaponComponent::IsAmmoEnough(const int32 InAmmo)
 
 	if (bAmmoIsEmpty)
 	{
-		OnAmmoOut.Broadcast(this, CurrentWeapon);
+		OnAmmoOut.Broadcast(this);
 	}
 
 	return !bAmmoIsEmpty;
@@ -208,7 +210,8 @@ bool URangedWeaponComponent::IsWeaponNotOverheating()
 
 	if (bIsOverheat)
 	{
-		Shooter->OnWeaponOverheats();
+		//Shooter->OnWeaponOverheats();
+		OnOverhating.Broadcast(this);
 	}
 
 	return !bIsOverheat;
@@ -253,7 +256,8 @@ void URangedWeaponComponent::CountHoldTriggerTime()
 		if (HoldTime >= MaxFireHoldTime)
 		{
 			bMaxHoldIsReach = true;
-			Shooter->OnMaxFireHold();
+			OnJustReachMaxHoldTrigger.Broadcast(this, HoldTime, MaxFireHoldTime);
+			//Shooter->OnMaxFireHold();
 		}
 	}
 }
@@ -264,7 +268,8 @@ void URangedWeaponComponent::FireReleaseAfterHold()
 	if (bMaxHoldIsReach)
 	{
 		FireStandardTrigger();
-		Shooter->OnMaxFireHoldRelease();
+		//Shooter->OnMaxFireHoldRelease();
+		OnMaxFireHoldRelease.Broadcast(this, HoldTime, MaxFireHoldTime);
 	}
 	else if (HoldTime >= CurrentWeapon.FireRateAndOther[0])
 	{
@@ -380,7 +385,7 @@ void URangedWeaponComponent::FireProjectile(int* Ammo)
 	for (int i = 0; i < MuzzleCount; i++)
 	{
 		if (CurrentAmmo <= 0) {
-			Shooter->OnNoMoreAmmoDuringFire();
+			OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
 			break;
 		}
 
@@ -404,7 +409,7 @@ void URangedWeaponComponent::FireProjectile(float* MyEnergy)
 		{
 			if (CurrentEnergy < EnergyCostPerShot)
 			{
-				Shooter->OnNoMoreAmmoDuringFire();
+				OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
 				break;
 			}
 
@@ -418,7 +423,7 @@ void URangedWeaponComponent::FireProjectile(float* MyEnergy)
 		{
 			if (CurrentEnergy >= 100.0f)
 			{
-				Shooter->OnNoMoreAmmoDuringFire();
+				OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
 				break;
 			}
 
@@ -510,6 +515,11 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const
 {
 	return CurrentWeapon.Trigger;
+}
+
+FAmmoCount URangedWeaponComponent::GetAllAmmo() const
+{
+	return Ammunition;
 }
 
 bool URangedWeaponComponent::GetIsTriggerPressed() const
