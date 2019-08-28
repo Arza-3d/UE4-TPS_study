@@ -189,10 +189,6 @@ void ATPShooterCharacter::FireRelease()
 	GetRangedWeapon()->FireRelease();
 }
 
-//===============
-// Switch Weapon:
-//===============
-
 //=========================
 // Switch Weapon (private):
 //=========================
@@ -205,9 +201,9 @@ void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(
 void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
 void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
 
-//============
-// Navigation:
-//============
+//======================
+// Navigation (private):
+//======================
 
 float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
 {

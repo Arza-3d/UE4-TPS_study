@@ -8,6 +8,7 @@
 class UCurveFloat;
 class UDataTable;
 class UUserWidget;
+class ACharacter;
 class ATPShooterCharacter;
 class ATPS_studyCharacter;
 
@@ -108,7 +109,12 @@ public:
 	//=================
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	bool GetIsAiming() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
 	bool GetTransitioningAiming() const;
+
+	//-------------------------------------------------------------
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int32 GetWeaponIndex() const;
@@ -119,20 +125,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	FName GetWeaponName() const;
 
+	//-------------------------------------------------------------
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	bool GetIsTriggerPressed() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Fire")
 	ETriggerMechanism GetTriggerMechanism() const;
 
+	//-------------------------------------------------------------
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	FAmmoCount GetAllAmmo() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	float GetAimingAlpha() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	bool GetIsAiming() const;
 
 	//=================
 	// Setter (public):
@@ -163,19 +170,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void AimingRelease();
 
-	//===============================
-	// Default variables (protected):
-	//===============================
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	TSubclassOf<UUserWidget> Crosshair;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	UDataTable* AimingTable;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	bool bIsAbleToShootWithoutAiming;
-
 //===========================================================================
 protected:
 //===========================================================================
@@ -203,11 +197,20 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float StopAimingSpeed = 0.1f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	float TotalAimingTime = 0.8f;// delete later
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon", Meta = (PriorityOrder = "1"))
 	UDataTable* WeaponTable;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	float TotalAimingTime = 0.8f;
+	TSubclassOf<UUserWidget> Crosshair;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	UDataTable* AimingTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
+	bool bIsAbleToShootWithoutAiming;
 
 	/** 
 	 * Curve time must be 0 to 1
@@ -220,24 +223,25 @@ protected:
 private:
 //===========================================================================
 
-	//========
-	// Aiming:
-	//========
-
-	// 0 = default, 1 = aiming, 2, 3, x extra mode
-	TArray<FAimingStat> AimStats;
-	int32 AimStatStartIndex = 0;
-	int32 AimStatTargetIndex = 1;
-	TArray<FName> AimingNames;
-
-	EAimingState AimingState;
+	//==================
+	// Aiming (private):
+	//==================
 
 	bool bIsAimingForward;
-	
-	FTimerHandle AimingTimerHandle;
+
 	float DeltaSecond;
 	float AimingAlpha;
 	float CurrentAimingTime;
+
+	int32 AimStatStartIndex;
+	int32 AimStatTargetIndex = 1;
+
+	EAimingState AimingState;
+
+	TArray<FName> AimingNames;
+	TArray<FAimingStat> AimStats; // 0 = default, 1 = aiming, 2, 3, x extra mode
+
+	FTimerHandle AimingTimerHandle;
 
 	void AimingTimerStart();
 	void ClearAndStartAimingTimer();
@@ -251,6 +255,7 @@ private:
 
 	ATPShooterCharacter* Shooter;
 	ACharacter* MyCharacter;
+	TSubclassOf<ACharacter> CharTest;
 
 	//=======================
 	// Weapon stat (private):

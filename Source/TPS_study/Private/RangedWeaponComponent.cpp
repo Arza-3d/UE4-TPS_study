@@ -25,10 +25,19 @@ URangedWeaponComponent::URangedWeaponComponent()
 // Getter (public):
 //=================
 
+bool URangedWeaponComponent::GetIsAiming() const
+{
+	bool retVal = AimingState == EAimingState::Aiming;
+
+	return (bIsAbleToShootWithoutAiming) ? true : retVal;
+}
+
 bool URangedWeaponComponent::GetTransitioningAiming() const
 {
 	return AimingState == EAimingState::TransitioningAiming;
 }
+
+//-------------------------------------------------------------
 
 int32 URangedWeaponComponent::GetWeaponIndex() const
 {
@@ -44,6 +53,8 @@ FName URangedWeaponComponent::GetWeaponName() const
 {
 	return WeaponNames[WeaponIndex];
 }
+
+//-------------------------------------------------------------
 
 bool URangedWeaponComponent::GetIsTriggerPressed() const
 {
@@ -63,13 +74,6 @@ FAmmoCount URangedWeaponComponent::GetAllAmmo() const
 float URangedWeaponComponent::GetAimingAlpha() const
 {
 	return AimingAlpha;
-}
-
-bool URangedWeaponComponent::GetIsAiming() const
-{
-	bool retVal = AimingState == EAimingState::Aiming;
-
-	return (bIsAbleToShootWithoutAiming) ? true : retVal;
 }
 
 //=================
@@ -368,13 +372,12 @@ void URangedWeaponComponent::TimeAiming(float InAlpha)
 	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
 	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
 
-	//GetOwner()
-
 	Shooter->GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, InAlpha);
 	Shooter->GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, InAlpha);
 	MyCharacter->GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, InAlpha);
 	MyCharacter->GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, InAlpha);
 	Shooter->GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, InAlpha));
+
 }
 
 //================

@@ -151,7 +151,7 @@ private:
 	float NormalizedForward;
 	float NormalizedRight;
 
-	//---------------------
+	//-------------------------------------------------------------
 
 	float AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed);
 
