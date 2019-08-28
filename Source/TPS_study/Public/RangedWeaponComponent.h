@@ -164,7 +164,7 @@ public:
 	void AimingRelease();
 
 	//===============================
-	// Default variables (protected)
+	// Default variables (protected):
 	//===============================
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
@@ -224,14 +224,26 @@ private:
 	// Aiming:
 	//========
 
-	void TimeAiming(float InAlpha);
-
 	// 0 = default, 1 = aiming, 2, 3, x extra mode
 	TArray<FAimingStat> AimStats;
 	int32 AimStatStartIndex = 0;
 	int32 AimStatTargetIndex = 1;
 	TArray<FName> AimingNames;
+
+	EAimingState AimingState;
+
+	bool bIsAimingForward;
+	
+	FTimerHandle AimingTimerHandle;
+	float DeltaSecond;
+	float AimingAlpha;
+	float CurrentAimingTime;
+
+	void AimingTimerStart();
+	void ClearAndStartAimingTimer();
 	void OrientCharacter(const bool bMyCharIsAiming);
+	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
+	void TimeAiming(float InAlpha);
 
 	//========================
 	// Shotter stat (private):
@@ -254,31 +266,11 @@ private:
 	int32 LastWeaponIndex;
 	TArray<FName> WeaponNames;
 	
-	//==================
-	// Aiming (private):
-	//==================
-
-	EAimingState AimingState = EAimingState::NotAiming;
-
-	bool bMaxHoldIsReach;
-	float MaxFireHoldTime;
-
-	FTimerHandle AimingTimerHandle;
-	float DeltaSecond;
-	bool bIsAimingForward;
-
-	void AimingTimerStart();
-	void ClearAndStartAimingTimer();
-
-	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
-	//bool bIsTransitioningAiming;
-	float AimingAlpha;
-	float CurrentAimingTime;
-	
 	//================
 	// Fire (private):
 	//================
-
+	bool bMaxHoldIsReach;
+	float MaxFireHoldTime;
 	USceneComponent* WeaponInWorld;
 	void SetWeaponMesh();
 

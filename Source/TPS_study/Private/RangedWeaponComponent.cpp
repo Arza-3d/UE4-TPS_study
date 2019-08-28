@@ -72,6 +72,134 @@ bool URangedWeaponComponent::GetIsAiming() const
 	return (bIsAbleToShootWithoutAiming) ? true : retVal;
 }
 
+//=================
+// Setter (public):
+//=================
+
+void URangedWeaponComponent::SetIsTransitioningAiming(bool bInBool)
+{
+	if (bInBool)
+	{
+		AimingState = EAimingState::TransitioningAiming;
+	}
+}
+
+void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)
+{
+	switch (InAmmoType)
+	{
+	case EAmmoType::StandardAmmo:
+		AmmunitionCount.StandardAmmo += AdditionalAmmo;
+		break;
+
+	case EAmmoType::RifleAmmo:
+		AmmunitionCount.RifleAmmo += AdditionalAmmo;
+		break;
+
+	case EAmmoType::ShotgunAmmo:
+		AmmunitionCount.ShotgunAmmo += AdditionalAmmo;
+		break;
+
+	case EAmmoType::Rocket:
+		AmmunitionCount.Rocket += AdditionalAmmo;
+		break;
+
+	case EAmmoType::Arrow:
+		AmmunitionCount.Arrow += AdditionalAmmo;
+		break;
+
+	case EAmmoType::Grenade:
+		AmmunitionCount.Grenade += AdditionalAmmo;
+		break;
+
+	case EAmmoType::Mine:
+		AmmunitionCount.Mine += AdditionalAmmo;
+		break;
+
+	default:
+		break;
+	}
+}
+
+void URangedWeaponComponent::AddEnergy(const EEnergyType InEnergyType, const float AdditionalEnergy)
+{
+	switch (InEnergyType)
+	{
+	case EEnergyType::MP:
+		Shooter->CharacterStat.MP += AdditionalEnergy;
+		break;
+
+	case EEnergyType::Battery:
+		EnergyExternal.Battery += AdditionalEnergy;
+		break;
+
+	case EEnergyType::Fuel:
+		EnergyExternal.Fuel += AdditionalEnergy;
+		break;
+
+	default:
+		break;
+	}
+}
+
+//==================================
+// Function for Controller (public):
+//==================================
+
+void URangedWeaponComponent::FirePress()
+{
+	bIsTriggerPressed = true;
+	FlipOnePressTriggerSwitch();
+
+	if (!IsWeaponAbleToFire()) { return; }
+
+	switch (CurrentWeapon.Trigger)
+	{
+	case ETriggerMechanism::PressTrigger:
+		FireStandardTrigger();
+		break;
+
+	case ETriggerMechanism::AutomaticTrigger:
+		FireAutomaticTrigger();
+		break;
+
+	case ETriggerMechanism::ReleaseTrigger:
+		FireHold();
+		break;
+
+	case ETriggerMechanism::OnePressAutoTrigger:
+		FireAutomaticTriggerOnePress();
+		break;
+
+	default:
+		FireStandardTrigger();
+	}
+}
+
+void URangedWeaponComponent::FireRelease()
+{
+	bIsTriggerPressed = false;
+
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
+	{
+		FireReleaseAfterHold();
+	}
+}
+
+void URangedWeaponComponent::AimingPress()
+{
+	bIsAimingForward = true;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("Start Timer"));
+}
+
+void URangedWeaponComponent::AimingRelease()
+{
+	bIsAimingForward = false;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("STOP Timer DELTA seconds is %f"), DeltaSecond);
+}
+
 //===========================================================================
 // protected function:
 //===========================================================================
@@ -135,51 +263,9 @@ void URangedWeaponComponent::BeginPlay()
 	SetWeaponMesh();
 }
 
-
-
 //==================
 // Fire (protected):
 //==================
-
-void URangedWeaponComponent::FirePress()
-{
-	bIsTriggerPressed = true;
-	FlipOnePressTriggerSwitch();
-
-	if (!IsWeaponAbleToFire()) { return; }
-
-	switch (CurrentWeapon.Trigger)
-	{
-	case ETriggerMechanism::PressTrigger:
-		FireStandardTrigger();
-		break;
-
-	case ETriggerMechanism::AutomaticTrigger:
-		FireAutomaticTrigger();
-		break;
-
-	case ETriggerMechanism::ReleaseTrigger:
-		FireHold();
-		break;
-
-	case ETriggerMechanism::OnePressAutoTrigger:
-		FireAutomaticTriggerOnePress();
-		break;
-
-	default:
-		FireStandardTrigger();
-	}
-}
-
-void URangedWeaponComponent::FireRelease()
-{
-	bIsTriggerPressed = false;
-
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
-	{
-		FireReleaseAfterHold();
-	}
-}
 
 void URangedWeaponComponent::OrientCharacter(bool bMyCharIsAiming)
 {
@@ -191,7 +277,6 @@ void URangedWeaponComponent::OrientCharacter(bool bMyCharIsAiming)
 //===========================================================================
 // private function:
 //===========================================================================
-
 
 void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 {
@@ -266,20 +351,6 @@ void URangedWeaponComponent::ClearAndInvalidateAimingTimer(const float NewCurren
 	CurrentAimingTime = NewCurrentTime;
 }
 
-void URangedWeaponComponent::AimingPress()
-{
-	bIsAimingForward = true;
-	ClearAndStartAimingTimer();
-	UE_LOG(LogTemp, Log, TEXT("Start Timer"));
-}
-
-void URangedWeaponComponent::AimingRelease()
-{
-	bIsAimingForward = false;
-	ClearAndStartAimingTimer();
-	UE_LOG(LogTemp, Log, TEXT("STOP Timer DELTA seconds is %f"), DeltaSecond);
-}
-
 void URangedWeaponComponent::TimeAiming(float InAlpha)
 {
 	int32 A = AimStatStartIndex;
@@ -304,15 +375,6 @@ void URangedWeaponComponent::TimeAiming(float InAlpha)
 	MyCharacter->GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, InAlpha);
 	MyCharacter->GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, InAlpha);
 	Shooter->GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, InAlpha));
-}
-
-
-void URangedWeaponComponent::SetIsTransitioningAiming(bool bInBool)
-{
-	if (bInBool)
-	{
-		AimingState = EAimingState::TransitioningAiming;
-	}
 }
 
 //================
@@ -764,64 +826,5 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 //=================
 // Pickup (public):
 //=================
-
-void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)
-{
-
-	switch (InAmmoType)
-	{
-	case EAmmoType::StandardAmmo:
-		AmmunitionCount.StandardAmmo += AdditionalAmmo;
-		break;
-
-	case EAmmoType::RifleAmmo:
-		AmmunitionCount.RifleAmmo += AdditionalAmmo;
-		break;
-
-	case EAmmoType::ShotgunAmmo:
-		AmmunitionCount.ShotgunAmmo += AdditionalAmmo;
-		break;
-
-	case EAmmoType::Rocket:
-		AmmunitionCount.Rocket += AdditionalAmmo;
-		break;
-
-	case EAmmoType::Arrow:
-		AmmunitionCount.Arrow += AdditionalAmmo;
-		break;
-
-	case EAmmoType::Grenade:
-		AmmunitionCount.Grenade += AdditionalAmmo;
-		break;
-
-	case EAmmoType::Mine:
-		AmmunitionCount.Mine += AdditionalAmmo;
-		break;
-
-	default:
-		break;
-	}
-}
-
-void URangedWeaponComponent::AddEnergy(const EEnergyType InEnergyType, const float AdditionalEnergy)
-{
-	switch (InEnergyType)
-	{
-	case EEnergyType::MP:
-		Shooter->CharacterStat.MP += AdditionalEnergy;
-		break;
-
-	case EEnergyType::Battery:
-		EnergyExternal.Battery += AdditionalEnergy;
-		break;
-
-	case EEnergyType::Fuel:
-		EnergyExternal.Fuel += AdditionalEnergy;
-		break;
-	
-	default:
-		break;
-	}
-}
 
 //UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH current time is %f"), CurrentAimingTime);
