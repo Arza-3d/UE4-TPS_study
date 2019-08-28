@@ -39,8 +39,8 @@ public:
 
 	FORCEINLINE UHPandMPComponent* GetHealthAndMana() const { return HealthAndMana; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	bool GetIsAiming() const;
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	//bool GetIsAiming() const;
 
 	float GetHP() const;
 
@@ -50,32 +50,18 @@ public:
 
 	void SetMP(float val);
 
-	//===========================
-	// TPS Anim Interface Getter:
-	//===========================
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
-	UAnimInstance* GetAnimBlueprint() const;
-
 //===========================================================================
 protected:
 //===========================================================================
 
-	//===============================
-	// Default variables (protected)
-	//===============================
+	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	TSubclassOf<UUserWidget> Crosshair;
+	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	UDataTable* AimingTable;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	bool bIsAbleToShootWithoutAiming;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	//====================
-	// Getter (protected)
+	// Getter (protected):
 	//====================
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
@@ -84,31 +70,11 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
 	float GetNormalizedRight() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	bool GetTransitioningAiming() const;
-
-	//======================
-	// Function (protected)
-	//======================
-
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void AimingPress();
-
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void AimingRelease();
-
-	//===================
-	// Event (protected)
-	//===================
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
-	void OnAiming();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
-	void OnStopAiming();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
+	UAnimInstance* GetAnimBlueprint() const;
 
 	//================================
-	// overriden function (protected)
+	// Overriden function (protected):
 	//================================
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Weapon")
@@ -123,26 +89,16 @@ protected:
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
 
-	//===========
-	// and other:
-	//===========
-
-	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void SetIsTransitioningAiming(bool bInBool);
-
-	virtual void BeginPlay() override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void Tick(float DeltaSeconds) override;
-
 //===========================================================================
 private:
 //===========================================================================
+	
+	FCharacterStatBPCPP CharacterStat; // will delete later
+	FShooter ShooterState;
 
-	//======================
-	// Blueprint Component:
-	//======================
+	//===============================
+	// Blueprint Component (private):
+	//===============================
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -156,50 +112,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	UHPandMPComponent* HealthAndMana;
 
-	UPROPERTY()
-	UTimelineComponent* AimingTimeline;
+	//==================
+	// Aiming (private):
+	//==================
 
-	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	UCurveFloat* FloatCurve;
+	void AimingPress();
+	void AimingRelease();
 
-	UFUNCTION()
-	void TimeAiming(float InAlpha);
-
-	UFUNCTION()
-	void TimeFinishAiming();
-
-	UPROPERTY()
-	TEnumAsByte<ETimelineDirection::Type> TimeAimingDirection;
-
-	//========
-	// Aiming:
-	//========
-
-	// 0 = default, 1 = aiming, 2, 3, x extra mode
-	TArray<FAimingStat> AimStats;
-	int32 AimStatStartIndex = 0;
-	int32 AimStatTargetIndex = 1;
-	TArray<FName> AimingNames;
-
-	bool bIsAiming;
-	bool bIsTransitioningAiming;
-
-	void Aiming(const bool bInIsAiming);
-	void OrientCharacter(const bool bMyCharIsAiming);
-
-	FCharacterStatBPCPP CharacterStat;
-	FShooter ShooterState;
-
-	//=============
-	// Fire Weapon:
-	//=============
+	//=======================
+	// Fire Weapon (private):
+	//=======================
 
 	void FirePress();
 	void FireRelease();
 
-	//===============
-	// Switch Weapon:
-	//===============
+	//=========================
+	// Switch Weapon (private):
+	//=========================
 
 	void SetWeaponIndex1();
 	void SetWeaponIndex2();
@@ -209,9 +138,9 @@ private:
 	void SetWeaponIndexUp();
 	void SetWeaponIndexDown();
 
-	//============
-	// Navigation:
-	//============
+	//======================
+	// Navigation (private):
+	//======================
 
 	const float BaseTurnRate = 45.0f;
 	const float BaseLookUpRate = 45.0f;
@@ -221,6 +150,8 @@ private:
 
 	float NormalizedForward;
 	float NormalizedRight;
+
+	//---------------------
 
 	float AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed);
 

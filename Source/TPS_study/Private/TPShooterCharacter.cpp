@@ -52,15 +52,6 @@ ATPShooterCharacter::ATPShooterCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 	PrimaryActorTick.bStartWithTickEnabled = true;
-
-	// aiming setup:
-	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
-	AimStats[0].CamBoom.SocketOffset = GetCameraBoom()->SocketOffset;
-	AimStats[0].CamBoom.TargetArmLength = GetCameraBoom()->TargetArmLength;
-	AimStats[0].CharMov.MaxAcceleration = GetCharacterMovement()->MaxAcceleration;
-	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-	AimStats[0].FollCam.FieldOfView = GetFollowCamera()->FieldOfView;
-
 }
 
 float ATPShooterCharacter::GetHP() const
@@ -83,61 +74,22 @@ void ATPShooterCharacter::SetMP(float val)
 	CharacterStat.MP = val;
 }
 
-UAnimInstance* ATPShooterCharacter::GetAnimBlueprint() const
+
+
+//===========================================================================
+// protected function:
+//===========================================================================
+
+void ATPShooterCharacter::BeginPlay()
 {
-	return GetMesh()->GetAnimInstance();
+	Super::BeginPlay();
 }
 
-void ATPShooterCharacter::BeginPlay() {
-	Super::BeginPlay();
+void ATPShooterCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 
-	// aiming setup:
-	if (AimingTable != nullptr)
-	{
-		AimingNames = AimingTable->GetRowNames();
-	}
-
-	int aimingNamesCount = AimingNames.Num();
-	FName currentAimingName;
-	static const FString contextString(TEXT("Aiming name"));
-	struct FAimingStatCompact* aimStatRow;
-	AimStats.SetNum(1 + aimingNamesCount);
-	
-	for (int i = 0; i < AimingNames.Num(); i++)
-	{
-		currentAimingName = AimingNames[i];
-		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
-		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
-		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
-		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
-	}
-
-	// aiming timeline setup:
-	FOnTimelineFloat onAimingTimeCallback;
-	FOnTimelineEventStatic onAimingTimeFinishedCallback;
-
-	if (FloatCurve)
-	{
-		AimingTimeline = NewObject<UTimelineComponent>(this, FName("AimingTimeline"));
-		AimingTimeline->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-		this->BlueprintCreatedComponents.Add(AimingTimeline);
-		AimingTimeline->SetNetAddressable();
-		AimingTimeline->SetPropertySetObject(this);
-		AimingTimeline->SetDirectionPropertyName(FName("TimeAimingDirection"));
-		AimingTimeline->SetLooping(false);
-		AimingTimeline->SetTimelineLength(1.0f);
-		AimingTimeline->SetTimelineLengthMode(ETimelineLengthMode::TL_LastKeyFrame);
-		AimingTimeline->SetPlaybackPosition(0.0f, false);
-		onAimingTimeCallback.BindUFunction(this, FName(TEXT("TimeAiming")));
-		onAimingTimeFinishedCallback.BindUFunction(this, FName(TEXT("TimeFinishAiming")));
-		AimingTimeline->AddInterpFloat(FloatCurve, onAimingTimeCallback);
-		AimingTimeline->SetTimelineFinishedFunc(onAimingTimeFinishedCallback);
-		AimingTimeline->RegisterComponent();
-	}
-
-	// weapon setup:
-	//GetWorldTimerManager().ClearTimer(RangedWeaponSetupTimer);
-	//GetWorldTimerManager().SetTimer(RangedWeaponSetupTimer, this, &ATPShooterCharacter::SetupRangedWeaponVariables, 0.3f);
+	GetRangedWeapon()->DeltaSecond = DeltaSeconds;
 }
 
 void ATPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -164,21 +116,14 @@ void ATPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ATPShooterCharacter::LookUpAtRate);
 }
 
-void ATPShooterCharacter::Tick(float DeltaSeconds)
+UAnimInstance* ATPShooterCharacter::GetAnimBlueprint() const
 {
-	Super::Tick(DeltaSeconds);
-
-	if (AimingTimeline)
-	{
-		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
-	}
-
-	GetRangedWeapon()->DeltaSecond = DeltaSeconds;
+	return GetMesh()->GetAnimInstance();
 }
 
-//============
-// Navigation:
-//============
+//========================
+// Navigation (protected):
+//========================
 
 float ATPShooterCharacter::GetNormalizedForward() const
 {
@@ -190,6 +135,89 @@ float ATPShooterCharacter::GetNormalizedRight() const
 	return NormalizedRight;
 }
 
+//================================
+// Overriden function (protected):
+//================================
+
+bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
+{
+	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
+	bool bIsNotAiming = !GetRangedWeapon()->GetIsAiming();
+
+	return bIsOnTheGround && bIsNotAiming;
+}
+
+bool ATPShooterCharacter::IsAbleToAim_Implementation()
+{
+	return !GetCharacterMovement()->IsFalling();
+}
+
+bool ATPShooterCharacter::IsAbleToFire_Implementation()
+{
+	return !GetCharacterMovement()->IsFalling();
+}
+
+//===========================================================================
+// private function:
+//===========================================================================
+
+//==================
+// Aiming (private):
+//==================
+
+void ATPShooterCharacter::AimingPress() 
+{
+	GetRangedWeapon()->AimingPress();
+}
+
+void ATPShooterCharacter::AimingRelease()
+{
+	GetRangedWeapon()->AimingRelease();
+}
+
+//=======================
+// Fire Weapon (private):
+//=======================
+
+void ATPShooterCharacter::FirePress()
+{
+	GetRangedWeapon()->FirePress();
+}
+
+void ATPShooterCharacter::FireRelease()
+{
+	GetRangedWeapon()->FireRelease();
+}
+
+//===============
+// Switch Weapon:
+//===============
+
+//=========================
+// Switch Weapon (private):
+//=========================
+
+void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndex(true); }
+void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndex(false); }
+
+void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndex(0); }
+void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(1); }
+void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
+void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
+
+//============
+// Navigation:
+//============
+
+float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
+{
+	FVector myVelo = GetVelocity();
+	float mySpeed = FVector(myVelo.X, myVelo.Y, 0.0f).Size();
+	float divider = (bOtherButtonPressed) ? UKismetMathLibrary::Sqrt(2.0f) : 1.0f;
+
+	return (mySpeed * MyValue) / (divider * GetCharacterMovement()->MaxWalkSpeed);
+}
+
 void ATPShooterCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -199,7 +227,7 @@ void ATPShooterCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
-		if (bIsAiming)
+		if (GetRangedWeapon()->AimingState != EAimingState::NotAiming)
 		{
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
@@ -221,7 +249,7 @@ void ATPShooterCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 
-		if (bIsAiming)
+		if (GetRangedWeapon()->AimingState != EAimingState::NotAiming)
 		{
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
@@ -242,161 +270,4 @@ void ATPShooterCharacter::LookRightAtRate(float Rate)
 void ATPShooterCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-//========
-// Aiming:
-//========
-
-bool ATPShooterCharacter::GetTransitioningAiming() const
-{
-	return bIsTransitioningAiming;
-}
-
-void ATPShooterCharacter::SetIsTransitioningAiming(bool bInBool)
-{
-	bIsTransitioningAiming = bInBool;
-}
-
-bool ATPShooterCharacter::GetIsAiming() const
-{
-	return (bIsAbleToShootWithoutAiming) ? true : bIsAiming;
-}
-
-void ATPShooterCharacter::AimingPress() {
-
-	if (!IsAbleToAim()) { return; }
-
-	Aiming(true);
-
-	OnAiming();
-
-	bIsTransitioningAiming = true;
-
-	AimingTimeline->Play();
-}
-
-void ATPShooterCharacter::AimingRelease()
-{
-	Aiming(false);
-
-	AimingTimeline->Reverse();
-
-	OnStopAiming();
-
-	GetRangedWeapon()->bOnePressToggle = false;
-
-	if (GetRangedWeapon()->CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
-	{
-		GetWorldTimerManager().ClearTimer(GetRangedWeapon()->TimerOfHoldTrigger);
-		GetRangedWeapon()->bMaxHoldIsReach = false;
-		GetRangedWeapon()->HoldTime = 0.0f;
-	}
-}
-
-void ATPShooterCharacter::Aiming(const bool bInIsAiming)
-{
-	bIsAiming = bInIsAiming;
-	OrientCharacter(bInIsAiming);
-	bIsTransitioningAiming = bInIsAiming;
-
-	float speed = (bInIsAiming) ? GetRangedWeapon()->AimingSpeed : GetRangedWeapon()->StopAimingSpeed;
-
-	if (speed <= 0.0f) { speed = 1.0f; };
-
-	AimingTimeline->SetPlayRate(1.0f / speed);
-}
-
-void ATPShooterCharacter::OrientCharacter(bool bMyCharIsAiming)
-{
-	FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
-	bUseControllerRotationYaw = bMyCharIsAiming;
-	GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
-}
-
-void ATPShooterCharacter::TimeAiming(float InAlpha)
-{
-	int32 A = AimStatStartIndex;
-	int32 B = AimStatTargetIndex;
-
-	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
-	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
-	float defaultTargetArmLength = AimStats[A].CamBoom.TargetArmLength;
-	float defaultWalkSpeed = AimStats[A].CharMov.MaxWalkSpeed;
-	FVector defaultSocketOffset = AimStats[A].CamBoom.SocketOffset;
-
-	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
-	float aimingMaxAcceleration = AimStats[B].CharMov.MaxAcceleration;
-	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
-	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
-	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
-
-	GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, InAlpha);
-	GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, InAlpha);
-	GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, InAlpha);
-	GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, InAlpha);
-	GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, InAlpha));
-}
-
-void ATPShooterCharacter::TimeFinishAiming()
-{
-	bIsTransitioningAiming = false;
-	OnAiming();
-}
-
-//=============
-// Fire Weapon:
-//=============
-
-bool ATPShooterCharacter::IsAbleToFire_Implementation()
-{
-	return !GetCharacterMovement()->IsFalling();
-}
-
-void ATPShooterCharacter::FirePress()
-{
-	GetRangedWeapon()->FirePress();
-}
-
-void ATPShooterCharacter::FireRelease()
-{
-	GetRangedWeapon()->FireRelease();
-}
-
-//===============
-// Switch Weapon:
-//===============
-
-bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
-{
-	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
-	bool bIsNotAiming = !GetIsAiming();
-
-	return bIsOnTheGround && bIsNotAiming;
-}
-
-bool ATPShooterCharacter::IsAbleToAim_Implementation()
-{
-	return !GetCharacterMovement()->IsFalling();
-}
-
-void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndex(true); }
-void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndex(false); }
-
-void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndex(0); }
-void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(1); }
-void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
-void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
-
-//============
-// Navigation:
-//============
-
-float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
-{
-	FVector myVelo = GetVelocity();
-	float mySpeed = FVector(myVelo.X, myVelo.Y, 0.0f).Size();
-	float divider = (bOtherButtonPressed) ? UKismetMathLibrary::Sqrt(2.0f) : 1.0f;
-
-	return (mySpeed * MyValue) / (divider * GetCharacterMovement()->MaxWalkSpeed);
 }

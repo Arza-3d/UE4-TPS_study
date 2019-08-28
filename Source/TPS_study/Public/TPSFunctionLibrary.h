@@ -13,30 +13,6 @@ class UParticleSystem;
 class UProjectileFXDataAsset;
 class UProjectileSXDataAsset;
 
-/*USTRUCT(BlueprintType)
-struct FMinMaxFloat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	float Min;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	float Max = 1.0;
-};
-
-USTRUCT(BlueprintType)
-struct FMinMaxCurve
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	FMinMaxFloat TimeRange;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	FMinMaxFloat FloatRange;
-};*/
-
 /**
  * Will put some extra struct and enum in this class
  */

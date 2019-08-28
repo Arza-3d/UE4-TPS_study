@@ -11,6 +11,17 @@ class UUserWidget;
 class ATPShooterCharacter;
 class ATPS_studyCharacter;
 
+UENUM(BlueprintType)
+enum class EAimingState : uint8
+{
+	NotAiming,
+	TransitioningAiming,
+	Aiming
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAiming, URangedWeaponComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTransitioningAiming, URangedWeaponComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStopAiming, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWeapon, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunOutOfAmmoSignature, URangedWeaponComponent*, MyComponent);
@@ -48,6 +59,18 @@ public:
 	// Event (public):
 	//================
 
+	/** Called when actor reach aiming state */
+	UPROPERTY(BlueprintAssignable, Category = "Aiming")
+	FOnAiming OnAiming;
+
+	/** Called when actor in transitioning in aiming state */
+	UPROPERTY(BlueprintAssignable, Category = "Aiming")
+	FOnTransitioningAiming OnTransitioningAiming;
+
+	/** Called when actor reach aiming state */
+	UPROPERTY(BlueprintAssignable, Category = "Aiming")
+	FOnStopAiming OnStopAiming;
+
 	/** Called when actor fire the weapon */
 	UPROPERTY(BlueprintAssignable, Category = "Fire Event")
 	FOnFireSignature OnFire;
@@ -84,6 +107,9 @@ public:
 	// Getter (public):
 	//=================
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	bool GetTransitioningAiming() const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int32 GetWeaponIndex() const;
 
@@ -105,9 +131,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	float GetAimingAlpha() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
+	bool GetIsAiming() const;
+
 	//=================
 	// Setter (public):
 	//=================
+
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void SetIsTransitioningAiming(bool bInBool);
 
 	UFUNCTION(BlueprintCallable, Category = "Ammo")
 	void AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo);
@@ -126,10 +158,23 @@ public:
 	void FireRelease();
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void StartAiming();
+	void AimingPress();
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
-	void StopAiming();
+	void AimingRelease();
+
+	//===============================
+	// Default variables (protected)
+	//===============================
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	TSubclassOf<UUserWidget> Crosshair;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	UDataTable* AimingTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Aiming")
+	bool bIsAbleToShootWithoutAiming;
 
 //===========================================================================
 protected:
@@ -158,12 +203,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float StopAimingSpeed = 0.1f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
-	TSubclassOf<UUserWidget> Crosshair;
-
-	//UPROPERTY(EditDefaultsOnly, Category = "Aiming")
-	//UDataTable* AimingTable;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UDataTable* WeaponTable;
 
@@ -181,11 +220,25 @@ protected:
 private:
 //===========================================================================
 
+	//========
+	// Aiming:
+	//========
+
+	void TimeAiming(float InAlpha);
+
+	// 0 = default, 1 = aiming, 2, 3, x extra mode
+	TArray<FAimingStat> AimStats;
+	int32 AimStatStartIndex = 0;
+	int32 AimStatTargetIndex = 1;
+	TArray<FName> AimingNames;
+	void OrientCharacter(const bool bMyCharIsAiming);
+
 	//========================
 	// Shotter stat (private):
 	//========================
 
 	ATPShooterCharacter* Shooter;
+	ACharacter* MyCharacter;
 
 	//=======================
 	// Weapon stat (private):
@@ -205,10 +258,11 @@ private:
 	// Aiming (private):
 	//==================
 
+	EAimingState AimingState = EAimingState::NotAiming;
+
 	bool bMaxHoldIsReach;
 	float MaxFireHoldTime;
 
-	//FMinMaxCurve CurveMinMax;
 	FTimerHandle AimingTimerHandle;
 	float DeltaSecond;
 	bool bIsAimingForward;
@@ -217,11 +271,10 @@ private:
 	void ClearAndStartAimingTimer();
 
 	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
-	bool bIsTransitioningAiming;
+	//bool bIsTransitioningAiming;
 	float AimingAlpha;
 	float CurrentAimingTime;
 	
-
 	//================
 	// Fire (private):
 	//================

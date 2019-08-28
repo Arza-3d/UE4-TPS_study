@@ -1,6 +1,8 @@
 #include "RangedWeaponComponent.h"
 #include "Engine/Engine.h"// delete later
 #include "Kismet/GameplayStatics.h"// delete later
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "TPS_Projectile.h"
 #include "TimerManager.h"
 #include "Camera/CameraComponent.h"
@@ -19,6 +21,57 @@ URangedWeaponComponent::URangedWeaponComponent()
 	//if (WeaponAmmunition.Num() == 0) WeaponAmmunition = {FAmmoCount()};
 }
 
+//=================
+// Getter (public):
+//=================
+
+bool URangedWeaponComponent::GetTransitioningAiming() const
+{
+	return AimingState == EAimingState::TransitioningAiming;
+}
+
+int32 URangedWeaponComponent::GetWeaponIndex() const
+{
+	return WeaponIndex;
+}
+
+int32 URangedWeaponComponent::GetLastWeaponIndex() const
+{
+	return LastWeaponIndex;
+}
+
+FName URangedWeaponComponent::GetWeaponName() const
+{
+	return WeaponNames[WeaponIndex];
+}
+
+bool URangedWeaponComponent::GetIsTriggerPressed() const
+{
+	return bIsTriggerPressed;
+}
+
+ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const
+{
+	return CurrentWeapon.Trigger;
+}
+
+FAmmoCount URangedWeaponComponent::GetAllAmmo() const
+{
+	return AmmunitionCount;
+}
+
+float URangedWeaponComponent::GetAimingAlpha() const
+{
+	return AimingAlpha;
+}
+
+bool URangedWeaponComponent::GetIsAiming() const
+{
+	bool retVal = AimingState == EAimingState::Aiming;
+
+	return (bIsAbleToShootWithoutAiming) ? true : retVal;
+}
+
 //===========================================================================
 // protected function:
 //===========================================================================
@@ -27,7 +80,8 @@ void URangedWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Shooter = Cast<ATPShooterCharacter>(GetOwner());
+	MyCharacter = Cast<ACharacter>(GetOwner());
+	Shooter = Cast<ATPShooterCharacter>(MyCharacter);
 
 	if (WeaponTable != nullptr)
 	{
@@ -46,27 +100,98 @@ void URangedWeaponComponent::BeginPlay()
 		UKismetSystemLibrary::PrintString(this, FString("AIMING CURVE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
 	}
 
+	if (AimingTable != nullptr)
+	{
+		AimingNames = AimingTable->GetRowNames();
+	}
+
+	// aiming setup:
+	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
+	AimStats[0].CamBoom.SocketOffset = Shooter->GetCameraBoom()->SocketOffset;
+	AimStats[0].CamBoom.TargetArmLength = Shooter->GetCameraBoom()->TargetArmLength;
+	AimStats[0].CharMov.MaxAcceleration = Shooter->GetCharacterMovement()->MaxAcceleration;
+	AimStats[0].CharMov.MaxWalkSpeed = MyCharacter->GetCharacterMovement()->MaxWalkSpeed;
+	AimStats[0].FollCam.FieldOfView = Shooter->GetFollowCamera()->FieldOfView;
+
+	int aimingNamesCount = AimingNames.Num();
+	FName currentAimingName;
+	static const FString contextString(TEXT("Aiming name"));
+	struct FAimingStatCompact* aimStatRow;
+	AimStats.SetNum(1 + aimingNamesCount);
+
+	for (int i = 0; i < AimingNames.Num(); i++)
+	{
+		currentAimingName = AimingNames[i];
+		aimStatRow = AimingTable->FindRow<FAimingStatCompact>(currentAimingName, contextString, true);
+		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
+		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
+		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
+	}
+
+	// aiming timeline setup:
+	FOnTimelineFloat onAimingTimeCallback;
+	FOnTimelineEventStatic onAimingTimeFinishedCallback;
+
 	SetWeaponMesh();
 }
 
-FName URangedWeaponComponent::GetWeaponName() const
+
+
+//==================
+// Fire (protected):
+//==================
+
+void URangedWeaponComponent::FirePress()
 {
-	return WeaponNames[WeaponIndex];
+	bIsTriggerPressed = true;
+	FlipOnePressTriggerSwitch();
+
+	if (!IsWeaponAbleToFire()) { return; }
+
+	switch (CurrentWeapon.Trigger)
+	{
+	case ETriggerMechanism::PressTrigger:
+		FireStandardTrigger();
+		break;
+
+	case ETriggerMechanism::AutomaticTrigger:
+		FireAutomaticTrigger();
+		break;
+
+	case ETriggerMechanism::ReleaseTrigger:
+		FireHold();
+		break;
+
+	case ETriggerMechanism::OnePressAutoTrigger:
+		FireAutomaticTriggerOnePress();
+		break;
+
+	default:
+		FireStandardTrigger();
+	}
+}
+
+void URangedWeaponComponent::FireRelease()
+{
+	bIsTriggerPressed = false;
+
+	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
+	{
+		FireReleaseAfterHold();
+	}
+}
+
+void URangedWeaponComponent::OrientCharacter(bool bMyCharIsAiming)
+{
+	Shooter->FollowCamera->bUsePawnControlRotation = bMyCharIsAiming;
+	MyCharacter->bUseControllerRotationYaw = bMyCharIsAiming;
+	MyCharacter->GetCharacterMovement()->bOrientRotationToMovement = !bMyCharIsAiming;
 }
 
 //===========================================================================
 // private function:
 //===========================================================================
 
-int32 URangedWeaponComponent::GetWeaponIndex() const
-{
-	return WeaponIndex;
-}
-
-int32 URangedWeaponComponent::GetLastWeaponIndex() const
-{
-	return LastWeaponIndex;
-}
 
 void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 {
@@ -124,35 +249,115 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 	}
 }
 
+//==================
+// Aiming (private):
+//==================
+
+void URangedWeaponComponent::ClearAndStartAimingTimer()
+{
+	MyCharacter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
+	MyCharacter->GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &URangedWeaponComponent::AimingTimerStart, DeltaSecond, true);
+}
+
+void URangedWeaponComponent::ClearAndInvalidateAimingTimer(const float NewCurrentTime)
+{
+	MyCharacter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
+	AimingTimerHandle.Invalidate();
+	CurrentAimingTime = NewCurrentTime;
+}
+
+void URangedWeaponComponent::AimingPress()
+{
+	bIsAimingForward = true;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("Start Timer"));
+}
+
+void URangedWeaponComponent::AimingRelease()
+{
+	bIsAimingForward = false;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("STOP Timer DELTA seconds is %f"), DeltaSecond);
+}
+
+void URangedWeaponComponent::TimeAiming(float InAlpha)
+{
+	int32 A = AimStatStartIndex;
+	int32 B = AimStatTargetIndex;
+
+	float defaultFieldOfView = AimStats[A].FollCam.FieldOfView;
+	float defaultMaxAcceleration = AimStats[A].CharMov.MaxAcceleration;
+	float defaultTargetArmLength = AimStats[A].CamBoom.TargetArmLength;
+	float defaultWalkSpeed = AimStats[A].CharMov.MaxWalkSpeed;
+	FVector defaultSocketOffset = AimStats[A].CamBoom.SocketOffset;
+
+	float aimingFieldOfView = AimStats[B].FollCam.FieldOfView;
+	float aimingMaxAcceleration = AimStats[B].CharMov.MaxAcceleration;
+	float aimingTargetArmLength = AimStats[B].CamBoom.TargetArmLength;
+	float aimingWalkSpeed = AimStats[B].CharMov.MaxWalkSpeed;
+	FVector aimingSocketOffset = AimStats[B].CamBoom.SocketOffset;
+
+	//GetOwner()
+
+	Shooter->GetCameraBoom()->TargetArmLength = FMath::Lerp(defaultTargetArmLength, aimingTargetArmLength, InAlpha);
+	Shooter->GetCameraBoom()->SocketOffset = FMath::Lerp(defaultSocketOffset, aimingSocketOffset, InAlpha);
+	MyCharacter->GetCharacterMovement()->MaxWalkSpeed = FMath::Lerp(defaultWalkSpeed, aimingWalkSpeed, InAlpha);
+	MyCharacter->GetCharacterMovement()->MaxAcceleration = FMath::Lerp(defaultMaxAcceleration, aimingMaxAcceleration, InAlpha);
+	Shooter->GetFollowCamera()->SetFieldOfView(FMath::Lerp(defaultFieldOfView, aimingFieldOfView, InAlpha));
+}
+
+
+void URangedWeaponComponent::SetIsTransitioningAiming(bool bInBool)
+{
+	if (bInBool)
+	{
+		AimingState = EAimingState::TransitioningAiming;
+	}
+}
+
+//================
+// Fire (private):
+//================
+
 void URangedWeaponComponent::AimingTimerStart()
 {
-	float inTime = CurrentAimingTime / TotalAimingTime;
+	AimingState = EAimingState::TransitioningAiming;
 
-	AimingAlpha = AimingCurve->GetFloatValue(inTime);// *TotalAimingTime;
+	OnTransitioningAiming.Broadcast(this);
 
-	UE_LOG(LogTemp, Log, TEXT("Aiming Alpha is %f, current time is %f, then inTime is %f"), AimingAlpha, CurrentAimingTime, inTime);
+	AimingAlpha = AimingCurve->GetFloatValue(CurrentAimingTime / TotalAimingTime);
+	
+	UE_LOG(LogTemp, Log, TEXT("Aiming Alpha is %f, current time is %f"), AimingAlpha, CurrentAimingTime);
 
 	float incrementTime = (bIsAimingForward) ? DeltaSecond : -1 * DeltaSecond;
 	CurrentAimingTime += incrementTime;
 
-	if (bIsAimingForward) 
+	if (bIsAimingForward)
 	{
 		if (CurrentAimingTime >= TotalAimingTime)
 		{
+			AimingState = EAimingState::Aiming;
+
 			ClearAndInvalidateAimingTimer(TotalAimingTime);
+
+			OnAiming.Broadcast(this);
 			UE_LOG(LogTemp, Log, TEXT("FINISH >>>>>>> current time is %f"), CurrentAimingTime);
 		}
-	} 
+	}
 	else if (CurrentAimingTime <= 0.0f)
 	{
+		AimingState = EAimingState::NotAiming;
+
+		OnStopAiming.Broadcast(this);
+
 		ClearAndInvalidateAimingTimer(0.0f);
-		UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH current time is %f"), CurrentAimingTime);
+		UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH  current time is %f"), CurrentAimingTime);
 	}
 }
 
 void URangedWeaponComponent::SetWeaponMesh()
-{
-	USkeletalMeshComponent* weaponMesh = Shooter->GetMesh(); // change it to accept additional weapon mesh later
+{	
+	USkeletalMeshComponent* weaponMesh = MyCharacter->GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(weaponMesh);
 }
 
@@ -265,17 +470,14 @@ bool URangedWeaponComponent::IsWeaponNotOverheating()
 
 void URangedWeaponComponent::FireAutomaticTrigger()
 {
-	if (!(bIsTriggerPressed && IsWeaponAbleToFire()))
-	{
-		return;
-	}
+	if (!(bIsTriggerPressed && IsWeaponAbleToFire())) return;
 
 	FireStandardTrigger();
 }
 
 bool URangedWeaponComponent::IsWeaponAbleToFire()
 {
-	return Shooter->GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
+	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
 }
 
 void URangedWeaponComponent::FireAutomaticTriggerOnePress()
@@ -288,9 +490,8 @@ void URangedWeaponComponent::FireAutomaticTriggerOnePress()
 
 void URangedWeaponComponent::FireHold()
 {
-
-	Shooter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
-	Shooter->GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &URangedWeaponComponent::CountHoldTriggerTime, HoldTimeRateCount, true);
+	MyCharacter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+	MyCharacter->GetWorldTimerManager().SetTimer(TimerOfHoldTrigger, this, &URangedWeaponComponent::CountHoldTriggerTime, HoldTimeRateCount, true);
 }
 
 void URangedWeaponComponent::CountHoldTriggerTime()
@@ -309,7 +510,7 @@ void URangedWeaponComponent::CountHoldTriggerTime()
 
 void URangedWeaponComponent::FireReleaseAfterHold()
 {
-	Shooter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
+	MyCharacter->GetWorldTimerManager().ClearTimer(TimerOfHoldTrigger);
 	if (bMaxHoldIsReach)
 	{
 		FireStandardTrigger();
@@ -512,15 +713,15 @@ void URangedWeaponComponent::TimerFireRateStart()
 	bIsFireRatePassed = false;
 	UE_LOG(LogTemp, Log, TEXT("FIRE RATE START!!!!"));
 
-	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
-	Shooter->GetWorldTimerManager().SetTimer(FireRateTimer, this, &URangedWeaponComponent::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
+	MyCharacter->GetWorldTimerManager().ClearTimer(FireRateTimer);
+	MyCharacter->GetWorldTimerManager().SetTimer(FireRateTimer, this, &URangedWeaponComponent::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
 }
 
 void URangedWeaponComponent::TimerFireRateReset()
 {
 	UE_LOG(LogTemp, Log, TEXT("FIRE RATE TIMER RESERT, IT WORKS OMG!!!!"));
 	bIsFireRatePassed = true;
-	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
+	MyCharacter->GetWorldTimerManager().ClearTimer(FireRateTimer);
 
 	if (CurrentWeapon.Trigger == ETriggerMechanism::AutomaticTrigger)
 	{
@@ -551,7 +752,7 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 	FVector TargetLocation;
 	FRotator MuzzleLookRotation;
 
-	if (Shooter->GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	if (MyCharacter->GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
 	{
 		TargetLocation = HitTrace.Location;
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
@@ -560,93 +761,9 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 	return MuzzleLookRotation;
 }
 
-ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const
-{
-	return CurrentWeapon.Trigger;
-}
-
-FAmmoCount URangedWeaponComponent::GetAllAmmo() const
-{
-	return AmmunitionCount;
-}
-
-float URangedWeaponComponent::GetAimingAlpha() const
-{
-	return AimingAlpha;
-}
-
-bool URangedWeaponComponent::GetIsTriggerPressed() const
-{
-	return bIsTriggerPressed;
-}
-
-void URangedWeaponComponent::FirePress()
-{
-	bIsTriggerPressed = true;
-	FlipOnePressTriggerSwitch();
-
-	if (!IsWeaponAbleToFire()) { return; }
-
-	switch (CurrentWeapon.Trigger)
-	{
-	case ETriggerMechanism::PressTrigger:
-		FireStandardTrigger();
-		break;
-
-	case ETriggerMechanism::AutomaticTrigger:
-		FireAutomaticTrigger();
-		break;
-
-	case ETriggerMechanism::ReleaseTrigger:
-		FireHold();
-		break;
-
-	case ETriggerMechanism::OnePressAutoTrigger:
-		FireAutomaticTriggerOnePress();
-		break;
-
-	default:
-		FireStandardTrigger();
-	}
-}
-
-void URangedWeaponComponent::FireRelease()
-{
-	bIsTriggerPressed = false;
-
-	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
-	{
-		FireReleaseAfterHold();
-	}
-}
-
-void URangedWeaponComponent::ClearAndStartAimingTimer()
-{
-	Shooter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
-	Shooter->GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &URangedWeaponComponent::AimingTimerStart, DeltaSecond, true);
-}
-
-void URangedWeaponComponent::ClearAndInvalidateAimingTimer(const float NewCurrentTime)
-{
-	Shooter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
-	AimingTimerHandle.Invalidate();
-	CurrentAimingTime = NewCurrentTime;
-	bIsTransitioningAiming = false;
-}
-
-void URangedWeaponComponent::StartAiming()
-{
-	bIsAimingForward = true;
-	ClearAndStartAimingTimer();
-	UE_LOG(LogTemp, Log, TEXT("Start Timer"));
-}
-
-void URangedWeaponComponent::StopAiming()
-{
-	bIsAimingForward = false;
-	ClearAndStartAimingTimer();
-	UE_LOG(LogTemp, Log, TEXT("STOP Timer DELTA seconds is %f"), DeltaSecond);
-}
+//=================
+// Pickup (public):
+//=================
 
 void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)
 {
@@ -688,7 +805,6 @@ void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 Add
 
 void URangedWeaponComponent::AddEnergy(const EEnergyType InEnergyType, const float AdditionalEnergy)
 {
-
 	switch (InEnergyType)
 	{
 	case EEnergyType::MP:
@@ -707,3 +823,5 @@ void URangedWeaponComponent::AddEnergy(const EEnergyType InEnergyType, const flo
 		break;
 	}
 }
+
+//UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH current time is %f"), CurrentAimingTime);
