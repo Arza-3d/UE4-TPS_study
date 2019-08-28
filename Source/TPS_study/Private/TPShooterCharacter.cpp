@@ -50,7 +50,8 @@ ATPShooterCharacter::ATPShooterCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-	PrimaryActorTick.bStartWithTickEnabled = false;
+
+	PrimaryActorTick.bStartWithTickEnabled = true;
 
 	// aiming setup:
 	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
@@ -101,7 +102,7 @@ void ATPShooterCharacter::BeginPlay() {
 	static const FString contextString(TEXT("Aiming name"));
 	struct FAimingStatCompact* aimStatRow;
 	AimStats.SetNum(1 + aimingNamesCount);
-
+	
 	for (int i = 0; i < AimingNames.Num(); i++)
 	{
 		currentAimingName = AimingNames[i];
@@ -171,6 +172,8 @@ void ATPShooterCharacter::Tick(float DeltaSeconds)
 	{
 		AimingTimeline->TickComponent(DeltaSeconds, ELevelTick::LEVELTICK_TimeOnly, NULL);
 	}
+
+	GetRangedWeapon()->DeltaSecond = DeltaSeconds;
 }
 
 //============

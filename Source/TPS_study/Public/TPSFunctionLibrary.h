@@ -7,10 +7,35 @@
 #include "TPSFunctionLibrary.generated.h"
 
 class UAnimMontage;
+class UCurveFloat;
 class USoundBase;
 class UParticleSystem;
 class UProjectileFXDataAsset;
 class UProjectileSXDataAsset;
+
+/*USTRUCT(BlueprintType)
+struct FMinMaxFloat
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	float Min;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	float Max = 1.0;
+};
+
+USTRUCT(BlueprintType)
+struct FMinMaxCurve
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	FMinMaxFloat TimeRange;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	FMinMaxFloat FloatRange;
+};*/
 
 /**
  * Will put some extra struct and enum in this class
@@ -24,6 +49,10 @@ public:
 	static float GetNewPlayRateForMontage(float targetDuration, UAnimMontage* animMontage);
 
 	static UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
+
+	static float  StandardLinearInterpolation(const float X, const float X1, const float X2, const float Y1, const float Y2);
+
+	//static FMinMaxCurve GetCurveRange(const UCurveFloat* InCurve);
 };
 
 // 0 character state

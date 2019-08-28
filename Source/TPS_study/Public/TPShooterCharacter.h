@@ -107,27 +107,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Aiming")
 	void OnStopAiming();
 
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnWeaponFires();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnMaxFireHoldRelease();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnMaxFireHold();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnNoEnergy();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnWeaponOverheats();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Fire")
-	//void OnNoMoreAmmoDuringFire();
-
-	//UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Weapon", meta = (KeyWords = "change interface"))
-	//void OnSwitchWeapon();
-
 	//================================
 	// overriden function (protected)
 	//================================
@@ -144,9 +123,9 @@ protected:
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
 
-	/////////////
-	// and other
-	/////////////
+	//===========
+	// and other:
+	//===========
 
 	UFUNCTION(BlueprintCallable, Category = "Aiming")
 	void SetIsTransitioningAiming(bool bInBool);

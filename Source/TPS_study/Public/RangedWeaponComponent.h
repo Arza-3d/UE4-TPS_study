@@ -5,6 +5,7 @@
 #include "TPSFunctionLibrary.h"
 #include "RangedWeaponComponent.generated.h"
 
+class UCurveFloat;
 class UDataTable;
 class UUserWidget;
 class ATPShooterCharacter;
@@ -101,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
 	FAmmoCount GetAllAmmo() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ammo")
+	float GetAimingAlpha() const;
+
 	//=================
 	// Setter (public):
 	//=================
@@ -120,6 +124,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
+
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void StartAiming();
+
+	UFUNCTION(BlueprintCallable, Category = "Aiming")
+	void StopAiming();
 
 //===========================================================================
 protected:
@@ -156,6 +166,16 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	UDataTable* WeaponTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Aiming")
+	float TotalAimingTime = 0.8f;
+
+	/** 
+	 * Curve time must be 0 to 1
+	 * Curve value muse be 0 to 1
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Aiming", Meta = (DisplayName = "Aiming Curve 0 -> 1", DisplayPriority = "1"))
+	UCurveFloat* AimingCurve;
 	
 //===========================================================================
 private:
@@ -187,6 +207,20 @@ private:
 
 	bool bMaxHoldIsReach;
 	float MaxFireHoldTime;
+
+	//FMinMaxCurve CurveMinMax;
+	FTimerHandle AimingTimerHandle;
+	float DeltaSecond;
+	bool bIsAimingForward;
+
+	void AimingTimerStart();
+	void ClearAndStartAimingTimer();
+
+	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
+	bool bIsTransitioningAiming;
+	float AimingAlpha;
+	float CurrentAimingTime;
+	
 
 	//================
 	// Fire (private):

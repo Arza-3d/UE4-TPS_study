@@ -7,12 +7,21 @@
 #include "TPShooterCharacter.h"
 #include "Blueprint/UserWidget.h"
 
+
+//===========================================================================
+// public function:
+//===========================================================================
+
 URangedWeaponComponent::URangedWeaponComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	//if (WeaponAmmunition.Num() == 0) WeaponAmmunition = {FAmmoCount()};
 }
+
+//===========================================================================
+// protected function:
+//===========================================================================
 
 void URangedWeaponComponent::BeginPlay()
 {
@@ -27,8 +36,14 @@ void URangedWeaponComponent::BeginPlay()
 	}
 	else 
 	{
-		GEngine->ClearOnScreenDebugMessages();
+		//GEngine->ClearOnScreenDebugMessages();
 		UKismetSystemLibrary::PrintString(this, FString("WEAPON TABLE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
+	}
+
+	if (AimingCurve == nullptr)
+	{
+		//GEngine->ClearOnScreenDebugMessages();
+		UKismetSystemLibrary::PrintString(this, FString("AIMING CURVE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
 	}
 
 	SetWeaponMesh();
@@ -64,8 +79,6 @@ void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 
 		WeaponIndex = (withinRange >= 0) ? withinRange : WeaponNames.Num() - 1;
 		SetWeaponMode(WeaponIndex);
-		UE_LOG(LogTemp, Log, TEXT("Weapon num is %i and index is %i!"), WeaponNames.Num(), WeaponIndex);
-
 		OnSwitchWeapon.Broadcast(this);
 	}
 }
@@ -108,6 +121,32 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 		{
 			MaxFireHoldTime = CurrentWeapon.FireRateAndOther[0];
 		}
+	}
+}
+
+void URangedWeaponComponent::AimingTimerStart()
+{
+	float inTime = CurrentAimingTime / TotalAimingTime;
+
+	AimingAlpha = AimingCurve->GetFloatValue(inTime);// *TotalAimingTime;
+
+	UE_LOG(LogTemp, Log, TEXT("Aiming Alpha is %f, current time is %f, then inTime is %f"), AimingAlpha, CurrentAimingTime, inTime);
+
+	float incrementTime = (bIsAimingForward) ? DeltaSecond : -1 * DeltaSecond;
+	CurrentAimingTime += incrementTime;
+
+	if (bIsAimingForward) 
+	{
+		if (CurrentAimingTime >= TotalAimingTime)
+		{
+			ClearAndInvalidateAimingTimer(TotalAimingTime);
+			UE_LOG(LogTemp, Log, TEXT("FINISH >>>>>>> current time is %f"), CurrentAimingTime);
+		}
+	} 
+	else if (CurrentAimingTime <= 0.0f)
+	{
+		ClearAndInvalidateAimingTimer(0.0f);
+		UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH current time is %f"), CurrentAimingTime);
 	}
 }
 
@@ -218,7 +257,6 @@ bool URangedWeaponComponent::IsWeaponNotOverheating()
 
 	if (bIsOverheat)
 	{
-		//Shooter->OnWeaponOverheats();
 		OnOverhating.Broadcast(this);
 	}
 
@@ -472,6 +510,7 @@ void URangedWeaponComponent::PlayFireMontage()
 void URangedWeaponComponent::TimerFireRateStart()
 {
 	bIsFireRatePassed = false;
+	UE_LOG(LogTemp, Log, TEXT("FIRE RATE START!!!!"));
 
 	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
 	Shooter->GetWorldTimerManager().SetTimer(FireRateTimer, this, &URangedWeaponComponent::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
@@ -479,6 +518,7 @@ void URangedWeaponComponent::TimerFireRateStart()
 
 void URangedWeaponComponent::TimerFireRateReset()
 {
+	UE_LOG(LogTemp, Log, TEXT("FIRE RATE TIMER RESERT, IT WORKS OMG!!!!"));
 	bIsFireRatePassed = true;
 	Shooter->GetWorldTimerManager().ClearTimer(FireRateTimer);
 
@@ -530,6 +570,11 @@ FAmmoCount URangedWeaponComponent::GetAllAmmo() const
 	return AmmunitionCount;
 }
 
+float URangedWeaponComponent::GetAimingAlpha() const
+{
+	return AimingAlpha;
+}
+
 bool URangedWeaponComponent::GetIsTriggerPressed() const
 {
 	return bIsTriggerPressed;
@@ -573,6 +618,34 @@ void URangedWeaponComponent::FireRelease()
 	{
 		FireReleaseAfterHold();
 	}
+}
+
+void URangedWeaponComponent::ClearAndStartAimingTimer()
+{
+	Shooter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
+	Shooter->GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &URangedWeaponComponent::AimingTimerStart, DeltaSecond, true);
+}
+
+void URangedWeaponComponent::ClearAndInvalidateAimingTimer(const float NewCurrentTime)
+{
+	Shooter->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
+	AimingTimerHandle.Invalidate();
+	CurrentAimingTime = NewCurrentTime;
+	bIsTransitioningAiming = false;
+}
+
+void URangedWeaponComponent::StartAiming()
+{
+	bIsAimingForward = true;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("Start Timer"));
+}
+
+void URangedWeaponComponent::StopAiming()
+{
+	bIsAimingForward = false;
+	ClearAndStartAimingTimer();
+	UE_LOG(LogTemp, Log, TEXT("STOP Timer DELTA seconds is %f"), DeltaSecond);
 }
 
 void URangedWeaponComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)

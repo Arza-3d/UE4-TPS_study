@@ -1,5 +1,6 @@
 #include "TPSFunctionLibrary.h"
 #include "Animation/AnimMontage.h"
+#include "Curves/CurveFloat.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,3 +20,28 @@ UParticleSystem* UTPSFunctionLibrary::GetRandomParticle(TArray<UParticleSystem*>
 
 	return particleSystems[randInt];
 }
+
+float UTPSFunctionLibrary::StandardLinearInterpolation(const float X, const float X1, const float X2, const float Y1, const float Y2)
+{
+	const float gradient = (Y2 -Y1) / (X2 - X1);
+
+	return gradient * (X - X1) + Y1;
+}
+
+/*FMinMaxCurve UTPSFunctionLibrary::GetCurveRange(const UCurveFloat * InCurve)
+{
+	float minTime, maxTime;
+	float minFloat, maxFloat;
+
+	FMinMaxCurve returnedVal;
+
+	InCurve->GetTimeRange(minTime, maxTime);
+	InCurve->GetValueRange(minFloat, maxFloat);
+	
+	returnedVal.TimeRange.Min = minTime;
+	returnedVal.TimeRange.Max = maxTime;
+	returnedVal.TimeRange.Min = minFloat;
+	returnedVal.TimeRange.Max = maxFloat;
+
+	return returnedVal;
+}*/

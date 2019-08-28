@@ -45,21 +45,41 @@ public:
 	
 	UHPandMPComponent();
 
+	//=================
+	// Setter (public):
+	//=================
+
+	UFUNCTION(BlueprintCallable, Category = "Character Stat", Meta = (KeyWords = "heal damage health mana"))
+	float AddHealth(const float AddHealth);
+
+	UFUNCTION(BlueprintCallable, Category = "Character Stat", Meta = (KeyWords = "heal damage health mana"))
+	float AddMana(const float AddMana);
+
+	UFUNCTION(BlueprintCallable, Category = "Character Stat", Meta = (KeyWords = "heal damage health mana"))
+	float SetHealth(float NewHealth);
+
+	UFUNCTION(BlueprintCallable, Category = "Character Stat", Meta = (KeyWords = "heal damage health mana"))
+	float SetMana(float NewMana);
+
+	UFUNCTION(BlueprintCallable, Category = "Character Stat", Meta = (KeyWords = "heal damage health mana"))
+	FCeiledFloat SetMaxHealth(const float NewMaxHealth);
+
 //===========================================================================
 protected:
 //===========================================================================
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY()
-	int32 CharHP = 100;
-
-	UPROPERTY()
-	int32 CharMP = 100;
+	UPROPERTY(EditDefaultsOnly, Category = "Character Stat", Meta = (DisplayPriority = "1"))
+	FCharacterStat HealthAndMana;
 
 //===========================================================================
 private:
 //===========================================================================
 
 	APawn* TheChar;
+
+	float AddStat(float* CurrentStat, const float AddStat, const float MaxStat = 9999.0f);
+
+	float SetStatClamped(float NewStat, const float MaxStat = 9999.0f);
 };
