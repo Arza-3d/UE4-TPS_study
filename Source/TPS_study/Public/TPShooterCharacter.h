@@ -3,9 +3,11 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "HPandMPComponent.h"
 #include "TPSFunctionLibrary.h"
 #include "TPShooterCharacter.generated.h"
 
+class UAimingComponent;
 class UDataTable;
 class UUserWidget;
 class USpringArmComponent;
@@ -13,6 +15,7 @@ class UCameraComponent;
 class UHPandMPComponent;
 class URangedWeaponComponent;
 class ATPS_Projectile;
+class UAmmoAndEnergyComponent;
 
 UCLASS(config = Game)
 class ATPShooterCharacter : public ACharacter {
@@ -39,16 +42,7 @@ public:
 
 	FORCEINLINE UHPandMPComponent* GetHealthAndMana() const { return HealthAndMana; }
 
-	//UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Aiming")
-	//bool GetIsAiming() const;
-
-	float GetHP() const;
-
-	void SetHP(float val);
-
-	float GetMP() const;
-
-	void SetMP(float val);
+	FORCEINLINE UAimingComponent* GetAiming() const { return Aiming; }
 
 //===========================================================================
 protected:
@@ -94,7 +88,7 @@ private:
 //===========================================================================
 	
 	FCharacterStatBPCPP CharacterStat; // will delete later
-	FShooter ShooterState;
+	//struct FShooter ShooterState;
 
 	//===============================
 	// Blueprint Component (private):
@@ -107,10 +101,16 @@ private:
 	UCameraComponent* FollowCamera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UHPandMPComponent* HealthAndMana;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	URangedWeaponComponent* RangedWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UHPandMPComponent* HealthAndMana;
+	UAimingComponent* Aiming;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UAmmoAndEnergyComponent* Ammo;
 
 	//==================
 	// Aiming (private):

@@ -42,9 +42,9 @@ void UAmmoAndEnergyComponent::AddEnergy(const EEnergyType InEnergyType, const fl
 {
 	switch (InEnergyType)
 	{
-	case EEnergyType::MP:
+	/*case EEnergyType::MP:
 		Shooter->CharacterStat.MP += AdditionalEnergy;
-		break;
+		break;*/
 
 	case EEnergyType::Battery:
 		EnergyExternal.Battery += AdditionalEnergy;
@@ -135,6 +135,8 @@ bool UAmmoAndEnergyComponent::IsAmmoEnough(const float MyEnergy, const float MyE
 
 bool UAmmoAndEnergyComponent::IsAmmoEnough(const EEnergyType InEnergyType)
 {
+	if (RangedWeaponComponent == nullptr) return false;
+
 	switch (InEnergyType)
 	{
 	case EEnergyType::MP:
@@ -178,18 +180,16 @@ UAmmoAndEnergyComponent::UAmmoAndEnergyComponent()
 void UAmmoAndEnergyComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	RangedWeaponComponent = URangedWeaponComponent::GetRangedWeapon();
-	
+	RangedWeaponComponent = GetThisType<URangedWeaponComponent>();
 }
 
 // Called every frame
-void UAmmoAndEnergyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+/*void UAmmoAndEnergyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-}
+}*/
 
 FAmmoCount UAmmoAndEnergyComponent::GetAllAmmo() const
 {

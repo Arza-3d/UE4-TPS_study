@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TPSFunctionLibrary.h"
+#include "AmmoAndEnergyComponent.h"
 #include "TPS_Projectile.generated.h"
 
 class UProjectileMovementComponent;

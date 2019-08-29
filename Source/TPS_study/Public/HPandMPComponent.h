@@ -57,6 +57,8 @@ public:
 	
 	UHPandMPComponent();
 
+	friend class URangedWeaponComponent;
+
 	//=================
 	// Setter (public):
 	//=================
@@ -89,7 +91,7 @@ protected:
 private:
 //===========================================================================
 
-	APawn* TheChar;
+	//APawn* TheChar;
 
 	float AddStat(float* CurrentStat, const float AddStat, const float MaxStat = 9999.0f);
 
