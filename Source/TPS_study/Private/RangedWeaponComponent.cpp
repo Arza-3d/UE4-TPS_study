@@ -2,13 +2,14 @@
 #include "Engine/Engine.h"// delete later
 #include "Kismet/GameplayStatics.h"// delete later
 #include "Camera/CameraComponent.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "TPS_Projectile.h"
 #include "TimerManager.h"
 #include "Camera/CameraComponent.h"
+//#include "Blueprint/UserWidget.h"
 #include "TPShooterCharacter.h"
-#include "Blueprint/UserWidget.h"
 
 
 //===========================================================================
@@ -18,8 +19,6 @@
 URangedWeaponComponent::URangedWeaponComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-	//if (WeaponAmmunition.Num() == 0) WeaponAmmunition = {FAmmoCount()};
 }
 
 //=================
