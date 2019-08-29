@@ -3,7 +3,10 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
-#include "EnumAndStruct//AimingEnumAndStruct.h"
+// custom:
+#include "Enum/AimingEnum.h"
+#include "Struct/AimingStruct.h"
+//
 #include "AimingComponent.generated.h"
 
 class USpringArmComponent;
@@ -13,79 +16,6 @@ class UCameraComponent;
 class UCharacterMovementComponent;
 class UCurveFloat;
 class UDataTable;
-
-//=============
-// Aiming Enum:
-//=============
-
-UENUM(BlueprintType)
-enum class EAimingState : uint8
-{
-	NotAiming,
-	TransitioningAiming,
-	Aiming
-};
-
-//===============
-// Aiming Struct:
-//===============
-
-USTRUCT(BlueprintType)
-struct FCharMovAimingStat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float MaxAcceleration = 2048.0f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float MaxWalkSpeed = 600.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FCamBoomAimingStat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FVector SocketOffset;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float TargetArmLength = 300.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FllowCamAimingStat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float FieldOfView = 90.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FAimingStat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FCharMovAimingStat CharMov;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FCamBoomAimingStat CamBoom;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FllowCamAimingStat FollCam;
-};
-
-USTRUCT(BlueprintType)
-struct FAimingStatCompact : public FTableRowBase
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FAimingStat AimStat;
-};
 
 //=================
 // Aiming DELEGATE:

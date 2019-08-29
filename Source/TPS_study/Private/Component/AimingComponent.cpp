@@ -1,4 +1,4 @@
-#include "AimingComponent.h"
+#include "Component/AimingComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"

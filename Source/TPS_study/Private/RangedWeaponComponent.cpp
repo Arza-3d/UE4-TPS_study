@@ -4,7 +4,7 @@
 #include "Gameframework/Character.h"
 #include "TimerManager.h"
 // custom:
-#include "AimingComponent.h"
+#include "Component/AimingComponent.h"
 #include "TPS_Projectile.h"
 #include "HPandMPComponent.h"
 #include "AmmoAndEnergyComponent.h"

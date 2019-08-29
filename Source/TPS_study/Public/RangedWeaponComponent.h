@@ -78,8 +78,6 @@ public:
 		return returnedVal;
 	}
 	
-	
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int32 GetWeaponIndex() const;
 
