@@ -88,8 +88,6 @@ void ATPShooterCharacter::BeginPlay()
 void ATPShooterCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	GetRangedWeapon()->DeltaSecond = DeltaSeconds;
 }
 
 void ATPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

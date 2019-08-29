@@ -5,12 +5,13 @@
 #include "TPSFunctionLibrary.h"
 #include "RangedWeaponComponent.generated.h"
 
+class ACharacter;
+class ATPS_studyCharacter;
+class ATPShooterCharacter;
+class UCameraComponent;
 class UCurveFloat;
 class UDataTable;
 class UUserWidget;
-class ACharacter;
-class ATPShooterCharacter;
-class ATPS_studyCharacter;
 
 UENUM(BlueprintType)
 enum class EAimingState : uint8
@@ -176,6 +177,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	//===============================
 	// Default Variables (protected):
 	//===============================
@@ -223,6 +226,18 @@ protected:
 private:
 //===========================================================================
 
+	//========================
+	// Shotter stat (private):
+	//========================
+
+	ATPShooterCharacter* Shooter;
+	ACharacter* MyCharacter;
+	//TSubclassOf<ACharacter> CharTest;
+
+	TArray<UActorComponent*> CharacterComponents;
+
+	UCameraComponent* CharacterCamera;
+
 	//==================
 	// Aiming (private):
 	//==================
@@ -237,25 +252,17 @@ private:
 	int32 AimStatTargetIndex = 1;
 
 	EAimingState AimingState;
-
+	
 	TArray<FName> AimingNames;
 	TArray<FAimingStat> AimStats; // 0 = default, 1 = aiming, 2, 3, x extra mode
 
 	FTimerHandle AimingTimerHandle;
-
+	
 	void AimingTimerStart();
 	void ClearAndStartAimingTimer();
 	void OrientCharacter(const bool bMyCharIsAiming);
 	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
 	void TimeAiming(float InAlpha);
-
-	//========================
-	// Shotter stat (private):
-	//========================
-
-	ATPShooterCharacter* Shooter;
-	ACharacter* MyCharacter;
-	TSubclassOf<ACharacter> CharTest;
 
 	//=======================
 	// Weapon stat (private):
@@ -269,13 +276,20 @@ private:
 
 	int32 WeaponIndex;
 	int32 LastWeaponIndex;
+
 	TArray<FName> WeaponNames;
 	
 	//================
 	// Fire (private):
 	//================
+
+	bool bOnePressToggle;
 	bool bMaxHoldIsReach;
+	bool bIsTriggerPressed;
+	bool bIsFireRatePassed = true;
+
 	float MaxFireHoldTime;
+
 	USceneComponent* WeaponInWorld;
 	void SetWeaponMesh();
 
@@ -290,9 +304,7 @@ private:
 	bool IsAmmoEnough(const float MyEnergy, const float MyEnergyPerShot);
 	bool IsWeaponNotOverheating();
 
-	bool bIsFireRatePassed = true;
-	bool bIsTriggerPressed;
-	bool bOnePressToggle;
+	
 
 	void FireStandardTrigger();
 	void FireAutomaticTrigger();

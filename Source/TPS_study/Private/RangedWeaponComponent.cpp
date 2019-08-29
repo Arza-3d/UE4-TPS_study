@@ -1,6 +1,7 @@
 #include "RangedWeaponComponent.h"
 #include "Engine/Engine.h"// delete later
 #include "Kismet/GameplayStatics.h"// delete later
+#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "TPS_Projectile.h"
@@ -215,6 +216,37 @@ void URangedWeaponComponent::BeginPlay()
 	MyCharacter = Cast<ACharacter>(GetOwner());
 	Shooter = Cast<ATPShooterCharacter>(MyCharacter);
 
+	CharacterComponents = MyCharacter->GetComponents().Array();
+
+	for (int i = 0; i < CharacterComponents.Num(); i++)
+	{
+		//CharacterCamera = Cast<UCameraComponent>(CharacterComponents[i]);
+		UCameraComponent* camera1 = Cast<UCameraComponent>(CharacterComponents[i]);
+		USpringArmComponent* springArm1 = Cast<USpringArmComponent>(CharacterComponents[i]);
+
+		if (camera1)
+		{
+			UKismetSystemLibrary::PrintString(this, FString("camera is found!!! >O<"), true, false, FLinearColor::Black, 10.0f);
+			UE_LOG(LogTemp, Log, TEXT("Camera is found is found at %i"), i);
+			camera1->FieldOfView;
+			continue;
+		}
+		else if (springArm1)
+		{
+			UKismetSystemLibrary::PrintString(this, FString("spring camera is found!!! >O<"), true, false, FLinearColor::Black, 10.0f);
+			UE_LOG(LogTemp, Log, TEXT("spring arm is found at %i"), i);
+			springArm1->SocketOffset;
+			springArm1->TargetArmLength;
+
+			continue;
+		}
+		else
+		{
+			//UKismetSystemLibrary::PrintString(this, FString("Camera not found!!! >O<"), true, false, FLinearColor::Black, 10.0f);
+		}
+	}
+	//CharacterComponent.Find(CameraBoom);
+
 	if (WeaponTable != nullptr)
 	{
 		WeaponNames = WeaponTable->GetRowNames();
@@ -265,6 +297,15 @@ void URangedWeaponComponent::BeginPlay()
 	FOnTimelineEventStatic onAimingTimeFinishedCallback;
 
 	SetWeaponMesh();
+
+
+}
+
+void URangedWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	DeltaSecond = DeltaTime;
 }
 
 //==================
