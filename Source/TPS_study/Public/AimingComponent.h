@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
+#include "EnumAndStruct//AimingEnumAndStruct.h"
 #include "AimingComponent.generated.h"
 
 class USpringArmComponent;
@@ -102,7 +104,7 @@ class TPS_STUDY_API UAimingComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend URangedWeaponComponent;
+	friend class URangedWeaponComponent;
 
 //===========================================================================
 public:
@@ -189,6 +191,20 @@ protected:
 //===========================================================================
 private:
 //===========================================================================
+
+	template <class ThisType>
+	ThisType* GetThisType() const
+	{
+		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
+		ThisType* returnedVal = nullptr;
+
+		for (int i = 0; i < myComponents.Num(); i++)
+		{
+			returnedVal = Cast<ThisType>(myComponents[i]);
+			if (returnedVal) break;
+		}
+		return returnedVal;
+	}
 
 	//==================
 	// Getter (private):

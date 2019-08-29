@@ -1,13 +1,16 @@
 #include "RangedWeaponComponent.h"
-#include "AmmoAndEnergyComponent.h"
-#include "TPS_Projectile.h"
+// default:
+#include "Camera/CameraComponent.h"
+#include "Gameframework/Character.h"
 #include "TimerManager.h"
-
-//#include "Blueprint/UserWidget.h"
-#include "TPShooterCharacter.h"
-
-#include "Engine/Engine.h"// debug
-#include "Kismet/GameplayStatics.h"// debug
+// custom:
+#include "AimingComponent.h"
+#include "TPS_Projectile.h"
+#include "HPandMPComponent.h"
+#include "AmmoAndEnergyComponent.h"
+// debug:
+#include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
 
 //===========================================================================
 // public function:
@@ -15,54 +18,23 @@
 
 URangedWeaponComponent::URangedWeaponComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 //=================
 // Getter (public):
 //=================
 
-//-------------------------------------------------------------
 
-URangedWeaponComponent* URangedWeaponComponent::GetRangedWeapon()
-{
-	TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
-	URangedWeaponComponent* returnedVal;
+int32 URangedWeaponComponent::GetWeaponIndex() const { return WeaponIndex; }
 
-	for (int i = 0; i < myComponents.Num(); i++)
-	{
-		returnedVal = Cast<URangedWeaponComponent>(myComponents[i]);
-		if (returnedVal) break;
-	}
-	return returnedVal;
-}
+int32 URangedWeaponComponent::GetLastWeaponIndex() const { return LastWeaponIndex; }
 
-int32 URangedWeaponComponent::GetWeaponIndex() const
-{
-	return WeaponIndex;
-}
+FName URangedWeaponComponent::GetWeaponName() const { return WeaponNames[WeaponIndex]; }
 
-int32 URangedWeaponComponent::GetLastWeaponIndex() const
-{
-	return LastWeaponIndex;
-}
+bool URangedWeaponComponent::GetIsTriggerPressed() const { return bIsTriggerPressed; }
 
-FName URangedWeaponComponent::GetWeaponName() const
-{
-	return WeaponNames[WeaponIndex];
-}
-
-//-------------------------------------------------------------
-
-bool URangedWeaponComponent::GetIsTriggerPressed() const
-{
-	return bIsTriggerPressed;
-}
-
-ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const
-{
-	return CurrentWeapon.Trigger;
-}
+ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const { return CurrentWeapon.Trigger; }
 
 //==================================
 // Function for Controller (public):
@@ -103,11 +75,12 @@ void URangedWeaponComponent::FireRelease()
 	bIsTriggerPressed = false;
 
 	if (CurrentWeapon.Trigger == ETriggerMechanism::ReleaseTrigger)
-	{
-		FireReleaseAfterHold();
-	}
+	FireReleaseAfterHold();
 }
 
+void URangedWeaponComponent::SetWeaponIndexWithNumpad(const int32 InNumber) { SetWeaponIndex(InNumber); }
+
+void URangedWeaponComponent::SetWeaponIndexWithMouseWheel(const bool bIsUp) { SetWeaponIndex(bIsUp); }
 
 //===========================================================================
 // protected function:
@@ -117,16 +90,17 @@ void URangedWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WeaponTable != nullptr)
+	CameraComponent = GetThisType<UCameraComponent>();
+	AimingComponent = GetThisType<UAimingComponent>();
+	AmmoComponent = GetThisType<UAmmoAndEnergyComponent>();
+	MPComponent = GetThisType<UHPandMPComponent>();
+
+	if (WeaponTable)
 	{
 		WeaponNames = WeaponTable->GetRowNames();
 		SetWeaponMode(0);
 	}
-	else 
-	{
-		//GEngine->ClearOnScreenDebugMessages();
-		UKismetSystemLibrary::PrintString(this, FString("WEAPON TABLE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
-	}
+	else  UKismetSystemLibrary::PrintString(this, FString("WEAPON TABLE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
 
 	SetWeaponMesh();
 }
@@ -175,7 +149,7 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 	{
 		FWeaponMode CurrentWeaponMode = WeaponModeRow->WeaponMode;
 
-		Shooter->ShooterState = CurrentWeaponMode.Shooter;
+		//Shooter->ShooterState = CurrentWeaponMode.Shooter;
 		CurrentWeapon = CurrentWeaponMode.Weapon;
 		CurrentProjectile = CurrentWeaponMode.Projectile;
 
@@ -196,28 +170,26 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 
 void URangedWeaponComponent::SetWeaponMesh()
 {	
-	USkeletalMeshComponent* weaponMesh = GetCharacter()->GetMesh(); // change it to accept additional weapon mesh later
+	USkeletalMeshComponent* weaponMesh = Cast<ACharacter>(GetOwner())->GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(weaponMesh);
 }
 
 void URangedWeaponComponent::FireAutomaticTrigger()
 {
-	if (!(bIsTriggerPressed && IsWeaponAbleToFire())) return;
-
+	if (bIsTriggerPressed && IsWeaponAbleToFire())
 	FireStandardTrigger();
 }
 
 bool URangedWeaponComponent::IsWeaponAbleToFire()
 {
-	return GetIsAiming() && bIsFireRatePassed && IsAmmoEnough();
+	if (AimingComponent && AmmoComponent) return AimingComponent->GetIsAiming() && bIsFireRatePassed && AmmoComponent->IsAmmoEnough();
+	return bIsFireRatePassed;
 }
 
 void URangedWeaponComponent::FireAutomaticTriggerOnePress()
 {
 	if (bOnePressToggle && IsWeaponAbleToFire())
-	{
-		FireStandardTrigger();
-	}
+	FireStandardTrigger();
 }
 
 void URangedWeaponComponent::FireHold()
@@ -260,7 +232,7 @@ void URangedWeaponComponent::FireReleaseAfterHold()
 void URangedWeaponComponent::FireStandardTrigger()
 {
 	TimerFireRateStart();
-	PlayFireMontage();
+
 	OnFire.Broadcast(this);
 
 	switch (CurrentWeapon.WeaponCost)
@@ -284,39 +256,43 @@ void URangedWeaponComponent::FireStandardTrigger()
 
 void URangedWeaponComponent::FireProjectile(const EAmmoType AmmoType)
 {
-	switch (AmmoType)
+	if (AmmoComponent)
 	{
-	case EAmmoType::StandardAmmo:
-		FireProjectile(&AmmunitionCount.StandardAmmo);
-		break;
+		switch (AmmoType)
+		{
+		case EAmmoType::StandardAmmo:
+			FireProjectile(&AmmoComponent->AmmunitionCount.StandardAmmo);
+			break;
 
-	case EAmmoType::RifleAmmo:
-		FireProjectile(&AmmunitionCount.RifleAmmo);
-		break;
+		case EAmmoType::RifleAmmo:
+			FireProjectile(&AmmoComponent->AmmunitionCount.RifleAmmo);
+			break;
 
-	case EAmmoType::ShotgunAmmo:
-		FireProjectile(&AmmunitionCount.ShotgunAmmo);
-		break;
+		case EAmmoType::ShotgunAmmo:
+			FireProjectile(&AmmoComponent->AmmunitionCount.ShotgunAmmo);
+			break;
 
-	case EAmmoType::Rocket:
-		FireProjectile(&AmmunitionCount.Rocket);
-		break;
+		case EAmmoType::Rocket:
+			FireProjectile(&AmmoComponent->AmmunitionCount.Rocket);
+			break;
 
-	case EAmmoType::Arrow:
-		FireProjectile(&AmmunitionCount.Arrow);
-		break;
+		case EAmmoType::Arrow:
+			FireProjectile(&AmmoComponent->AmmunitionCount.Arrow);
+			break;
 
-	case EAmmoType::Grenade:
-		FireProjectile(&AmmunitionCount.Grenade);
-		break;
+		case EAmmoType::Grenade:
+			FireProjectile(&AmmoComponent->AmmunitionCount.Grenade);
+			break;
 
-	case EAmmoType::Mine:
-		FireProjectile(&AmmunitionCount.Mine);
-		break;
+		case EAmmoType::Mine:
+			FireProjectile(&AmmoComponent->AmmunitionCount.Mine);
+			break;
 
-	default:
-		break;
+		default:
+			break;
+		}
 	}
+	else FireProjectile();
 }
 
 void URangedWeaponComponent::FireProjectile(const EEnergyType EnergyType)
@@ -324,20 +300,32 @@ void URangedWeaponComponent::FireProjectile(const EEnergyType EnergyType)
 	switch (EnergyType)
 	{
 	case EEnergyType::MP:
-		FireProjectile(&EnergyExternal.MP);
-		break;
+		if (MPComponent){
+			FireProjectile(&MPComponent->HealthAndMana.Mana.Current);
+		} else {
+			FireProjectile();
+		} break;
 
 	case EEnergyType::Battery:
-		FireProjectile(&EnergyExternal.Battery);
-		break;
+		if (AmmoComponent) {
+			FireProjectile(&AmmoComponent->EnergyExternal.Battery);
+		} else {
+			FireProjectile();
+		} break;
 
 	case EEnergyType::Fuel:
-		FireProjectile(&EnergyExternal.Fuel);
-		break;
+		if (AmmoComponent) {
+			FireProjectile(&AmmoComponent->EnergyExternal.Fuel);
+		} else {
+			FireProjectile();
+		} break;
 
 	case EEnergyType::Overheat:
-		FireProjectile(&EnergyExternal.Overheat);
-		break;
+		if (AmmoComponent) {
+			FireProjectile(&AmmoComponent->EnergyExternal.Overheat);
+		} else {
+			FireProjectile();
+		}
 
 	default:
 		break;
@@ -364,14 +352,13 @@ void URangedWeaponComponent::FireProjectile(int* Ammo)
 	for (int i = 0; i < MuzzleCount; i++)
 	{
 		if (CurrentAmmo <= 0) {
-			OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
+			AmmoComponent->OnNoMoreAmmoDuringMultipleShot.Broadcast(i);
 			break;
 		}
 
 		CurrentAmmo--;
 		SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 	}
-
 	*Ammo = CurrentAmmo;
 }
 
@@ -388,10 +375,9 @@ void URangedWeaponComponent::FireProjectile(float* MyEnergy)
 		{
 			if (CurrentEnergy < EnergyCostPerShot)
 			{
-				OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
+				AmmoComponent->OnNoMoreAmmoDuringMultipleShot.Broadcast(i);
 				break;
 			}
-
 			CurrentEnergy -= EnergyCostPerShot;
 			SpawnProjectile(WeaponInWorld, MuzzleName, GetWorld(), i);
 		}
@@ -402,7 +388,7 @@ void URangedWeaponComponent::FireProjectile(float* MyEnergy)
 		{
 			if (CurrentEnergy >= 100.0f)
 			{
-				OnNoMoreAmmoDuringMultipleShot.Broadcast(this, i);
+				AmmoComponent->OnNoMoreAmmoDuringMultipleShot.Broadcast(i);
 				break;
 			}
 
@@ -424,26 +410,9 @@ void URangedWeaponComponent::SpawnProjectile(USceneComponent* MyWeaponInWorld, T
 	MyProjectile->FinishSpawning(SpawnTransform);
 }
 
-void URangedWeaponComponent::PlayFireMontage()
-{
-	UAnimMontage* fireMontage;
-
-	if (Shooter->ShooterState.CharacterWeaponMontage.Num() > 0)
-	{
-		fireMontage = Shooter->ShooterState.CharacterWeaponMontage[0];
-
-		if (fireMontage)
-		{
-			float playRate = UTPSFunctionLibrary::GetNewPlayRateForMontage(CurrentWeapon.FireRateAndOther[0], fireMontage);
-			Shooter->PlayAnimMontage(fireMontage, playRate);
-		}
-	}
-}
-
 void URangedWeaponComponent::TimerFireRateStart()
 {
 	bIsFireRatePassed = false;
-	UE_LOG(LogTemp, Log, TEXT("FIRE RATE START!!!!"));
 
 	GetOwner()->GetWorldTimerManager().ClearTimer(FireRateTimer);
 	GetOwner()->GetWorldTimerManager().SetTimer(FireRateTimer, this, &URangedWeaponComponent::TimerFireRateReset, CurrentWeapon.FireRateAndOther[0]);
@@ -451,7 +420,6 @@ void URangedWeaponComponent::TimerFireRateStart()
 
 void URangedWeaponComponent::TimerFireRateReset()
 {
-	UE_LOG(LogTemp, Log, TEXT("FIRE RATE TIMER RESERT, IT WORKS OMG!!!!"));
 	bIsFireRatePassed = true;
 	GetOwner()->GetWorldTimerManager().ClearTimer(FireRateTimer);
 
@@ -474,7 +442,6 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 {
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
-	//QueryParams.AddIgnoredActor(Shooter);
 
 	FHitResult HitTrace;
 	FVector StartTrace = CameraComponent->GetComponentLocation();
@@ -484,17 +451,10 @@ FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform So
 	FVector TargetLocation;
 	FRotator MuzzleLookRotation;
 
-	if (GetCharacter()->GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	if (GetOwner()->GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, QueryParams))
 	{
 		TargetLocation = HitTrace.Location;
 		MuzzleLookRotation = UKismetMathLibrary::FindLookAtRotation(SocketTransform.GetLocation(), TargetLocation);
 	}
-
 	return MuzzleLookRotation;
 }
-
-//=================
-// Pickup (public):
-//=================
-
-//UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH current time is %f"), CurrentAimingTime);

@@ -1,4 +1,5 @@
 #include "TPShooterCharacter.h"
+// default:
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -10,15 +11,18 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "HPandMPComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "RangedWeaponComponent.h"
 #include "TimerManager.h"
+// costum:
+#include "RangedWeaponComponent.h"
 #include "TPSAnimInterface.h"
 #include "TPSFunctionLibrary.h"
 #include "TPS_Projectile.h"
+#include "HPandMPComponent.h"
+// debug:
 #include "DrawDebugHelpers.h"
+#include "AimingComponent.h"
 
 //==============
 // Construction:
@@ -29,8 +33,11 @@ ATPShooterCharacter::ATPShooterCharacter()
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
+	
 	HealthAndMana = CreateDefaultSubobject<UHPandMPComponent>(TEXT("HealthAndMana"));
+	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
+	Aiming = CreateDefaultSubobject<UAimingComponent>(TEXT("Aiming"));
+	Ammo = CreateDefaultSubobject<UAmmoAndEnergyComponent>(TEXT("Ammo"));
 
 	// basic component setup:
 	CameraBoom->bUsePawnControlRotation = true;
@@ -53,28 +60,6 @@ ATPShooterCharacter::ATPShooterCharacter()
 
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
-
-float ATPShooterCharacter::GetHP() const
-{
-	return CharacterStat.HP;
-}
-
-void ATPShooterCharacter::SetHP(float val)
-{
-	CharacterStat.HP = val;
-}
-
-float ATPShooterCharacter::GetMP() const
-{
-	return CharacterStat.MP;
-}
-
-void ATPShooterCharacter::SetMP(float val)
-{
-	CharacterStat.MP = val;
-}
-
-
 
 //===========================================================================
 // protected function:
@@ -140,7 +125,7 @@ float ATPShooterCharacter::GetNormalizedRight() const
 bool ATPShooterCharacter::IsAbleToSwitchWeapon_Implementation()
 {
 	bool bIsOnTheGround = !GetCharacterMovement()->IsFalling();
-	bool bIsNotAiming = !GetRangedWeapon()->GetIsAiming();
+	bool bIsNotAiming = !Aiming->GetIsAiming();
 
 	return bIsOnTheGround && bIsNotAiming;
 }
@@ -165,12 +150,12 @@ bool ATPShooterCharacter::IsAbleToFire_Implementation()
 
 void ATPShooterCharacter::AimingPress() 
 {
-	GetRangedWeapon()->AimingPress();
+	Aiming->AimingPress();
 }
 
 void ATPShooterCharacter::AimingRelease()
 {
-	GetRangedWeapon()->AimingRelease();
+	Aiming->AimingRelease();
 }
 
 //=======================
@@ -191,13 +176,13 @@ void ATPShooterCharacter::FireRelease()
 // Switch Weapon (private):
 //=========================
 
-void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndex(true); }
-void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndex(false); }
+void ATPShooterCharacter::SetWeaponIndexUp() { GetRangedWeapon()->SetWeaponIndexWithMouseWheel(true); }
+void ATPShooterCharacter::SetWeaponIndexDown() { GetRangedWeapon()->SetWeaponIndexWithMouseWheel(false); }
 
-void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndex(0); }
-void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndex(1); }
-void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndex(2); }
-void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndex(3); }
+void ATPShooterCharacter::SetWeaponIndex1() { GetRangedWeapon()->SetWeaponIndexWithNumpad(0); }
+void ATPShooterCharacter::SetWeaponIndex2() { GetRangedWeapon()->SetWeaponIndexWithNumpad(1); }
+void ATPShooterCharacter::SetWeaponIndex3() { GetRangedWeapon()->SetWeaponIndexWithNumpad(2); }
+void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndexWithNumpad(3); }
 
 //======================
 // Navigation (private):
@@ -221,7 +206,7 @@ void ATPShooterCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
-		if (GetRangedWeapon()->AimingState != EAimingState::NotAiming)
+		if (Aiming->GetIsAiming())
 		{
 			bForwardInputPressed = true;
 			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
@@ -243,7 +228,7 @@ void ATPShooterCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 
-		if (GetRangedWeapon()->AimingState != EAimingState::NotAiming)
+		if (Aiming->GetIsAiming())
 		{
 			bRightInputPressed = true;
 			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);

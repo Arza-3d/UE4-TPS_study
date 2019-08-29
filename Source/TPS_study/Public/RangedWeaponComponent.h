@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "TPSFunctionLibrary.h"
+#include "AmmoAndEnergyComponent.h"
 #include "RangedWeaponComponent.generated.h"
 
 class UDataTable;
@@ -11,9 +12,7 @@ class AmmoAndEnergyComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWeapon, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMaxFireHoldRelease, URangedWeaponComponent*, MyComponent, const float, MyCurrentHoldTime, const float, MyMaxHoldTime);
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnJustReachMaxFireHoldSignature, URangedWeaponComponent*, MyComponent, const float, MyCurrentHoldTime, const float, MyMaxHoldTime);
 
 //=============================================================================
@@ -65,8 +64,21 @@ public:
 	// Getter (public):
 	//=================
 
-	static URangedWeaponComponent* GetRangedWeapon();
-	//-------------------------------------------------------------
+	template <class ThisType>
+	ThisType* GetThisType() const 
+	{
+		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
+		ThisType* returnedVal = nullptr;
+
+		for (int i = 0; i < myComponents.Num(); i++)
+		{
+			returnedVal = Cast<ThisType>(myComponents[i]);
+			if (returnedVal) break;
+		}
+		return returnedVal;
+	}
+	
+	
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int32 GetWeaponIndex() const;
@@ -93,6 +105,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void FireRelease();
 
+	UFUNCTION(BlueprintCallable, Category = "")
+	void SetWeaponIndexWithNumpad(const int32 InNumber);
+
+	UFUNCTION(BlueprintCallable, Category = "Switch Weapon")
+	void SetWeaponIndexWithMouseWheel(const bool bIsUp);
+
 //===========================================================================
 protected:
 //===========================================================================
@@ -116,14 +134,15 @@ private:
 	//==================
 	// Getter (private):
 	//==================
-	APawn* GetPawn();
+
+	class UCameraComponent* CameraComponent;
+	class UAimingComponent* AimingComponent;
+	class UAmmoAndEnergyComponent* AmmoComponent;
+	class UHPandMPComponent* MPComponent;
 
 	//=======================
 	// Weapon stat (private):
 	//=======================
-
-	FAmmoCount AmmunitionCount;
-	FExternalEnergyCount EnergyExternal;
 
 	FWeapon CurrentWeapon;
 	FProjectile CurrentProjectile;
@@ -145,12 +164,13 @@ private:
 	float MaxFireHoldTime;
 
 	USceneComponent* WeaponInWorld;
+
 	void SetWeaponMesh();
 
-	void SetWeaponMode(const int32 MyWeaponIndex);
 	void SetWeaponIndex(const int32 InNumber);
 	void SetWeaponIndex(const bool isUp);
-
+	void SetWeaponMode(const int32 MyWeaponIndex);
+	
 	void FireStandardTrigger();
 	void FireAutomaticTrigger();
 	void FireHold();
@@ -177,6 +197,6 @@ private:
 	void TimerFireRateReset();
 
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
-	void PlayFireMontage();
+	//void PlayFireMontage();
 
 };

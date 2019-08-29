@@ -60,8 +60,6 @@ float UHPandMPComponent::AddMana(const float AddMana)
 void UHPandMPComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	TheChar = Cast<APawn>(GetOwner());
 }
 
 float UHPandMPComponent::AddStat(float* CurrentStat, const float AddStat, const float MaxStat)
@@ -85,7 +83,6 @@ float UHPandMPComponent::SetStatClamped(float NewStat, const float MaxStat)
 	{
 		NewStat = MaxStat;
 	}
-
 	return NewStat;
 }
 

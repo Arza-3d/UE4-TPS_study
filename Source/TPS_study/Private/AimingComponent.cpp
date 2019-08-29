@@ -5,9 +5,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "RangedWeaponComponent.h"
 #include "TimerManager.h"
-
-#include "Engine/Engine.h"// debug
-#include "Kismet/GameplayStatics.h"// debug
+// debug:
+#include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
 
 //===========================================================================
 // public function:
@@ -32,6 +32,8 @@ void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 bool UAimingComponent::GetIsAiming() const
 {
 	bool retVal = AimingState == EAimingState::Aiming;
+
+	if (RangedWeaponComponent == nullptr) return retVal;
 
 	return (RangedWeaponComponent->bIsAbleToShootWithoutAiming) ? true : retVal;
 }
@@ -80,47 +82,9 @@ void UAimingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<UActorComponent*> characterComponents = GetCharacter()->GetComponents().Array();
-
-	for (int i = 0; i < characterComponents.Num(); i++)
-	{
-		bool bCameraIsFound;
-		bool bCameraBoomIsFound;
-		bool bRangedWeaponIsFound;
-
-		if (!bCameraIsFound)
-		{
-			CameraComponent = Cast<UCameraComponent>(characterComponents[i]);
-
-			if (CameraComponent)
-			{
-				bCameraIsFound = true;
-				continue;
-			}
-		}
-
-		if (!bCameraBoomIsFound)
-		{
-			CameraBoomComponent = Cast<USpringArmComponent>(characterComponents[i]);
-
-			if (CameraBoomComponent)
-			{
-				bCameraBoomIsFound = true;
-				continue;
-			}
-		}
-
-		if (!bRangedWeaponIsFound)
-		{
-			RangedWeaponComponent = Cast<URangedWeaponComponent>(characterComponents[i]);
-
-			if (RangedWeaponComponent)
-			{
-				bRangedWeaponIsFound = true;
-				continue;
-			}
-		}
-	}
+	CameraComponent = GetThisType<UCameraComponent>();
+	CameraBoomComponent = GetThisType<USpringArmComponent>();
+	RangedWeaponComponent = GetThisType<URangedWeaponComponent>();
 
 	if (AimingCurve == nullptr)
 	{

@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
+
 #include "AmmoAndEnergyComponent.generated.h"
 
 UENUM(BlueprintType)
@@ -90,30 +92,13 @@ struct FExternalEnergyCount
 };
 
 USTRUCT(BlueprintType)
-struct FShooter
-{
-	GENERATED_BODY();
-
-	/**
-	* 0 = FireMontage,
-	* 1 = EquipMontage,
-	* 2 = UnequipMontage
-	*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		TArray<UAnimMontage*> CharacterWeaponMontage;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		USoundBase* FireCry;
-};
-
-USTRUCT(BlueprintType)
 struct FWeapon
 {
 	GENERATED_BODY();
 
 	/** name/names of the socket where the projectile is spawned*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		TArray<FName> SocketName = { FName(TEXT("Muzzle_01")) };
+	TArray<FName> SocketName = { FName(TEXT("Muzzle_01")) };
 
 	/**
 	 * 0 = fire rate,
@@ -124,26 +109,26 @@ struct FWeapon
 	 * all of that are in second
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
-		TArray<float> FireRateAndOther = { 0.3f };
+	TArray<float> FireRateAndOther = { 0.3f };
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-		ETriggerMechanism Trigger;
+	ETriggerMechanism Trigger;
 
 	/* is the weapon cost int (ammo), or float (energy), or nothing (unlimited)*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-		EWeaponCost WeaponCost;
+	EWeaponCost WeaponCost;
 
 	/** used only if WeaponCost is "Ammo"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-		EAmmoType AmmoType;
+	EAmmoType AmmoType;
 
 	/** used only if WeaponCost is "Energy"*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-		EEnergyType EnergyType;
+	EEnergyType EnergyType;
 
 	/** used only if WeaponCost is "Energy", this is in %*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
-		float EnergyUsePerShot = 10.0f;
+	float EnergyUsePerShot = 10.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -212,19 +197,19 @@ struct FProjectile
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		FProjectileMuzzle Muzzle;
+	FProjectileMuzzle Muzzle;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		FProjectileTrail Trail;
+	FProjectileTrail Trail;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		FProjectileHit Hit;
+	FProjectileHit Hit;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		UProjectileFXDataAsset* ProjectileVX;
+	class UProjectileFXDataAsset* ProjectileVX;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		UProjectileSXDataAsset* ProjectileSoundEffect;
+	class UProjectileSXDataAsset* ProjectileSoundEffect;
 };
 
 USTRUCT(BlueprintType)
@@ -232,14 +217,14 @@ struct FWeaponMode
 {
 	GENERATED_BODY();
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FShooter Shooter;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	//FShooter Shooter;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FWeapon Weapon;
+	FWeapon Weapon;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FProjectile Projectile;
+	FProjectile Projectile;
 };
 
 USTRUCT(BlueprintType)
@@ -248,12 +233,12 @@ struct FWeaponModeCompact : public FTableRowBase
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FWeaponMode WeaponMode;
+	FWeaponMode WeaponMode;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunOutOfAmmoSignature, UAmmoAndEnergyComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsOverheatingSignature, UAmmoAndEnergyComponent*, MyComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoMoreAmmoDuringFire, UAmmoAndEnergyComponent*, MyComponent, const int32, MyFireRound);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNoMoreAmmoDuringFire, const int32, MyFireRound);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, UAmmoAndEnergyComponent*, MyComponent, const float, CurrentEnergy, const float, EnergyNeededPerShot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -261,7 +246,7 @@ class TPS_STUDY_API UAmmoAndEnergyComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	friend URangedWeaponComponent;
+	friend class URangedWeaponComponent;
 
 public:	
 	
@@ -313,9 +298,23 @@ protected:
 
 public:	
 	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+
+	template <class ThisType>
+	ThisType* GetThisType() const
+	{
+		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
+		ThisType* returnedVal = nullptr;
+
+		for (int i = 0; i < myComponents.Num(); i++)
+		{
+			returnedVal = Cast<ThisType>(myComponents[i]);
+			if (returnedVal) break;
+		}
+		return returnedVal;
+	}
 
 	URangedWeaponComponent* RangedWeaponComponent;
 
