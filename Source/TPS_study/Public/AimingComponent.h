@@ -89,9 +89,9 @@ struct FAimingStatCompact : public FTableRowBase
 // Aiming DELEGATE:
 //=================
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAiming, URangedWeaponComponent*, MyComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTransitioningAiming, URangedWeaponComponent*, MyComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStopAiming, URangedWeaponComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAiming, UAimingComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTransitioningAiming, UAimingComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStopAiming, UAimingComponent*, MyComponent);
 
 //=======================
 // AimingComponent CLASS:
@@ -199,6 +199,7 @@ private:
 
 	UCameraComponent* CameraComponent;
 	USpringArmComponent* CameraBoomComponent;
+	URangedWeaponComponent* RangedWeaponComponent;
 
 	bool bIsAimingForward;
 

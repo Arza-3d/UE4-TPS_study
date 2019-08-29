@@ -70,8 +70,6 @@ struct FAmmoCount
 	int Mine = 3;
 };
 
-
-
 /**Only external energy mana is not included*/
 USTRUCT(BlueprintType)
 struct FExternalEnergyCount
@@ -253,10 +251,10 @@ struct FWeaponModeCompact : public FTableRowBase
 		FWeaponMode WeaponMode;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunOutOfAmmoSignature, URangedWeaponComponent*, MyComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsOverheatingSignature, URangedWeaponComponent*, MyComponent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoMoreAmmoDuringFire, URangedWeaponComponent*, MyComponent, const int32, MyFireRound);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, URangedWeaponComponent*, MyComponent, const float, CurrentEnergy, const float, EnergyNeededPerShot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRunOutOfAmmoSignature, UAmmoAndEnergyComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsOverheatingSignature, UAmmoAndEnergyComponent*, MyComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoMoreAmmoDuringFire, UAmmoAndEnergyComponent*, MyComponent, const int32, MyFireRound);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, UAmmoAndEnergyComponent*, MyComponent, const float, CurrentEnergy, const float, EnergyNeededPerShot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TPS_STUDY_API UAmmoAndEnergyComponent : public UActorComponent
@@ -307,7 +305,7 @@ public:
 	 *  * 1 = max ammunition
 	 */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Ammo")
-		TArray<FAmmoCount> AmmunitionLimit;
+	TArray<FAmmoCount> AmmunitionLimit;
 
 protected:
 	
@@ -318,6 +316,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+
+	URangedWeaponComponent* RangedWeaponComponent;
 
 	bool IsAmmoEnough();
 	bool IsAmmoEnough(const EAmmoType InAmmoType);

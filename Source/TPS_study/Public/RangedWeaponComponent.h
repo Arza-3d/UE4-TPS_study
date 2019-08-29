@@ -6,6 +6,8 @@
 #include "RangedWeaponComponent.generated.h"
 
 class UDataTable;
+class UAimingComponent;
+class AmmoAndEnergyComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWeapon, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
@@ -28,6 +30,10 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TPS_STUDY_API URangedWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+	friend UAimingComponent;
+	friend UAmmoAndEnergyComponent;
+
 
 //===========================================================================
 public:	
@@ -59,6 +65,7 @@ public:
 	// Getter (public):
 	//=================
 
+	static URangedWeaponComponent* GetRangedWeapon();
 	//-------------------------------------------------------------
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")

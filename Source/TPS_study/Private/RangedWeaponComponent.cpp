@@ -24,6 +24,19 @@ URangedWeaponComponent::URangedWeaponComponent()
 
 //-------------------------------------------------------------
 
+URangedWeaponComponent* URangedWeaponComponent::GetRangedWeapon()
+{
+	TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
+	URangedWeaponComponent* returnedVal;
+
+	for (int i = 0; i < myComponents.Num(); i++)
+	{
+		returnedVal = Cast<URangedWeaponComponent>(myComponents[i]);
+		if (returnedVal) break;
+	}
+	return returnedVal;
+}
+
 int32 URangedWeaponComponent::GetWeaponIndex() const
 {
 	return WeaponIndex;
@@ -126,7 +139,7 @@ void URangedWeaponComponent::SetWeaponIndex(bool isUp)
 {
 	LastWeaponIndex = WeaponIndex;
 
-	if (Shooter->IsAbleToSwitchWeapon())
+	if (true/*Shooter->IsAbleToSwitchWeapon()*/)
 	{
 		int32 inCounter = isUp ? 1 : -1;
 		int32 withinRange = (WeaponIndex + inCounter) % WeaponNames.Num();
@@ -143,7 +156,7 @@ void URangedWeaponComponent::SetWeaponIndex(const int32 InNumber)
 
 	LastWeaponIndex = WeaponIndex;
 
-	if ((WeaponNames.Num() > WeaponIndex) && Shooter->IsAbleToSwitchWeapon())
+	if ((WeaponNames.Num() > WeaponIndex)/* && Shooter->IsAbleToSwitchWeapon()*/)
 	{
 		WeaponIndex = InNumber;
 		SetWeaponMode(WeaponIndex);

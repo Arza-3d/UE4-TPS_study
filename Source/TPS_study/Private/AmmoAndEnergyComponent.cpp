@@ -1,4 +1,5 @@
 #include "AmmoAndEnergyComponent.h"
+#include "RangedWeaponComponent.h"
 
 void UAmmoAndEnergyComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)
 {
@@ -60,18 +61,18 @@ void UAmmoAndEnergyComponent::AddEnergy(const EEnergyType InEnergyType, const fl
 
 bool UAmmoAndEnergyComponent::IsAmmoEnough()
 {
-	if (CurrentWeapon.WeaponCost == EWeaponCost::Nothing)
+	if (RangedWeaponComponent->CurrentWeapon.WeaponCost == EWeaponCost::Nothing)
 	{
 		return true;
 	}
 
-	switch (CurrentWeapon.WeaponCost)
+	switch (RangedWeaponComponent->CurrentWeapon.WeaponCost)
 	{
 	case EWeaponCost::Ammo:
-		return IsAmmoEnough(CurrentWeapon.AmmoType);
+		return IsAmmoEnough(RangedWeaponComponent->CurrentWeapon.AmmoType);
 
 	case EWeaponCost::Energy:
-		return IsAmmoEnough(CurrentWeapon.EnergyType);
+		return IsAmmoEnough(RangedWeaponComponent->CurrentWeapon.EnergyType);
 
 	default:
 		return false;
@@ -137,13 +138,13 @@ bool UAmmoAndEnergyComponent::IsAmmoEnough(const EEnergyType InEnergyType)
 	switch (InEnergyType)
 	{
 	case EEnergyType::MP:
-		return IsAmmoEnough(EnergyExternal.MP, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.MP, RangedWeaponComponent->CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Fuel:
-		return IsAmmoEnough(EnergyExternal.Fuel, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.Fuel, RangedWeaponComponent->CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Battery:
-		return IsAmmoEnough(EnergyExternal.Battery, CurrentWeapon.EnergyUsePerShot);
+		return IsAmmoEnough(EnergyExternal.Battery, RangedWeaponComponent->CurrentWeapon.EnergyUsePerShot);
 
 	case EEnergyType::Overheat:
 		return IsWeaponNotOverheating();
@@ -168,21 +169,19 @@ bool UAmmoAndEnergyComponent::IsWeaponNotOverheating()
 // Sets default values for this component's properties
 UAmmoAndEnergyComponent::UAmmoAndEnergyComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
-
 
 // Called when the game starts
 void UAmmoAndEnergyComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	RangedWeaponComponent = URangedWeaponComponent::GetRangedWeapon();
 	
 }
-
 
 // Called every frame
 void UAmmoAndEnergyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

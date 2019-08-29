@@ -3,6 +3,8 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "RangedWeaponComponent.h"
+#include "TimerManager.h"
 
 #include "Engine/Engine.h"// debug
 #include "Kismet/GameplayStatics.h"// debug
@@ -31,7 +33,7 @@ bool UAimingComponent::GetIsAiming() const
 {
 	bool retVal = AimingState == EAimingState::Aiming;
 
-	return (bIsAbleToShootWithoutAiming) ? true : retVal;
+	return (RangedWeaponComponent->bIsAbleToShootWithoutAiming) ? true : retVal;
 }
 
 bool UAimingComponent::GetTransitioningAiming() const
@@ -84,6 +86,7 @@ void UAimingComponent::BeginPlay()
 	{
 		bool bCameraIsFound;
 		bool bCameraBoomIsFound;
+		bool bRangedWeaponIsFound;
 
 		if (!bCameraIsFound)
 		{
@@ -103,6 +106,17 @@ void UAimingComponent::BeginPlay()
 			if (CameraBoomComponent)
 			{
 				bCameraBoomIsFound = true;
+				continue;
+			}
+		}
+
+		if (!bRangedWeaponIsFound)
+		{
+			RangedWeaponComponent = Cast<URangedWeaponComponent>(characterComponents[i]);
+
+			if (RangedWeaponComponent)
+			{
+				bRangedWeaponIsFound = true;
 				continue;
 			}
 		}
