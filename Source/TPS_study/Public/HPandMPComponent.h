@@ -30,6 +30,18 @@ struct FCharacterStat
 	FCeiledFloat Mana;
 };
 
+USTRUCT(BlueprintType)
+struct FCharacterStatBPCPP
+{
+	GENERATED_BODY();
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
+	float HP = 100.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
+	float MP = 100.0f;
+};
+
 //=============================================================================
 /**
  *  UHPandMPComponent contain character stat that can be use by Actor

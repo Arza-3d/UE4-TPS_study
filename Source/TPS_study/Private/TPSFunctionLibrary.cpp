@@ -27,21 +27,3 @@ float UTPSFunctionLibrary::StandardLinearInterpolation(const float X, const floa
 
 	return gradient * (X - X1) + Y1;
 }
-
-/*FMinMaxCurve UTPSFunctionLibrary::GetCurveRange(const UCurveFloat * InCurve)
-{
-	float minTime, maxTime;
-	float minFloat, maxFloat;
-
-	FMinMaxCurve returnedVal;
-
-	InCurve->GetTimeRange(minTime, maxTime);
-	InCurve->GetValueRange(minFloat, maxFloat);
-	
-	returnedVal.TimeRange.Min = minTime;
-	returnedVal.TimeRange.Max = maxTime;
-	returnedVal.TimeRange.Min = minFloat;
-	returnedVal.TimeRange.Max = maxFloat;
-
-	return returnedVal;
-}*/
