@@ -26,15 +26,13 @@ struct FProjectileSound
 
 	FProjectileSound()
 	{
-		static ConstructorHelpers::FObjectFinder<USoundBase> inSound(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_Shot_Stereo_Cue.AssaultRifle_Shot_Stereo_Cue'"));
-		check(inSound.Succeeded());
+		static ConstructorHelpers::FObjectFinder<USoundBase> inSound1(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_Shot_Stereo_Cue.AssaultRifle_Shot_Stereo_Cue'"));
+		check(inSound1.Succeeded());
+		MuzzleSound = inSound1.Object;
 
-		MuzzleSound = inSound.Object;
-
-		static ConstructorHelpers::FObjectFinder<USoundBase> inMuzzleSound(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_End_Stereo_Cue.AssaultRifle_End_Stereo_Cue'"));
-		check(inSound.Succeeded());
-
-		HitAndTrailSound[0] = inSound.Object;
+		static ConstructorHelpers::FObjectFinder<USoundBase> inSound2(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_End_Stereo_Cue.AssaultRifle_End_Stereo_Cue'"));
+		check(inSound2.Succeeded());
+		HitAndTrailSound[0] = inSound2.Object;
 	}
 };
 
