@@ -1,4 +1,4 @@
-#include "RangedWeaponComponent.h"
+#include "Component/RangedWeaponComponent.h"
 // default:
 #include "Camera/CameraComponent.h"
 #include "Gameframework/Character.h"
@@ -139,7 +139,7 @@ void URangedWeaponComponent::SetWeaponIndex(const int32 InNumber)
 }
 
 void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
-{	
+{
 	FName CurrentWeaponName = WeaponNames[MyWeaponIndex];
 	static const FString ContextString(TEXT("Weapon Mode"));
 	struct FWeaponModeCompact* WeaponModeRow;
@@ -169,7 +169,7 @@ void URangedWeaponComponent::SetWeaponMode(const int32 MyWeaponIndex)
 //================
 
 void URangedWeaponComponent::SetWeaponMesh()
-{	
+{
 	USkeletalMeshComponent* weaponMesh = Cast<ACharacter>(GetOwner())->GetMesh(); // change it to accept additional weapon mesh later
 	WeaponInWorld = Cast<USceneComponent>(weaponMesh);
 }

@@ -1,4 +1,4 @@
-#include "AmmoAndEnergyComponent.h"
+#include "Component/AmmoAndEnergyComponent.h"
 #include "RangedWeaponComponent.h"
 
 void UAmmoAndEnergyComponent::AddAmmo(const EAmmoType InAmmoType, const int32 AdditionalAmmo)

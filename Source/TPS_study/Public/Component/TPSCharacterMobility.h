@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "AdvanceCharacterMobility.generated.h"
+#include "TPSCharacterMobility.generated.h"
 
 
 UENUM(BlueprintType)
@@ -17,21 +17,21 @@ enum class ECharacterMobility : uint8
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API UAdvanceCharacterMobility : public UActorComponent
+class TPS_STUDY_API UTPSCharacterMobility : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
-	UAdvanceCharacterMobility();
+	UTPSCharacterMobility();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+
 };

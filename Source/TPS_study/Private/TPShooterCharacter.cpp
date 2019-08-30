@@ -1,28 +1,18 @@
 #include "TPShooterCharacter.h"
 // default:
-#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/InputComponent.h"
+
 #include "Components/SkeletalMeshComponent.h"
-#include "CustomCollisionChannel.h"
-#include "Engine/DataTable.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "TimerManager.h"
+
 // costum:
-#include "RangedWeaponComponent.h"
+#include "Component/RangedWeaponComponent.h"
 #include "TPSAnimInterface.h"
-#include "TPSFunctionLibrary.h"
-#include "TPS_Projectile.h"
 #include "HPandMPComponent.h"
-// debug:
-#include "DrawDebugHelpers.h"
-#include "AimingComponent.h"
+#include "Component/AimingComponent.h"
 
 //==============
 // Construction:
