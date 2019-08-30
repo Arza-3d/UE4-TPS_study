@@ -1,18 +1,20 @@
-#include "TPShooterCharacter.h"
-// default:
+#include "Character/TPShooterCharacter.h"
+
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
-
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 
-// costum:
 #include "Component/RangedWeaponComponent.h"
-#include "TPSAnimInterface.h"
-#include "HPandMPComponent.h"
+#include "Component/AmmoAndEnergyComponent.h"
+#include "Component/HPandMPComponent.h"
 #include "Component/AimingComponent.h"
+#include "Interface/TPSAnimInterface.h"
+
+#include "UObject/ConstructorHelpers.h"
+#include "Engine/DataTable.h"
 
 //==============
 // Construction:
@@ -23,7 +25,7 @@ ATPShooterCharacter::ATPShooterCharacter()
 	// basic component setup:
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	
+
 	HealthAndMana = CreateDefaultSubobject<UHPandMPComponent>(TEXT("HealthAndMana"));
 	RangedWeapon = CreateDefaultSubobject<URangedWeaponComponent>(TEXT("RangedWeapon"));
 	Aiming = CreateDefaultSubobject<UAimingComponent>(TEXT("Aiming"));
@@ -49,6 +51,16 @@ ATPShooterCharacter::ATPShooterCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	SetTestDataTable();// TEEEEEEEEEEEEEEEEEEEEEEEST
+}
+
+void ATPShooterCharacter::SetTestDataTable()
+{
+	static ConstructorHelpers::FObjectFinder<UDataTable> Tabel(TEXT("DataTable'/Game/Character/Component/AimingTable/HumanoidAimingTable.HumanoidAimingTable'"));
+	check(Tabel.Succeeded());
+
+	TestingDataTable = Tabel.Object;
 }
 
 //===========================================================================
@@ -138,7 +150,7 @@ bool ATPShooterCharacter::IsAbleToFire_Implementation()
 // Aiming (private):
 //==================
 
-void ATPShooterCharacter::AimingPress() 
+void ATPShooterCharacter::AimingPress()
 {
 	Aiming->AimingPress();
 }

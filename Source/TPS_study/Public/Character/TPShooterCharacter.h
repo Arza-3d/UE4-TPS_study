@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "HPandMPComponent.h"
 #include "TPSFunctionLibrary.h"
+
 #include "TPShooterCharacter.generated.h"
 
 class UAimingComponent;
@@ -23,12 +24,20 @@ class ATPShooterCharacter : public ACharacter {
 	GENERATED_BODY()
 
 	friend URangedWeaponComponent;
+	
+	
 
 //===========================================================================
 public:
 //===========================================================================
 
 	ATPShooterCharacter();
+
+	// tessttttt
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
+	UDataTable* TestingDataTable;
+
+	void SetTestDataTable();
 
 	//==============================
 	// Blueprint Component getter

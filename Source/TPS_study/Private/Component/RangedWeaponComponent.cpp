@@ -1,14 +1,14 @@
 #include "Component/RangedWeaponComponent.h"
-// default:
+
 #include "Camera/CameraComponent.h"
 #include "Gameframework/Character.h"
 #include "TimerManager.h"
-// custom:
+
+#include "Actor/TPS_Projectile.h"
 #include "Component/AimingComponent.h"
-#include "TPS_Projectile.h"
-#include "HPandMPComponent.h"
-#include "AmmoAndEnergyComponent.h"
-// debug:
+#include "Component/AmmoAndEnergyComponent.h"
+#include "Component/HPandMPComponent.h"
+
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -43,7 +43,7 @@ ETriggerMechanism URangedWeaponComponent::GetTriggerMechanism() const { return C
 void URangedWeaponComponent::FirePress()
 {
 	bIsTriggerPressed = true;
-	FlipOnePressTriggerSwitch();
+	bOnePressToggle = (bOnePressToggle) ? false : true;
 
 	if (!IsWeaponAbleToFire()) { return; }
 
@@ -431,11 +431,6 @@ void URangedWeaponComponent::TimerFireRateReset()
 	{
 		FireAutomaticTriggerOnePress();
 	}
-}
-
-void URangedWeaponComponent::FlipOnePressTriggerSwitch()
-{
-	bOnePressToggle = (bOnePressToggle) ? false : true;
 }
 
 FRotator URangedWeaponComponent::GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform)

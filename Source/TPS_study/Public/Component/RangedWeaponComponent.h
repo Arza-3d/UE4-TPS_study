@@ -2,13 +2,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "TPSFunctionLibrary.h"
-#include "AmmoAndEnergyComponent.h"
+
+#include "Struct/TableStruct/WeaponTableStruct.h"
+#include "Library/TPSFunctionLibrary.h"
+
 #include "RangedWeaponComponent.generated.h"
 
 class UDataTable;
 class UAimingComponent;
-class AmmoAndEnergyComponent;
+class UAmmoAndEnergyComponent;
+class UCameraComponent;
+class UHPandMPComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSwitchWeapon, URangedWeaponComponent*, MyComponent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFireSignature, URangedWeaponComponent*, MyComponent);
@@ -133,10 +137,10 @@ private:
 	// Getter (private):
 	//==================
 
-	class UCameraComponent* CameraComponent;
-	class UAimingComponent* AimingComponent;
-	class UAmmoAndEnergyComponent* AmmoComponent;
-	class UHPandMPComponent* MPComponent;
+	UCameraComponent* CameraComponent;
+	UAimingComponent* AimingComponent;
+	UAmmoAndEnergyComponent* AmmoComponent;
+	UHPandMPComponent* MPComponent;
 
 	//=======================
 	// Weapon stat (private):
@@ -177,7 +181,6 @@ private:
 	void FireAutomaticTriggerOnePress();
 
 	void FireReleaseAfterHold();
-	void FlipOnePressTriggerSwitch();
 	bool IsWeaponAbleToFire();
 
 	void FireProjectile();

@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-// custom:
 #include "Struct/TableStruct/WeaponTableStruct.h"
 #include "Struct/AmmoAndEnergyStruct.h"
 

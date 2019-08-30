@@ -2,44 +2,16 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+
+#include "Struct/ProjectileParticleStruct.h"
+
 #include "ProjectileFXDataAsset.generated.h"
 
-class UParticleSystem;
-
-USTRUCT(BlueprintType)
-struct FProjectileVX
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TArray<UParticleSystem*> MuzzleVX = {nullptr};
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TArray<UParticleSystem*> TrailVX = {nullptr};
-
-	/**
-	 * 0 = HitWorld
-	 * 1 = HitCharacter
-	 * 2 = HiWater
-	 * 3 = NoHit
-	 */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TArray<UParticleSystem*> HitVX = {nullptr};
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UParticleSystem* HitCharacter;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UParticleSystem* HitWater;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UParticleSystem* NoHit;
-};
 
 /**
  * 
  */
-UCLASS(BlueprintType)
+UCLASS()
 class TPS_STUDY_API UProjectileFXDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
@@ -47,5 +19,5 @@ class TPS_STUDY_API UProjectileFXDataAsset : public UDataAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FProjectileVX ProjectileVX;
+	FProjectileParticle ProjectileVX;
 };

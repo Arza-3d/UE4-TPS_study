@@ -2,11 +2,14 @@
 
 #pragma once
 
+// Default:
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
+// Custom:
 #include "Enum/AmmoAndEnergyEnum.h"
 #include "Enum/RangedWeaponEnum.h"
+//
 #include "WeaponTableStruct.generated.h"
 
 
@@ -27,26 +30,26 @@ struct FWeapon
 	 * 4 = unequip time
 	 * all of that are in second
 	 */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Animation")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		TArray<float> FireRateAndOther = { 0.3f };
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		ETriggerMechanism Trigger;
 
 	/* is the weapon cost int (ammo), or float (energy), or nothing (unlimited)*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		EWeaponCost WeaponCost;
 
 	/** used only if WeaponCost is "Ammo"*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		EAmmoType AmmoType;
 
 	/** used only if WeaponCost is "Energy"*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		EEnergyType EnergyType;
 
 	/** used only if WeaponCost is "Energy", this is in %*/
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Logic")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		float EnergyUsePerShot = 10.0f;
 };
 
@@ -101,13 +104,13 @@ struct FProjectileHit
 	* 1 = AoE FX
 	*/
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		TArray<F_FX> HitFX;
+	TArray<F_FX> HitFX;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		float DamagePoint = 10.0f;
+	float DamagePoint = 10.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Effect")
-		float CriticalChance = 0.05f;
+	float CriticalChance = 0.05f;
 };
 
 USTRUCT(BlueprintType)

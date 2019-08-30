@@ -1,4 +1,4 @@
-#include "HPandMPComponent.h"
+#include "Component/HPandMPComponent.h"
 
 //===========================================================================
 // public:
@@ -27,7 +27,7 @@ float UHPandMPComponent::SetMana(float NewMana)
 FCeiledFloat UHPandMPComponent::SetMaxHealth(const float NewMaxHealth)
 {
 	if (NewMaxHealth <= 0.0f) return HealthAndMana.Health;
-	
+
 	if (NewMaxHealth > HealthAndMana.Health.Max)
 	{
 		HealthAndMana.Health.Max = NewMaxHealth;
@@ -85,6 +85,3 @@ float UHPandMPComponent::SetStatClamped(float NewStat, const float MaxStat)
 	}
 	return NewStat;
 }
-
-
-

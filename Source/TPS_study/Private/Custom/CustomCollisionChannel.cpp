@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CustomCollisionChannel.h"
+#include "Custom/CustomCollisionChannel.h"
 
 CustomCollisionChannel::CustomCollisionChannel()
 {

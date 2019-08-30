@@ -3,9 +3,10 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "RangedWeaponComponent.h"
 #include "TimerManager.h"
-// debug:
+
+#include "Component/RangedWeaponComponent.h"
+
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 
