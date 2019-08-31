@@ -5,6 +5,10 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/ConstructorHelpers.h"
+//#include "Sound/SoundBase.h"
+
+#include "Custom/ShouldCheckFile.h"
+#include "Library/TPSFunctionLibrary.h"
 #include "ProjectileSoundStruct.generated.h"
 
 class USoundBase;
@@ -26,12 +30,14 @@ struct FProjectileSound
 
 	FProjectileSound()
 	{
+		//UTPSFunctionLibrary::GetThisObject<USoundBase>(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_Shot_Stereo_Cue.AssaultRifle_Shot_Stereo_Cue'"));
+
 		static ConstructorHelpers::FObjectFinder<USoundBase> inSound1(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_Shot_Stereo_Cue.AssaultRifle_Shot_Stereo_Cue'"));
-		check(inSound1.Succeeded());
+		if(SHOULDCHECKFILE) check(inSound1.Succeeded());
 		MuzzleSound = inSound1.Object;
 
 		static ConstructorHelpers::FObjectFinder<USoundBase> inSound2(TEXT("SoundCue'/Game/Sounds/Weapon_AssaultRifle/Stereo/AssaultRifle_End_Stereo_Cue.AssaultRifle_End_Stereo_Cue'"));
-		check(inSound2.Succeeded());
+		if(SHOULDCHECKFILE) check(inSound2.Succeeded());
 		HitAndTrailSound[0] = inSound2.Object;
 	}
 };

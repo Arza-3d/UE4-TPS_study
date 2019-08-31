@@ -17,12 +17,13 @@
 UAimingComponent::UAimingComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	
+	if (AimingCurve == nullptr || AimingTable == nullptr) SetUpVariables(bShouldDoCheckFile);
 }
 
 void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 	DeltaSecond = DeltaTime;
 }
 
@@ -69,10 +70,7 @@ float UAimingComponent::GetAimingAlpha() const
 
 void UAimingComponent::SetIsTransitioningAiming(bool bInBool)
 {
-	if (bInBool)
-	{
-		AimingState = EAimingState::TransitioningAiming;
-	}
+	if (bInBool) AimingState = EAimingState::TransitioningAiming;
 }
 
 //===========================================================================
@@ -83,20 +81,11 @@ void UAimingComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CameraComponent = GetThisType<UCameraComponent>();
-	CameraBoomComponent = GetThisType<USpringArmComponent>();
-	RangedWeaponComponent = GetThisType<URangedWeaponComponent>();
+	CameraComponent =  GetComponentSibling<UCameraComponent>();
+	CameraBoomComponent = GetComponentSibling<USpringArmComponent>();
+	RangedWeaponComponent = GetComponentSibling<URangedWeaponComponent>();
 
-	if (AimingCurve == nullptr)
-	{
-		//GEngine->ClearOnScreenDebugMessages();
-		UKismetSystemLibrary::PrintString(this, FString("AIMING CURVE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
-	}
-
-	if (AimingTable != nullptr)
-	{
-		AimingNames = AimingTable->GetRowNames();
-	}
+	if (AimingCurve == nullptr || AimingTable == nullptr) SetUpVariables(bShouldDoCheckFile);
 
 	// aiming setup:
 	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
@@ -120,6 +109,12 @@ void UAimingComponent::BeginPlay()
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
 	}
+}
+
+void UAimingComponent::SetUpVariables(bool bShouldCheck)
+{
+	AimingCurve = GetThisFile<UCurveFloat>(TEXT("CurveFloat'/Game/Character/Curves/AimingFloatCurve.AimingFloatCurve'"), bShouldDoCheckFile);
+	AimingTable = GetThisFile<UDataTable>(TEXT("DataTable'/Game/Character/Table/AimingTable.AimingTable'"), bShouldDoCheckFile);
 }
 
 //==================

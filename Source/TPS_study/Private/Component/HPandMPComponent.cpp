@@ -6,7 +6,6 @@
 
 UHPandMPComponent::UHPandMPComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
 }
 
 float UHPandMPComponent::AddHealth(const float AddHealth)

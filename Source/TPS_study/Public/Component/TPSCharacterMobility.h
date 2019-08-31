@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Component/ComponentBase.h"
 #include "TPSCharacterMobility.generated.h"
 
 
@@ -17,7 +17,7 @@ enum class ECharacterMobility : uint8
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API UTPSCharacterMobility : public UActorComponent
+class TPS_STUDY_API UTPSCharacterMobility : public UComponentBase
 {
 	GENERATED_BODY()
 

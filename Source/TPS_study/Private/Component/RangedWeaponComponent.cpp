@@ -3,6 +3,7 @@
 #include "Camera/CameraComponent.h"
 #include "Gameframework/Character.h"
 #include "TimerManager.h"
+//#include "UObject/ConstructorHelpers.h"
 
 #include "Actor/TPS_Projectile.h"
 #include "Component/AimingComponent.h"
@@ -18,7 +19,7 @@
 
 URangedWeaponComponent::URangedWeaponComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	if (!WeaponTable) SetUpVariables(bShouldDoCheckFile);
 }
 
 //=================
@@ -90,19 +91,21 @@ void URangedWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CameraComponent = GetThisType<UCameraComponent>();
-	AimingComponent = GetThisType<UAimingComponent>();
-	AmmoComponent = GetThisType<UAmmoAndEnergyComponent>();
-	MPComponent = GetThisType<UHPandMPComponent>();
+	CameraComponent = GetComponentSibling<UCameraComponent>();
+	AimingComponent = GetComponentSibling<UAimingComponent>();
+	AmmoComponent = GetComponentSibling<UAmmoAndEnergyComponent>();
+	MPComponent = GetComponentSibling<UHPandMPComponent>();
 
-	if (WeaponTable)
-	{
-		WeaponNames = WeaponTable->GetRowNames();
-		SetWeaponMode(0);
-	}
-	else  UKismetSystemLibrary::PrintString(this, FString("WEAPON TABLE IS EMPTY!!! >O<"), true, false, FLinearColor::Red, 10.0f);
+	if (!WeaponTable) SetUpVariables(bShouldDoCheckFile);
 
+	WeaponNames = WeaponTable->GetRowNames();
+	SetWeaponMode(0);
 	SetWeaponMesh();
+}
+
+void URangedWeaponComponent::SetUpVariables(bool bShouldCheck)
+{
+	WeaponTable = GetThisFile<UDataTable>(TEXT("DataTable'/Game/Character/Table/WeaponTable.WeaponTable'"));
 }
 
 //===========================================================================

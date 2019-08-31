@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-// custom:
-#include "Components/ActorComponent.h"
+#include "Component/ComponentBase.h"
 #include "HPandMPComponent.generated.h"
 
 USTRUCT(BlueprintType)
@@ -48,7 +47,7 @@ struct FCharacterStatBPCPP
  *  UHPandMPComponent contain character stat that can be use by Actor
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API UHPandMPComponent : public UActorComponent
+class TPS_STUDY_API UHPandMPComponent : public UComponentBase
 {
 	GENERATED_BODY()
 

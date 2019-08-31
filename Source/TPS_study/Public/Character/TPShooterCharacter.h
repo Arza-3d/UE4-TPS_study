@@ -25,19 +25,11 @@ class ATPShooterCharacter : public ACharacter {
 
 	friend URangedWeaponComponent;
 	
-	
-
 //===========================================================================
 public:
 //===========================================================================
 
 	ATPShooterCharacter();
-
-	// tessttttt
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
-	UDataTable* TestingDataTable;
-
-	void SetTestDataTable();
 
 	//==============================
 	// Blueprint Component getter
@@ -96,9 +88,6 @@ protected:
 private:
 //===========================================================================
 	
-	FCharacterStatBPCPP CharacterStat; // will delete later
-	//struct FShooter ShooterState;
-
 	//===============================
 	// Blueprint Component (private):
 	//===============================

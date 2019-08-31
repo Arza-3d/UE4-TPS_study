@@ -83,10 +83,7 @@ bool UAmmoAndEnergyComponent::IsAmmoEnough(const int32 InAmmo)
 {
 	bool bAmmoIsEmpty = InAmmo <= 0;
 
-	if (bAmmoIsEmpty)
-	{
-		OnAmmoOut.Broadcast(this);
-	}
+	if (bAmmoIsEmpty) OnAmmoOut.Broadcast(this);
 
 	return !bAmmoIsEmpty;
 }
@@ -125,10 +122,7 @@ bool UAmmoAndEnergyComponent::IsAmmoEnough(const float MyEnergy, const float MyE
 {
 	bool bIsNotEnoughEnergy = MyEnergy < MyEnergyPerShot;
 
-	if (bIsNotEnoughEnergy)
-	{
-		OnEnergyOut.Broadcast(this, MyEnergy, MyEnergyPerShot);
-	}
+	if (bIsNotEnoughEnergy) OnEnergyOut.Broadcast(this, MyEnergy, MyEnergyPerShot);
 
 	return !bIsNotEnoughEnergy;
 }
@@ -160,10 +154,7 @@ bool UAmmoAndEnergyComponent::IsWeaponNotOverheating()
 {
 	bool bIsOverheat = EnergyExternal.Overheat >= 100.0f;
 
-	if (bIsOverheat)
-	{
-		OnOverhating.Broadcast(this);
-	}
+	if (bIsOverheat) OnOverhating.Broadcast(this);
 
 	return !bIsOverheat;
 }
@@ -172,24 +163,14 @@ bool UAmmoAndEnergyComponent::IsWeaponNotOverheating()
 UAmmoAndEnergyComponent::UAmmoAndEnergyComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
 }
 
-// Called when the game starts
 void UAmmoAndEnergyComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	RangedWeaponComponent = GetThisType<URangedWeaponComponent>();
+	RangedWeaponComponent = GetComponentSibling<URangedWeaponComponent>();
 }
 
-// Called every frame
-/*void UAmmoAndEnergyComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}*/
 
 FAmmoCount UAmmoAndEnergyComponent::GetAllAmmo() const
 {

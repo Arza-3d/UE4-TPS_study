@@ -50,17 +50,7 @@ ATPShooterCharacter::ATPShooterCharacter()
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
-	PrimaryActorTick.bStartWithTickEnabled = true;
-
-	SetTestDataTable();// TEEEEEEEEEEEEEEEEEEEEEEEST
-}
-
-void ATPShooterCharacter::SetTestDataTable()
-{
-	static ConstructorHelpers::FObjectFinder<UDataTable> Tabel(TEXT("DataTable'/Game/Character/Component/AimingTable/HumanoidAimingTable.HumanoidAimingTable'"));
-	check(Tabel.Succeeded());
-
-	TestingDataTable = Tabel.Object;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
 //===========================================================================

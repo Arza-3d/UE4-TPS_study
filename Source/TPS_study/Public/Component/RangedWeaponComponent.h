@@ -1,8 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
 
+#include "Component/ComponentBase.h"
 #include "Struct/TableStruct/WeaponTableStruct.h"
 #include "Library/TPSFunctionLibrary.h"
 
@@ -30,7 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnJustReachMaxFireHoldSignature,
  *  * Switch weapon functionality
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API URangedWeaponComponent : public UActorComponent
+class TPS_STUDY_API URangedWeaponComponent : public UComponentBase
 {
 	GENERATED_BODY()
 
@@ -68,20 +69,6 @@ public:
 	// Getter (public):
 	//=================
 
-	template <class ThisType>
-	ThisType* GetThisType() const 
-	{
-		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
-		ThisType* returnedVal = nullptr;
-
-		for (int i = 0; i < myComponents.Num(); i++)
-		{
-			returnedVal = Cast<ThisType>(myComponents[i]);
-			if (returnedVal) break;
-		}
-		return returnedVal;
-	}
-	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
 	int32 GetWeaponIndex() const;
 
@@ -118,6 +105,8 @@ protected:
 //===========================================================================
 
 	virtual void BeginPlay() override;
+
+	virtual void SetUpVariables(bool bShouldCheck) override;
 
 	//===============================
 	// Default Variables (protected):
@@ -199,5 +188,6 @@ private:
 
 	FRotator GetNewMuzzleRotationFromLineTrace(FTransform SocketTransform);
 	//void PlayFireMontage();
+
 
 };

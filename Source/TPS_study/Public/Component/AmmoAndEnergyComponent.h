@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Component/ComponentBase.h"
 
 #include "Struct/TableStruct/WeaponTableStruct.h"
 #include "Struct/AmmoAndEnergyStruct.h"
@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNoMoreAmmoDuringFire, const int32
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRunOutOfEnergySignature, UAmmoAndEnergyComponent*, MyComponent, const float, CurrentEnergy, const float, EnergyNeededPerShot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API UAmmoAndEnergyComponent : public UActorComponent
+class TPS_STUDY_API UAmmoAndEnergyComponent : public UComponentBase
 {
 	GENERATED_BODY()
 
@@ -74,20 +74,6 @@ public:
 	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-
-	template <class ThisType>
-	ThisType* GetThisType() const
-	{
-		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
-		ThisType* returnedVal = nullptr;
-
-		for (int i = 0; i < myComponents.Num(); i++)
-		{
-			returnedVal = Cast<ThisType>(myComponents[i]);
-			if (returnedVal) break;
-		}
-		return returnedVal;
-	}
 
 	URangedWeaponComponent* RangedWeaponComponent;
 

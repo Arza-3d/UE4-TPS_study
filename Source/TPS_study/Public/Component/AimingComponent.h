@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "Component/ComponentBase.h"
 
 #include "Enum/AimingEnum.h"
 #include "Struct/AimingStruct.h"
@@ -14,6 +14,8 @@ class UCurveFloat;
 class UDataTable;
 class USpringArmComponent;
 class UUserWidget;
+
+class URangedWeaponComponent;
 
 //=================
 // Aiming DELEGATE:
@@ -28,11 +30,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStopAiming, UAimingComponent*, My
 //=======================
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TPS_STUDY_API UAimingComponent : public UActorComponent
+class TPS_STUDY_API UAimingComponent : public UComponentBase
 {
 	GENERATED_BODY()
 
-	friend class URangedWeaponComponent;
+	friend URangedWeaponComponent;
 
 //===========================================================================
 public:
@@ -94,6 +96,8 @@ protected:
 	
 	virtual void BeginPlay() override;
 
+	virtual void SetUpVariables(bool bShouldCheck) override;
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Aiming")
 	float AimingSpeed = 0.1f;
 
@@ -119,20 +123,6 @@ protected:
 //===========================================================================
 private:
 //===========================================================================
-
-	template <class ThisType>
-	ThisType* GetThisType() const
-	{
-		TArray<UActorComponent*> myComponents = GetOwner()->GetComponents().Array();
-		ThisType* returnedVal = nullptr;
-
-		for (int i = 0; i < myComponents.Num(); i++)
-		{
-			returnedVal = Cast<ThisType>(myComponents[i]);
-			if (returnedVal) break;
-		}
-		return returnedVal;
-	}
 
 	//==================
 	// Getter (private):
@@ -166,5 +156,4 @@ private:
 	void OrientCharacter(const bool bMyCharIsAiming);
 	void ClearAndInvalidateAimingTimer(const float NewCurrentTime);
 	void TimeAiming(float InAlpha);
-	
 };

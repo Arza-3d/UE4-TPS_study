@@ -27,6 +27,14 @@ public:
 	static UParticleSystem* GetRandomParticle(TArray<UParticleSystem*> particleSystems);
 
 	static float  StandardLinearInterpolation(const float X, const float X1, const float X2, const float Y1, const float Y2);
+
+	/*template<class MyObject>
+	static MyObject* GetThisObject(const TCHAR * ObjectToFind, const bool bShouldCheck = true)
+	{
+		static ConstructorHelpers::FObjectFinder<MyObject> catchedObject(ObjectToFind);
+		if (bShouldCheck) check(catchedObject.Succeeded());
+		return catchedbject;
+	}*/
 };
 
 // 0 character state
@@ -47,4 +55,3 @@ enum class ECharacterShooterState : uint8
 	Aiming,
 	Shooting
 };
-

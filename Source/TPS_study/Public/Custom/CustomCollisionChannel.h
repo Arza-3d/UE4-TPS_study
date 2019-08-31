@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -9,9 +7,6 @@
 #define ECC_Enemy				ECollisionChannel::ECC_GameTraceChannel3
 #define ECC_EnemyProjectile		ECollisionChannel::ECC_GameTraceChannel4
 
-/**
- * 
- */
 class TPS_STUDY_API CustomCollisionChannel
 {
 public:
