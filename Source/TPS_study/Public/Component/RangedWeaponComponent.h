@@ -106,7 +106,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual void SetUpVariables(bool bShouldCheck) override;
+	virtual void SetUpVariables(bool bShouldCheck)  override;
 
 	//===============================
 	// Default Variables (protected):

@@ -18,7 +18,7 @@ UAimingComponent::UAimingComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	
-	if (AimingCurve == nullptr || AimingTable == nullptr) SetUpVariables(bShouldDoCheckFile);
+	SetUpVariables(bShouldDoCheckFile);
 }
 
 void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -85,7 +85,7 @@ void UAimingComponent::BeginPlay()
 	CameraBoomComponent = GetComponentSibling<USpringArmComponent>();
 	RangedWeaponComponent = GetComponentSibling<URangedWeaponComponent>();
 
-	if (AimingCurve == nullptr || AimingTable == nullptr) SetUpVariables(bShouldDoCheckFile);
+	SetUpVariables(bShouldDoCheckFile);
 
 	// aiming setup:
 	if (AimStats.Num() == 0) { AimStats.SetNum(1); };
@@ -113,8 +113,19 @@ void UAimingComponent::BeginPlay()
 
 void UAimingComponent::SetUpVariables(bool bShouldCheck)
 {
-	AimingCurve = GetThisFile<UCurveFloat>(TEXT("CurveFloat'/Game/Character/Curves/AimingFloatCurve.AimingFloatCurve'"), bShouldDoCheckFile);
-	AimingTable = GetThisFile<UDataTable>(TEXT("DataTable'/Game/Character/Table/AimingTable.AimingTable'"), bShouldDoCheckFile);
+	if (AimingTable == nullptr)
+	{
+		static ConstructorHelpers::FObjectFinder<UDataTable> thisObj2(TEXT("DataTable'/Game/Character/Table/AimingTable.AimingTable'"));
+		if (bShouldCheck) check(thisObj2.Object);
+		AimingTable = thisObj2.Object;
+	}
+	
+	if (AimingCurve == nullptr)
+	{
+		static ConstructorHelpers::FObjectFinder<UCurveFloat> thisObj3(TEXT("CurveFloat'/Game/Character/Curves/AimingFloatCurve.AimingFloatCurve'"));
+		if (bShouldCheck) check(thisObj3.Object);
+		AimingCurve = thisObj3.Object;
+	}
 }
 
 //==================

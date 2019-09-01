@@ -21,13 +21,7 @@ class TPS_STUDY_API ATPS_Projectile : public AActor
 public:	
 	ATPS_Projectile();
 
-	FProjectileMuzzle ProjectileMuzzle;
-	FProjectileTrail ProjectileTrail;
-	FProjectileHit ProjectileHit;
-	UProjectileFXDataAsset* ProjectileVX;
-	UProjectileSXDataAsset* ProjectileSound;
-
-	void SetUpProjectile(FProjectile MyProjectile);
+	void SetUpProjectile(FProjectile MyProjectile, APawn* InInstigator);
 
 	void SpawnFX(TArray<UParticleSystem*> MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
 
@@ -49,8 +43,17 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	UProjectileParticleDataAsset* ProjectileParticleObject;
+
+	UProjectileSoundDataAsset* ProjectileSoundObject;
+
+	FProjectileData ProjectileData;
+
 private:
+
 	FTimerHandle TimerDestroy;
+
+	float ParticleScale;
 	
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 	UProjectileMovementComponent* MovementComp;

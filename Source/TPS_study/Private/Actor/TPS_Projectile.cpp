@@ -7,8 +7,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "ProjectileFXDataAsset.h"
-#include "ProjectileSXDataAsset.h"
+#include "ProjectileParticleDataAsset.h"
+#include "ProjectileSoundDataAsset.h"
 #include "TimerManager.h" // delete later
 #include "TPSFunctionLibrary.h"
 
@@ -49,16 +49,15 @@ ATPS_Projectile::ATPS_Projectile()
 	UE_LOG(LogTemp, Log, TEXT("Event construct!"));
 }
 
-void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile) 
+void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile, APawn* InInstigator) 
 {
-	ProjectileMuzzle = MyProjectile.Muzzle;
-	ProjectileTrail = MyProjectile.Trail;
-	ProjectileHit = MyProjectile.Hit;
-	ProjectileVX = MyProjectile.ProjectileVX;
-	ProjectileSound = MyProjectile.ProjectileSoundEffect;
+	ProjectileParticleObject = MyProjectile.ProjectileParticle;
+	ProjectileSoundObject = MyProjectile.ProjectileSound;
+	ProjectileData = MyProjectile.ProjectileData;
 
-	MovementComp->InitialSpeed = ProjectileMuzzle.InitialSpeedAndOther[0];
-	MovementComp->ProjectileGravityScale = (ProjectileMuzzle.InitialSpeedAndOther.Num() > 2) ? ProjectileMuzzle.InitialSpeedAndOther[2] : 0.0f;	
+
+	MovementComp->InitialSpeed = ProjectileData.SpeedxGravityxScale[0];
+	MovementComp->ProjectileGravityScale = (ProjectileData.SpeedxGravityxScale.Num() > 2) ? ProjectileData.SpeedxGravityxScale[2] : 0.0f;
 
 	UE_LOG(LogTemp, Log, TEXT("Event setup!"));
 }
@@ -66,12 +65,20 @@ void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile)
 void ATPS_Projectile::BeginPlay() 
 {
 	Super::BeginPlay();
-	
-	if (ProjectileVX) 
-	{
-		SpawnFX(ProjectileVX->ProjectileVX.MuzzleParticle, ProjectileSound->ProjectileSoundEffect.MuzzleSX, GetActorTransform(), 1.0f);
 
-		ProjectileTrailParticle->SetTemplate(UTPSFunctionLibrary::GetRandomParticle(ProjectileVX->ProjectileVX.TrailParticle));
+	if (ProjectileParticleObject) 
+	{
+		ParticleScale = (ProjectileData.SpeedxGravityxScale.Num() >= 3) ? ProjectileData.SpeedxGravityxScale[2] : 1.0f;
+
+		SpawnFX(
+			ProjectileParticleObject->ProjectileParticle.MuzzleParticle[0], 
+			ProjectileSoundObject->ProjectileSoundEffect.MuzzleSound, 
+			GetActorTransform(), ParticleScale
+		);
+
+		ProjectileTrailParticle->SetTemplate(
+			UTPSFunctionLibrary::GetRandomParticle(ProjectileParticleObject->ProjectileParticle.TrailParticle)
+		);
 	}
 
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ATPS_Projectile::ShowOverlapObjectData);
@@ -90,8 +97,13 @@ void ATPS_Projectile::DestroySelf()
 
 void ATPS_Projectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UPrimitiveComponent * OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit) 
 {
-	if (ProjectileVX && ProjectileSound) 
-	SpawnFX(ProjectileVX->ProjectileVX.HitParticle, ProjectileSound->ProjectileSoundEffect.HitSX, GetActorTransform(), 1.0f);
+	if (ProjectileParticleObject && ProjectileSoundObject) 
+	SpawnFX(
+		ProjectileParticleObject->ProjectileParticle.HitParticle, 
+		ProjectileSoundObject->ProjectileSoundEffect.HitAndTrailSound[0], 
+		GetActorTransform(), 
+		ParticleScale
+	);
 	
 	if (ProjectileTrailParticle) 
 	ProjectileTrailParticle->DestroyComponent();

@@ -19,7 +19,7 @@
 
 URangedWeaponComponent::URangedWeaponComponent()
 {
-	if (!WeaponTable) SetUpVariables(bShouldDoCheckFile);
+	SetUpVariables(bShouldDoCheckFile);
 }
 
 //=================
@@ -96,7 +96,7 @@ void URangedWeaponComponent::BeginPlay()
 	AmmoComponent = GetComponentSibling<UAmmoAndEnergyComponent>();
 	MPComponent = GetComponentSibling<UHPandMPComponent>();
 
-	if (!WeaponTable) SetUpVariables(bShouldDoCheckFile);
+	SetUpVariables(bShouldDoCheckFile);
 
 	WeaponNames = WeaponTable->GetRowNames();
 	SetWeaponMode(0);
@@ -105,7 +105,10 @@ void URangedWeaponComponent::BeginPlay()
 
 void URangedWeaponComponent::SetUpVariables(bool bShouldCheck)
 {
-	WeaponTable = GetThisFile<UDataTable>(TEXT("DataTable'/Game/Character/Table/WeaponTable.WeaponTable'"));
+	if (WeaponTable != nullptr) return;
+	static ConstructorHelpers::FObjectFinder<UDataTable> thisObj(TEXT("DataTable'/Game/Character/Table/WeaponTable.WeaponTable'"));
+	if (bShouldCheck) check(thisObj.Object);
+	WeaponTable = thisObj.Object;
 }
 
 //===========================================================================
@@ -409,7 +412,9 @@ void URangedWeaponComponent::SpawnProjectile(USceneComponent* MyWeaponInWorld, T
 
 	ATPS_Projectile* MyProjectile = MyWorld->SpawnActorDeferred<ATPS_Projectile>(ATPS_Projectile::StaticClass(), SpawnTransform);
 
-	MyProjectile->SetUpProjectile(CurrentProjectile);
+	APawn* instigator = Cast<APawn>(GetOwner());
+
+	MyProjectile->SetUpProjectile(CurrentProjectile, instigator);
 	MyProjectile->FinishSpawning(SpawnTransform);
 }
 

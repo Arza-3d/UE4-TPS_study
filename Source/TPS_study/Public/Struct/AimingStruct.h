@@ -34,7 +34,7 @@ struct FCamBoomAimingStat
 };
 
 USTRUCT(BlueprintType)
-struct FllowCamAimingStat
+struct FollowCamAimingStat
 {
 	GENERATED_BODY();
 
@@ -54,7 +54,7 @@ struct FAimingStat
 		FCamBoomAimingStat CamBoom;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FllowCamAimingStat FollCam;
+		FollowCamAimingStat FollCam;
 };
 
 USTRUCT(BlueprintType)
@@ -66,10 +66,6 @@ struct FAimingStatCompact : public FTableRowBase
 		FAimingStat AimStat;
 };
 
-
-/**
- * 
- */
 UCLASS()
 class TPS_STUDY_API UAimStruct : public UObject
 {
