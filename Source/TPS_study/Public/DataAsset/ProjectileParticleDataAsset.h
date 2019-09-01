@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 
-#include "Struct/ProjectileParticleStruct.h"
+#include "Struct/ProjectileStruct.h"
 #include "ProjectileParticleDataAsset.generated.h"
 
 /**

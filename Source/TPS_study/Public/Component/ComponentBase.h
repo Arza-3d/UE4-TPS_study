@@ -44,12 +44,12 @@ protected:
 		return returnedVal;
 	}
 
-	template <class ThisFile>
+	/*template <class ThisFile>
 	static ThisFile* GetThisFile(const TCHAR* ObjectToFind, bool bShouldCheck = true)
 	{
 		static ConstructorHelpers::FObjectFinder<ThisFile> inObj(ObjectToFind);
 		if (bShouldCheck) check(inObj.Object);
 		return inObj.Object;
-	}	
+	}*/	
 
 };

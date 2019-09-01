@@ -50,22 +50,12 @@ ATPShooterCharacter::ATPShooterCharacter()
 	GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -97.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
-	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 //===========================================================================
 // protected function:
 //===========================================================================
-
-void ATPShooterCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void ATPShooterCharacter::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
 
 void ATPShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
