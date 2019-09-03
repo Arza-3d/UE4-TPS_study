@@ -26,14 +26,6 @@ enum class ETPSJogBlendSpace : uint8
 	BackwardLeft
 };
 
-UENUM(BlueprintType)
-enum class ETPSSprintBlendSpace : uint8
-{
-	Idle,
-	Forward,
-	Backward,
-};
-
 UCLASS()
 class TPS_STUDY_API UTPSCharacterMobilityEnum : public UObject
 {

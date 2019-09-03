@@ -64,8 +64,8 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
 	ETPSJogBlendSpace GetJogDirection() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
-	ETPSSprintBlendSpace GetSprintDirection() const;
+	/*UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
+	ETPSSprintBlendSpace GetSprintDirection() const;*/
 
 	//================================
 	// Overriden function (protected):
@@ -157,7 +157,7 @@ private:
 	void LookUpAtRate(float Rate);
 
 	ETPSJogBlendSpace JogDirection;
-	ETPSSprintBlendSpace SprintDirection;
+	//ETPSSprintBlendSpace SprintDirection;
 
 	float RightMove;
 

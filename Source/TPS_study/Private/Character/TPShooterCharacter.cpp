@@ -91,10 +91,10 @@ ETPSJogBlendSpace ATPShooterCharacter::GetJogDirection() const
 	return JogDirection;
 }
 
-ETPSSprintBlendSpace ATPShooterCharacter::GetSprintDirection() const
+/*ETPSSprintBlendSpace ATPShooterCharacter::GetSprintDirection() const
 {
 	return SprintDirection;
-}
+}*/
 
 //========================
 // Navigation (protected):
@@ -179,26 +179,20 @@ void ATPShooterCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
-		SprintDirection = ETPSSprintBlendSpace::Forward;
+		bForwardInputPressed = true;
 
-		if (Aiming->GetIsAiming())
-		{
-			bForwardInputPressed = true;
-
-			if (!bRightInputPressed)
-				JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Forward : ETPSJogBlendSpace::Backward;
-			else if (Value > 0.0f)
-				JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::ForwardRight : ETPSJogBlendSpace::ForwardLeft;
-			else
-				JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::BackwardRight : ETPSJogBlendSpace::BackwardLeft;
-		}
+		if (!bRightInputPressed)
+			JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Forward : ETPSJogBlendSpace::Backward;
+		else if (Value > 0.0f)
+			JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::ForwardRight : ETPSJogBlendSpace::ForwardLeft;
+		else
+			JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::BackwardRight : ETPSJogBlendSpace::BackwardLeft;
 	}
 	else
 	{
 		bForwardInputPressed = false;
 		if (!bRightInputPressed)
 		{
-			SprintDirection = ETPSSprintBlendSpace::Idle;
 			JogDirection = ETPSJogBlendSpace::Idle;
 		}
 		
@@ -214,19 +208,13 @@ void ATPShooterCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 
-		SprintDirection = ETPSSprintBlendSpace::Forward;
-		RightMove = Value;
-		if (Aiming->GetIsAiming())
-		{
-			bRightInputPressed = true;
-			if (!bForwardInputPressed)
-			JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Right :ETPSJogBlendSpace::Left;
-		}
+		bRightInputPressed = true;
+
+		if (!bForwardInputPressed)
+		JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Right :ETPSJogBlendSpace::Left;
 	}
 	else
-	{
 		bRightInputPressed = false;
-	}
 }
 
 void ATPShooterCharacter::LookRightAtRate(float Rate)
