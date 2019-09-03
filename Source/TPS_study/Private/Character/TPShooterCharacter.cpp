@@ -86,19 +86,19 @@ UAnimInstance* ATPShooterCharacter::GetAnimBlueprint() const
 	return GetMesh()->GetAnimInstance();
 }
 
+ETPSJogBlendSpace ATPShooterCharacter::GetJogDirection() const
+{
+	return JogDirection;
+}
+
+ETPSSprintBlendSpace ATPShooterCharacter::GetSprintDirection() const
+{
+	return SprintDirection;
+}
+
 //========================
 // Navigation (protected):
 //========================
-
-float ATPShooterCharacter::GetNormalizedForward() const
-{
-	return NormalizedForward;
-}
-
-float ATPShooterCharacter::GetNormalizedRight() const
-{
-	return NormalizedRight;
-}
 
 //================================
 // Overriden function (protected):
@@ -170,15 +170,6 @@ void ATPShooterCharacter::SetWeaponIndex4() { GetRangedWeapon()->SetWeaponIndexW
 // Navigation (private):
 //======================
 
-float ATPShooterCharacter::AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed)
-{
-	FVector myVelo = GetVelocity();
-	float mySpeed = FVector(myVelo.X, myVelo.Y, 0.0f).Size();
-	float divider = (bOtherButtonPressed) ? UKismetMathLibrary::Sqrt(2.0f) : 1.0f;
-
-	return (mySpeed * MyValue) / (divider * GetCharacterMovement()->MaxWalkSpeed);
-}
-
 void ATPShooterCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -188,16 +179,29 @@ void ATPShooterCharacter::MoveForward(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
 
+		SprintDirection = ETPSSprintBlendSpace::Forward;
+
 		if (Aiming->GetIsAiming())
 		{
 			bForwardInputPressed = true;
-			NormalizedForward = AssignNormalizedVelo(Value, bRightInputPressed);
+
+			if (!bRightInputPressed)
+				JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Forward : ETPSJogBlendSpace::Backward;
+			else if (Value > 0.0f)
+				JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::ForwardRight : ETPSJogBlendSpace::ForwardLeft;
+			else
+				JogDirection = (RightMove > 0.0f) ? ETPSJogBlendSpace::BackwardRight : ETPSJogBlendSpace::BackwardLeft;
 		}
 	}
 	else
 	{
 		bForwardInputPressed = false;
-		NormalizedForward = 0.0f;
+		if (!bRightInputPressed)
+		{
+			SprintDirection = ETPSSprintBlendSpace::Idle;
+			JogDirection = ETPSJogBlendSpace::Idle;
+		}
+		
 	}
 }
 
@@ -210,16 +214,18 @@ void ATPShooterCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 
+		SprintDirection = ETPSSprintBlendSpace::Forward;
+		RightMove = Value;
 		if (Aiming->GetIsAiming())
 		{
 			bRightInputPressed = true;
-			NormalizedRight = AssignNormalizedVelo(Value, bForwardInputPressed);
+			if (!bForwardInputPressed)
+			JogDirection = (Value > 0.0f) ? ETPSJogBlendSpace::Right :ETPSJogBlendSpace::Left;
 		}
 	}
 	else
 	{
 		bRightInputPressed = false;
-		NormalizedRight = 0.0f;
 	}
 }
 

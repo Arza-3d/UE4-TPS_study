@@ -54,9 +54,18 @@ void ATPS_Projectile::SetUpProjectile(FProjectile MyProjectile, APawn* InInstiga
 	ProjectileParticleObject = MyProjectile.ProjectileParticle;
 	ProjectileSoundObject = MyProjectile.ProjectileSound;
 	ProjectileData = MyProjectile.ProjectileData;
+	
+	if (ProjectileData.SpeedxGravityxScale.Num() > 0) 
+	{
+		MovementComp->InitialSpeed = ProjectileData.SpeedxGravityxScale[0];
+	}
+	else
+	{
+		FProjectileData defaultProjectile;
 
+		MovementComp->InitialSpeed = defaultProjectile.SpeedxGravityxScale[0];
+	}
 
-	MovementComp->InitialSpeed = ProjectileData.SpeedxGravityxScale[0];
 	MovementComp->ProjectileGravityScale = (ProjectileData.SpeedxGravityxScale.Num() > 2) ? ProjectileData.SpeedxGravityxScale[2] : 0.0f;
 
 	UE_LOG(LogTemp, Log, TEXT("Event setup!"));
@@ -68,24 +77,47 @@ void ATPS_Projectile::BeginPlay()
 
 	if (ProjectileParticleObject) 
 	{
-		ParticleScale = (ProjectileData.SpeedxGravityxScale.Num() >= 3) ? ProjectileData.SpeedxGravityxScale[2] : 1.0f;
+		float particleScale = (ProjectileData.SpeedxGravityxScale.Num() >= 3) ? ProjectileData.SpeedxGravityxScale[2] : 1.0f;
 
-		SpawnFX(
-			ProjectileParticleObject->ProjectileParticle.MuzzleParticle[0], 
-			ProjectileSoundObject->ProjectileSoundEffect.MuzzleSound, 
-			GetActorTransform(), ParticleScale
-		);
+		SetActorScale3D(FVector(particleScale));
 
-		ProjectileTrailParticle->SetTemplate(
-			UTPSFunctionLibrary::GetRandomParticle(ProjectileParticleObject->ProjectileParticle.TrailParticle)
-		);
+		TArray<UParticleSystem*> muzzleParticle = ProjectileParticleObject->ProjectileParticle.MuzzleParticle;
+
+		if (muzzleParticle.Num() >= 0 && muzzleParticle[0] != nullptr)
+			UGameplayStatics::SpawnEmitterAtLocation(
+				this, 
+				muzzleParticle[0],
+				GetActorLocation(), 
+				GetActorRotation(), 
+				GetActorScale(), 
+				true, 
+				EPSCPoolMethod::None
+			);
+
+		TArray<UParticleSystem*> trailParticle = ProjectileParticleObject->ProjectileParticle.TrailParticle;
+
+		if (trailParticle.Num() > 0 && trailParticle[0] != nullptr)
+			ProjectileTrailParticle->SetTemplate(
+				trailParticle[0]
+			);
+	}
+
+	if (ProjectileSoundObject) {
+		USoundBase* muzzleSound = ProjectileSoundObject->ProjectileSound.MuzzleSound;
+
+		if (muzzleSound)
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				muzzleSound,
+				GetActorLocation()
+			);
 	}
 
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ATPS_Projectile::ShowOverlapObjectData);
 	CollisionComp->OnComponentHit.AddDynamic(this, &ATPS_Projectile::ShowHitObjectData);
 
 	UE_LOG(LogTemp, Log, TEXT("Event BEGINPLAY!"));
-	//UKismetSystemLibrary::PrintString(this, FString("Projectile Begin Play"), true, false, FLinearColor::Red, 5.0f);
+	UKismetSystemLibrary::PrintString(this, FString("Projectile Begin Play"), true, false, FLinearColor::Red, 5.0f);
 }
 
 void ATPS_Projectile::DestroySelf() 
@@ -97,16 +129,36 @@ void ATPS_Projectile::DestroySelf()
 
 void ATPS_Projectile::NotifyHit(UPrimitiveComponent * MyComp, AActor * Other, UPrimitiveComponent * OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult & Hit) 
 {
-	if (ProjectileParticleObject && ProjectileSoundObject) 
-	SpawnFX(
-		ProjectileParticleObject->ProjectileParticle.HitParticle, 
-		ProjectileSoundObject->ProjectileSoundEffect.HitAndTrailSound[0], 
-		GetActorTransform(), 
-		ParticleScale
-	);
-	
-	if (ProjectileTrailParticle) 
-	ProjectileTrailParticle->DestroyComponent();
+	TArray<UParticleSystem*> hitParticle = ProjectileParticleObject->ProjectileParticle.HitParticle;
+
+	if (ProjectileParticleObject)
+	{
+		if (hitParticle.Num() >= 0 && hitParticle[0] != nullptr)
+			UGameplayStatics::SpawnEmitterAtLocation(
+				this,
+				hitParticle[0],
+				GetActorLocation(),
+				GetActorRotation(),
+				GetActorScale(),
+				true,
+				EPSCPoolMethod::None
+			);
+
+		if (ProjectileTrailParticle != nullptr)
+			ProjectileTrailParticle->DestroyComponent();
+	}
+
+	if (ProjectileSoundObject)
+	{
+		TArray<USoundBase*> hitSound = ProjectileSoundObject->ProjectileSound.HitAndTrailSound;
+
+		if (hitSound.Num() > 0 && hitSound[0] != nullptr)
+			UGameplayStatics::PlaySoundAtLocation(
+				this,
+				hitSound[0],
+				GetActorLocation()
+			);
+	}
 
 	GetWorldTimerManager().ClearTimer(TimerDestroy);
 	GetWorldTimerManager().SetTimer(TimerDestroy, this, &ATPS_Projectile::DestroySelf, 3.0f);
@@ -167,7 +219,7 @@ void ATPS_Projectile::ShowHitObjectData(UPrimitiveComponent* HitComponent, AActo
 
 }
 
-void ATPS_Projectile::SpawnFX(TArray<UParticleSystem*> MyParticles, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter) 
+/*void ATPS_Projectile::SpawnFX(TArray<UParticleSystem*> MyParticles, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter) 
 {
 	if (MyParticles.Num() > 0) 
 	{
@@ -175,16 +227,16 @@ void ATPS_Projectile::SpawnFX(TArray<UParticleSystem*> MyParticles, USoundBase* 
 		UGameplayStatics::SpawnEmitterAtLocation(this, MyParticle, MyTransform.GetLocation(), MyTransform.Rotator(), MyTransform.GetScale3D(), false, EPSCPoolMethod::None);
 	}
 	
-	if (MySoundEffect != nullptr) 
+	if (MySoundEffect) 
 	UGameplayStatics::PlaySoundAtLocation(this, MySoundEffect, MyTransform.GetLocation());
-}
+}*/
 
-void ATPS_Projectile::SpawnFX(UParticleSystem* MyParticle, USoundBase * MySoundEffect, FTransform MyTransform, float MyScaleEmitter)
+/*void ATPS_Projectile::SpawnFX(UParticleSystem* MyParticle, USoundBase * MySoundEffect, FTransform MyTransform, float MyScaleEmitter)
 {
 	if (MyParticle)
 	UGameplayStatics::SpawnEmitterAtLocation(this, MyParticle, MyTransform.GetLocation(), MyTransform.Rotator(), MyTransform.GetScale3D(), false, EPSCPoolMethod::None);
 	
-	if (MySoundEffect != nullptr)
+	if (MySoundEffect)
 	UGameplayStatics::PlaySoundAtLocation(this, MySoundEffect, MyTransform.GetLocation());
 	
-}
+}*/

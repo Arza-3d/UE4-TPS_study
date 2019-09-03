@@ -33,7 +33,8 @@ void UAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 bool UAimingComponent::GetIsAiming() const
 {
-	bool retVal = AimingState == EAimingState::Aiming;
+	bool retVal = (AimingState == EAimingState::Aiming || AimingState == EAimingState::TransitioningAiming && bIsAimingForward == true)
+		? true : false;
 
 	if (RangedWeaponComponent == nullptr) return retVal;
 
@@ -95,12 +96,14 @@ void UAimingComponent::BeginPlay()
 	AimStats[0].CharMov.MaxWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	AimStats[0].FollCam.FieldOfView = CameraComponent->FieldOfView;
 
+	AimingNames = AimingTable->GetRowNames();
+
 	int aimingNamesCount = AimingNames.Num();
 	FName currentAimingName;
 	static const FString contextString(TEXT("Aiming name"));
 	struct FAimingStatCompact* aimStatRow;
 	AimStats.SetNum(1 + aimingNamesCount);
-
+	UKismetSystemLibrary::PrintString(this, TEXT("added aiming table start loop"), true, false, FLinearColor::Red, 5.0f);
 	for (int i = 0; i < AimingNames.Num(); i++)
 	{
 		currentAimingName = AimingNames[i];
@@ -108,6 +111,7 @@ void UAimingComponent::BeginPlay()
 		AimStats[1 + i].CamBoom = aimStatRow->AimStat.CamBoom;
 		AimStats[1 + i].CharMov = aimStatRow->AimStat.CharMov;
 		AimStats[1 + i].FollCam = aimStatRow->AimStat.FollCam;
+		UKismetSystemLibrary::PrintString(this, TEXT("added aiming table in aimstat"), true, false, FLinearColor::Red, 5.0f);
 	}
 }
 
@@ -115,16 +119,17 @@ void UAimingComponent::SetUpVariables(bool bShouldCheck)
 {
 	if (AimingTable == nullptr)
 	{
-		static ConstructorHelpers::FObjectFinder<UDataTable> thisObj2(TEXT("DataTable'/Game/Character/Table/AimingTable.AimingTable'"));
-		if (bShouldCheck) check(thisObj2.Object);
-		AimingTable = thisObj2.Object;
+		//Something* MyClass::aPointer = new Something;
+		static ConstructorHelpers::FObjectFinder<UDataTable> tempAimingTable(TEXT("DataTable'/Game/Character/Table/AimingTable.AimingTable'"));
+		if (bShouldCheck) check(tempAimingTable.Object);
+		AimingTable = tempAimingTable.Object;
 	}
 	
 	if (AimingCurve == nullptr)
 	{
-		static ConstructorHelpers::FObjectFinder<UCurveFloat> thisObj3(TEXT("CurveFloat'/Game/Character/Curves/AimingFloatCurve.AimingFloatCurve'"));
-		if (bShouldCheck) check(thisObj3.Object);
-		AimingCurve = thisObj3.Object;
+		static ConstructorHelpers::FObjectFinder<UCurveFloat> tempAimingCurve(TEXT("CurveFloat'/Game/Character/Curves/AimingFloatCurve.AimingFloatCurve'"));
+		if (bShouldCheck) check(tempAimingCurve.Object);
+		AimingCurve = tempAimingCurve.Object;
 	}
 }
 
@@ -146,10 +151,10 @@ void UAimingComponent::AimingTimerStart()
 {
 	AimingState = EAimingState::TransitioningAiming;
 
-	OnTransitioningAiming.Broadcast(this);
-
+	//OnTransitioningAiming.Broadcast(this);
+	TimeAiming(AimingAlpha);
 	AimingAlpha = AimingCurve->GetFloatValue(CurrentAimingTime / TotalAimingTime);
-
+	//OnAiming.Broadcast(this);
 	UE_LOG(LogTemp, Log, TEXT("Aiming Alpha is %f, current time is %f"), AimingAlpha, CurrentAimingTime);
 
 	float incrementTime = (bIsAimingForward) ? DeltaSecond : -1 * DeltaSecond;
@@ -162,17 +167,18 @@ void UAimingComponent::AimingTimerStart()
 			AimingState = EAimingState::Aiming;
 
 			ClearAndInvalidateAimingTimer(TotalAimingTime);
-
+			//TimeAiming(AimingAlpha);
 			OnAiming.Broadcast(this);
+			OrientCharacter(true);
 			UE_LOG(LogTemp, Log, TEXT("FINISH >>>>>>> current time is %f"), CurrentAimingTime);
 		}
 	}
 	else if (CurrentAimingTime <= 0.0f)
 	{
 		AimingState = EAimingState::NotAiming;
-
 		OnStopAiming.Broadcast(this);
-
+		//TimeAiming(AimingAlpha);
+		OrientCharacter(false);
 		ClearAndInvalidateAimingTimer(0.0f);
 		UE_LOG(LogTemp, Log, TEXT("<<<<<<<<<<<FINISH  current time is %f"), CurrentAimingTime);
 	}
@@ -182,6 +188,7 @@ void UAimingComponent::ClearAndStartAimingTimer()
 {
 	GetOwner()->GetWorldTimerManager().ClearTimer(AimingTimerHandle);
 	GetOwner()->GetWorldTimerManager().SetTimer(AimingTimerHandle, this, &UAimingComponent::AimingTimerStart, DeltaSecond, true);
+	OnTransitioningAiming.Broadcast(this);
 }
 
 void UAimingComponent::ClearAndInvalidateAimingTimer(const float NewCurrentTime)
@@ -193,6 +200,8 @@ void UAimingComponent::ClearAndInvalidateAimingTimer(const float NewCurrentTime)
 
 void UAimingComponent::TimeAiming(float InAlpha)
 {
+	UE_LOG(LogTemp, Log, TEXT("aimstats number %i"), AimStats.Num());
+
 	int32 A = AimStatStartIndex;
 	int32 B = AimStatTargetIndex;
 

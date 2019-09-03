@@ -23,9 +23,9 @@ public:
 
 	void SetUpProjectile(FProjectile MyProjectile, APawn* InInstigator);
 
-	void SpawnFX(TArray<UParticleSystem*> MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
+	//void SpawnFX(TArray<UParticleSystem*> MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
 
-	void SpawnFX(UParticleSystem* MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
+	//void SpawnFX(UParticleSystem* MyParticle, USoundBase* MySoundEffect, FTransform MyTransform, float MyScaleEmitter);
 
 	void DestroySelf();
 
@@ -53,7 +53,7 @@ private:
 
 	FTimerHandle TimerDestroy;
 
-	float ParticleScale;
+	//TArray<UParticleSystem>
 	
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 	UProjectileMovementComponent* MovementComp;

@@ -3,8 +3,10 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
-#include "HPandMPComponent.h"
-#include "TPSFunctionLibrary.h"
+
+#include "Component/HPandMPComponent.h"
+#include "Library/TPSFunctionLibrary.h"
+#include "Enum/TPSCharacterMobilityEnum.h"
 
 #include "TPShooterCharacter.generated.h"
 
@@ -17,6 +19,7 @@ class UHPandMPComponent;
 class URangedWeaponComponent;
 class ATPS_Projectile;
 class UAmmoAndEnergyComponent;
+
 
 UCLASS(config = Game)
 class ATPShooterCharacter : public ACharacter {
@@ -55,14 +58,14 @@ protected:
 	// Getter (protected):
 	//====================
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedForward() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation")
-	float GetNormalizedRight() const;
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
 	UAnimInstance* GetAnimBlueprint() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
+	ETPSJogBlendSpace GetJogDirection() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Animation Interface")
+	ETPSSprintBlendSpace GetSprintDirection() const;
 
 	//================================
 	// Overriden function (protected):
@@ -79,6 +82,10 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category = "Fire")
 	bool IsAbleToFire();
 	virtual bool IsAbleToFire_Implementation();
+
+	//================
+	// Event (public):
+	//================
 
 //===========================================================================
 private:
@@ -142,15 +149,24 @@ private:
 	bool bForwardInputPressed;
 	bool bRightInputPressed;
 
-	float NormalizedForward;
-	float NormalizedRight;
-
 	//-------------------------------------------------------------
-
-	float AssignNormalizedVelo(float MyValue, bool bOtherButtonPressed);
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void LookRightAtRate(float Rate);
 	void LookUpAtRate(float Rate);
+
+	ETPSJogBlendSpace JogDirection;
+	ETPSSprintBlendSpace SprintDirection;
+
+	float RightMove;
+
+	/*void ForwardPress();
+	void ForwardRelease();
+	void RightPress();
+	void RightRelease();
+	void BackwardPress();
+	void BackwardRelease();
+	void LeftPress();
+	void LeftRelease();*/
 };

@@ -20,7 +20,7 @@ class TPS_STUDY_API ITPSAnimInterface
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation", meta = (Keywords = "Animation Interface"))
-	void IsCharacterFallingIsSetTo(const bool inBool);
+	void IsInAirIsSetTo(const bool inBool);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Navigation", meta = (Keywords = "Animation Interface"))
 	void NormalizedForwardIsSetTo(const float normForward);
@@ -33,5 +33,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Weapon", meta = (Keywords = "Animation Interface"))
 	void IsAimingIsSetTo(const bool inBool);
-
 };

@@ -25,7 +25,7 @@ struct FProjectileData
 	 * 2 = particle scale
 	 */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	TArray<float> SpeedxGravityxScale;
+	TArray<float> SpeedxGravityxScale = {8000.0f};
 };
 
 USTRUCT(BlueprintType)

@@ -14,6 +14,6 @@ class TPS_STUDY_API UProjectileSoundDataAsset : public UPrimaryDataAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FProjectileSound ProjectileSoundEffect;
+	FProjectileSound ProjectileSound;
 
 };

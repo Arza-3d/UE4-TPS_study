@@ -4,43 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Component/ComponentBase.h"
+#include "Struct/HPandMPStruct.h"
 #include "HPandMPComponent.generated.h"
-
-USTRUCT(BlueprintType)
-struct FCeiledFloat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat", Meta = (ClampMin = "0", ClampMax = "9999"))
-	float Current = 100.0f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat", Meta = (ClampMin = "1", ClampMax = "9999"))
-	float Max = 100.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FCharacterStat
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	FCeiledFloat Health;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	FCeiledFloat Mana;
-};
-
-USTRUCT(BlueprintType)
-struct FCharacterStatBPCPP
-{
-	GENERATED_BODY();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	float HP = 100.0f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Stat")
-	float MP = 100.0f;
-};
 
 //=============================================================================
 /**
@@ -90,8 +55,6 @@ protected:
 //===========================================================================
 private:
 //===========================================================================
-
-	//APawn* TheChar;
 
 	float AddStat(float* CurrentStat, const float AddStat, const float MaxStat = 9999.0f);
 

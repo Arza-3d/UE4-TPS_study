@@ -15,10 +15,10 @@ struct FCharMovAimingStat
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float MaxAcceleration = 2048.0f;
+	float MaxAcceleration = 2048.0f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float MaxWalkSpeed = 600.0f;
+	float MaxWalkSpeed = 600.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -27,19 +27,19 @@ struct FCamBoomAimingStat
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FVector SocketOffset;
+	FVector SocketOffset;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float TargetArmLength = 300.0f;
+	float TargetArmLength = 300.0f;
 };
 
 USTRUCT(BlueprintType)
-struct FollowCamAimingStat
+struct FFollowCamAimingStat
 {
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float FieldOfView = 90.0f;
+	float FieldOfView = 90.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -48,13 +48,13 @@ struct FAimingStat
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FCharMovAimingStat CharMov;
+	FCharMovAimingStat CharMov;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FCamBoomAimingStat CamBoom;
+	FCamBoomAimingStat CamBoom;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FollowCamAimingStat FollCam;
+	FFollowCamAimingStat FollCam;
 };
 
 USTRUCT(BlueprintType)
@@ -63,7 +63,7 @@ struct FAimingStatCompact : public FTableRowBase
 	GENERATED_BODY();
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		FAimingStat AimStat;
+	FAimingStat AimStat;
 };
 
 UCLASS()
